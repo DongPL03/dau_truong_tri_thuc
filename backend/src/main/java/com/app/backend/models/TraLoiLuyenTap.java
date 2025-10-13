@@ -1,0 +1,41 @@
+package com.app.backend.models;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "tra_loi_luyen_tap")
+@Data
+public class TraLoiLuyenTap {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "phien_id", nullable = false)
+    private PhienLuyenTap phien;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cau_hoi_id", nullable = false)
+    private CauHoi cauHoi;
+
+    @Column(name = "lua_chon", length = 1, nullable = false)
+    private Character luaChon;
+
+    @Column(name = "dung_hay_sai", nullable = false)
+    private Boolean dungHaySai;
+
+    @Column(name = "thoi_gian_ms")
+    private Integer thoiGianMs;
+
+    @Column(name = "tra_loi_luc", updatable = false)
+    private LocalDateTime traLoiLuc;
+
+    @PrePersist
+    protected void onCreate() {
+        traLoiLuc = LocalDateTime.now();
+    }
+}

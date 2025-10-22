@@ -1,13 +1,20 @@
 package com.app.backend.models;
 
+import com.app.backend.models.enums.LuatTinhDiem;
+import com.app.backend.models.enums.TrangThaiTranDau;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tran_dau")
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class TranDau {
 
     @Id

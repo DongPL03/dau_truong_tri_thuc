@@ -1,13 +1,18 @@
 package com.app.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tra_loi_luyen_tap")
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class TraLoiLuyenTap {
 
     @Id

@@ -2,7 +2,7 @@ package com.app.backend.controllers;
 
 
 import com.app.backend.models.ChuDe;
-import com.app.backend.services.ChuDeService;
+import com.app.backend.services.chude.ChuDeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

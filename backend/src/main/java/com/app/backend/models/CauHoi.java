@@ -1,14 +1,21 @@
 package com.app.backend.models;
 
 
+import com.app.backend.models.enums.DoKho;
+import com.app.backend.models.enums.LoaiNoiDung;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cau_hoi")
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class CauHoi {
 
     @Id

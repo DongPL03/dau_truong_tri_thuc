@@ -1,13 +1,20 @@
 package com.app.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tra_loi_tran_dau")
+@Table(name = "tra_loi_tran_dau", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_traloi_unique", columnNames = {"tran_dau_id", "nguoi_dung_id", "cau_hoi_id"})
+})
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class TraLoiTranDau {
 
     @Id

@@ -1,7 +1,7 @@
 package com.app.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +9,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "phien_luyen_tap")
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PhienLuyenTap {
 
     @Id

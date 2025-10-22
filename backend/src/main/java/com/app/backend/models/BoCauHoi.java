@@ -1,14 +1,21 @@
 package com.app.backend.models;
 
+import com.app.backend.models.enums.CheDoHienThi;
+import com.app.backend.models.enums.TrangThaiBoCauHoi;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bo_cau_hoi")
 @Data
-public class BoCauHoi {
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class BoCauHoi extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,20 +46,4 @@ public class BoCauHoi {
     @Column(name = "ly_do_tu_choi")
     private String lyDoTuChoi;
 
-    @Column(name = "tao_luc", updatable = false)
-    private LocalDateTime taoLuc;
-
-    @Column(name = "cap_nhat_luc")
-    private LocalDateTime capNhatLuc;
-
-    @PrePersist
-    protected void onCreate() {
-        taoLuc = LocalDateTime.now();
-        capNhatLuc = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        capNhatLuc = LocalDateTime.now();
-    }
 }

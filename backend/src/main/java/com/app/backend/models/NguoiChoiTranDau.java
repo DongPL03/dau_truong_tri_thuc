@@ -1,7 +1,7 @@
 package com.app.backend.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
         @UniqueConstraint(columnNames = {"tran_dau_id", "nguoi_dung_id"})
 })
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class NguoiChoiTranDau {
 
     @Id

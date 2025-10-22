@@ -1,7 +1,8 @@
 package com.app.backend.models;
 
+import com.app.backend.models.enums.TrangThaiKetBan;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +11,11 @@ import java.time.LocalDateTime;
         @UniqueConstraint(columnNames = {"nguoi_gui_id", "nguoi_nhan_id"})
 })
 @Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class KetBan {
 
     @Id

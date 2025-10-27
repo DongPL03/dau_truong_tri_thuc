@@ -1,5 +1,6 @@
 package com.app.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,7 @@ public class EmailVerificationToken {
     private String token;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JsonBackReference
     @JoinColumn(name = "nguoi_dung_id", nullable = false)
     private NguoiDung nguoiDung;
 

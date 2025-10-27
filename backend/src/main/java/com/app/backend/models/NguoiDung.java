@@ -1,6 +1,7 @@
 package com.app.backend.models;
 
-import com.app.backend.models.enums.TrangThaiNguoiDung;
+import com.app.backend.models.constant.TrangThaiNguoiDung;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,12 +56,13 @@ public class NguoiDung implements UserDetails {
 
     // Thay thế ENUM bằng khóa ngoại
     @ManyToOne(fetch = FetchType.EAGER)
+    @JsonBackReference
     @JoinColumn(name = "vai_tro_id", nullable = true) // BIGINT (có thể là NULL)
     private VaiTro vaiTro;
 
-    @Enumerated(EnumType.STRING)
+
     @Column(name = "trang_thai", columnDefinition = "ENUM('ONLINE','OFFLINE','BANNED') DEFAULT 'OFFLINE'")
-    private TrangThaiNguoiDung trangThai = TrangThaiNguoiDung.OFFLINE;
+    private String trangThai = TrangThaiNguoiDung.OFFLINE;
 
 
     @Column(name = "last_login_at")
@@ -88,8 +90,6 @@ public class NguoiDung implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
         authorityList.add(new SimpleGrantedAuthority("ROLE_" + getVaiTro().getTenVaiTro().toUpperCase()));
-        //authorityList.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-
         return authorityList;
     }
 

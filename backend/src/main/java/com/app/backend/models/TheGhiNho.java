@@ -1,5 +1,6 @@
 package com.app.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,10 +21,12 @@ public class TheGhiNho {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "phien_id", nullable = false)
     private PhienLuyenTap phien;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "cau_hoi_id", nullable = false)
     private CauHoi cauHoi;
 

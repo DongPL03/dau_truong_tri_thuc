@@ -55,6 +55,9 @@ public class WebSecurityConfig {
                                     String.format("%s/users/verify-email", apiPrefix),
                                     String.format("%s/users/resend-verification", apiPrefix)
                             ).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/users/profile-images/**", apiPrefix))
+                            .permitAll()
 //
 //                            .requestMatchers(GET,
 //                                    String.format("%s/policies/**", apiPrefix)).permitAll()

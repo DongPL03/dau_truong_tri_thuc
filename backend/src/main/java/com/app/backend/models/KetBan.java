@@ -1,6 +1,7 @@
 package com.app.backend.models;
 
-import com.app.backend.models.enums.TrangThaiKetBan;
+import com.app.backend.models.constant.TrangThaiKetBan;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,16 +24,17 @@ public class KetBan {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "nguoi_gui_id", nullable = false)
     private NguoiDung nguoiGui;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "nguoi_nhan_id", nullable = false)
     private NguoiDung nguoiNhan;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "trang_thai", columnDefinition = "ENUM('PENDING','ACCEPTED','DECLINED') DEFAULT 'PENDING'")
-    private TrangThaiKetBan trangThai = TrangThaiKetBan.PENDING;
+    private String trangThai = TrangThaiKetBan.PENDING;
 
     @Column(name = "tao_luc", updatable = false)
     private LocalDateTime taoLuc;

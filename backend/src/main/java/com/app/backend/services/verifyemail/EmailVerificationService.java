@@ -2,7 +2,7 @@ package com.app.backend.services.verifyemail;
 
 import com.app.backend.models.EmailVerificationToken;
 import com.app.backend.models.NguoiDung;
-import com.app.backend.repositories.IEmailVerificationTokenRepository;
+import com.app.backend.repositories.IEmailVerifiTokenRepository;
 import com.app.backend.repositories.INguoiDungRepository;
 import com.app.backend.services.token.ITokenService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EmailVerificationService implements IEmailVerificationService {
 
-    private final IEmailVerificationTokenRepository tokenRepo;
+    private final IEmailVerifiTokenRepository tokenRepo;
     private final INguoiDungRepository userRepo;
     private final IEmailService emailService;
     private final ITokenService tokenService;

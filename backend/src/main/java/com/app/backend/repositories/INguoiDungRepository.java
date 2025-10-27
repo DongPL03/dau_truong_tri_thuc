@@ -24,5 +24,4 @@ public interface INguoiDungRepository extends JpaRepository<NguoiDung, Long> {
     Page<NguoiDung> findAll(@Param("keyword") String keyword, Pageable pageable);
     List<NguoiDung> findByVaiTroId(Long roleId);
 
-
 }

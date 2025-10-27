@@ -1,7 +1,8 @@
 package com.app.backend.models;
 
-import com.app.backend.models.enums.LuatTinhDiem;
-import com.app.backend.models.enums.TrangThaiTranDau;
+import com.app.backend.models.constant.LuatTinhDiem;
+import com.app.backend.models.constant.TrangThaiTranDau;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,19 +23,20 @@ public class TranDau {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "bo_cau_hoi_id", nullable = false)
     private BoCauHoi boCauHoi;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "chu_phong_id", nullable = false)
     private NguoiDung chuPhong;
 
     @Column(name = "ma_phong", length = 10, nullable = false, unique = true)
     private String maPhong;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "trang_thai", columnDefinition = "ENUM('PENDING','ONGOING','FINISHED') DEFAULT 'PENDING'")
-    private TrangThaiTranDau trangThai = TrangThaiTranDau.PENDING;
+    private String trangThai = TrangThaiTranDau.PENDING;
 
     @Column(name = "cong_khai", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean congKhai = true;
@@ -48,11 +50,11 @@ public class TranDau {
     @Column(name = "gioi_han_thoi_gian_cau_giay", columnDefinition = "INT DEFAULT 15")
     private Integer gioiHanThoiGianCauGiay = 15;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "luat_tinh_diem", columnDefinition = "ENUM('BASIC','SPEED_BONUS') DEFAULT 'SPEED_BONUS'")
-    private LuatTinhDiem luatTinhDiem = LuatTinhDiem.SPEED_BONUS;
+    private String luatTinhDiem = LuatTinhDiem.SPEED_BONUS;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "winner_id")
     private NguoiDung winner;
 

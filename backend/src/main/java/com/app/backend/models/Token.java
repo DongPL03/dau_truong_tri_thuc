@@ -1,5 +1,6 @@
 package com.app.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +43,7 @@ public class Token {
 
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "nguoi_dung_id")
     private NguoiDung nguoiDung;
 

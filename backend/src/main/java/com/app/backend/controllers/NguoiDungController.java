@@ -340,7 +340,7 @@ public class NguoiDungController {
 
         // Store file and get filename
         String oldFileName = loginUser.getAvatarUrl();
-        String imageName = FileUtils.storeFile(file);
+        String imageName = FileUtils.storeFile(file, "HINH_ANH");
 
         userService.changeProfileImage(loginUser.getId(), imageName);
         // Delete old file if exists
@@ -358,7 +358,7 @@ public class NguoiDungController {
     @GetMapping("/profile-images/{imageName}")
     public ResponseEntity<?> viewImage(@PathVariable String imageName) {
         try {
-            java.nio.file.Path imagePath = Paths.get("uploads/" + imageName);
+            java.nio.file.Path imagePath = Paths.get("uploads/images/" + imageName);
             UrlResource resource = new UrlResource(imagePath.toUri());
 
             if (resource.exists()) {
@@ -368,7 +368,7 @@ public class NguoiDungController {
             } else {
                 return ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_JPEG)
-                        .body(new UrlResource(Paths.get("uploads/default-profile-image.jpeg").toUri()));
+                        .body(new UrlResource(Paths.get("uploads/images/default-profile-image.jpeg").toUri()));
                 //return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
@@ -379,7 +379,7 @@ public class NguoiDungController {
 
     @PostMapping("/refreshToken")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseObject> refreshToken(@Valid @RequestBody RefreshTokenRequest req) throws Exception {
+    public ResponseEntity<ResponseObject> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO req) throws Exception {
         // Lấy user từ refresh token, kiểm tra revoke/expire trong DB
         NguoiDung user = userService.getUserDetailsFromRefreshToken(req.refreshToken());
         // Cấp token mới (access + refresh rotation) và revoke cái cũ
@@ -497,7 +497,6 @@ public class NguoiDungController {
                     .build());
         }
     }
-
 
 
     @PostMapping("/logout")

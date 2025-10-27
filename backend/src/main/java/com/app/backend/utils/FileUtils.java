@@ -1,75 +1,101 @@
 package com.app.backend.utils;
 
-
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Objects;
-import java.util.UUID;
+import java.nio.file.*;
+import java.util.*;
 
 public class FileUtils {
-    private static String UPLOADS_FOLDER = "uploads";
+    private static final String UPLOADS_FOLDER = "uploads";
 
+    // Các thư mục con riêng cho từng loại nội dung
+    private static final String IMAGE_FOLDER = "images";
+    private static final String AUDIO_FOLDER = "audio";
+    private static final String VIDEO_FOLDER = "videos";
+
+    /**
+     * Xóa file theo tên (tìm trong thư mục uploads)
+     */
     public static void deleteFile(String filename) throws IOException {
-        // Đường dẫn đến thư mục chứa file
-        java.nio.file.Path uploadDir = Paths.get(UPLOADS_FOLDER);
-        // Đường dẫn đầy đủ đến file cần xóa
-        java.nio.file.Path filePath = uploadDir.resolve(filename);
-
-        // Kiểm tra xem file tồn tại hay không
+        Path uploadDir = Paths.get(UPLOADS_FOLDER);
+        Path filePath = uploadDir.resolve(filename);
         if (Files.exists(filePath)) {
-            // Xóa file
             Files.delete(filePath);
-        } else {
-            //throw new FileNotFoundException("File not found: " + filename);
         }
     }
 
+    /**
+     * Kiểm tra xem có phải file ảnh hợp lệ không
+     */
     public static boolean isImageFile(MultipartFile file) {
-        return true;
-        /*
         String contentType = file.getContentType();
-        return contentType != null && contentType.startsWith("image/");
-         */
-        /*
-        AutoDetectParser parser = new AutoDetectParser();
-        Detector detector = parser.getDetector();
-        try {
-            Metadata metadata = new Metadata();
-            TikaInputStream stream = TikaInputStream.get(file.getInputStream());
-            MediaType mediaType = detector.detect(stream, metadata);
-            String mimeType =  mediaType.toString();
-        } catch (IOException e) {
-            return false;
-        }
-        */
+        return contentType.startsWith("image/");
     }
 
-    public static String storeFile(MultipartFile file) throws IOException {
-        if (!isImageFile(file) || file.getOriginalFilename() == null) {
-            throw new IOException("Invalid image format");
-        }
-        String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String extension = FilenameUtils.getExtension(filename);  // Lấy extension của file gốc
-        // Thêm UUID và extension vào tên file để đảm bảo tên file là duy nhất và giữ nguyên extension
-        String uniqueFilename = UUID.randomUUID().toString() + "_" + System.nanoTime() + "." + extension;
+    /**
+     * Kiểm tra xem có phải file âm thanh không
+     */
+    public static boolean isAudioFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType.startsWith("audio/");
+    }
 
-        // Đường dẫn đến thư mục mà bạn muốn lưu file
-        java.nio.file.Path uploadDir = Paths.get(UPLOADS_FOLDER);
-        // Kiểm tra và tạo thư mục nếu nó không tồn tại
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
+    /**
+     * Kiểm tra xem có phải file video không
+     */
+    public static boolean isVideoFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType.startsWith("video/");
+    }
+
+    /**
+     * Lưu file upload theo loại nội dung
+     * @param file file upload
+     * @param loai "HINH_ANH", "AM_THANH", "VIDEO"
+     */
+    public static String storeFile(MultipartFile file, String loai) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IOException("File rỗng hoặc không tồn tại");
         }
-        // Đường dẫn đầy đủ đến file
-        java.nio.file.Path destination = Paths.get(uploadDir.toString(), uniqueFilename);
-        // Sao chép file vào thư mục đích
+
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new IOException("Không thể xác định loại tệp");
+        }
+
+        // Xác định thư mục con phù hợp
+        String subFolder;
+        if ("HINH_ANH".equalsIgnoreCase(loai) && isImageFile(file)) {
+            subFolder = IMAGE_FOLDER;
+        } else if ("AM_THANH".equalsIgnoreCase(loai) && isAudioFile(file)) {
+            subFolder = AUDIO_FOLDER;
+        } else if ("VIDEO".equalsIgnoreCase(loai) && isVideoFile(file)) {
+            subFolder = VIDEO_FOLDER;
+        } else {
+            throw new IOException("Định dạng tệp không hợp lệ cho loại: " + loai);
+        }
+
+        // Lấy tên file & extension
+        String originalFilename = StringUtils.cleanPath(
+                Objects.requireNonNull(file.getOriginalFilename())
+        );
+        String extension = FilenameUtils.getExtension(originalFilename);
+        String uniqueFilename = UUID.randomUUID() + "_" + System.nanoTime() + "." + extension;
+
+        // Tạo thư mục con nếu chưa tồn tại
+        Path uploadPath = Paths.get(UPLOADS_FOLDER, subFolder);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // Lưu file vào thư mục
+        Path destination = uploadPath.resolve(uniqueFilename);
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
-        return uniqueFilename;
-    }
 
+        // Trả về path tương đối cho FE
+        return "/uploads/" + subFolder + "/" + uniqueFilename;
+    }
 }

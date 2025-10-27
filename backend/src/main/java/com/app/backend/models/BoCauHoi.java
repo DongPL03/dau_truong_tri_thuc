@@ -1,11 +1,8 @@
 package com.app.backend.models;
 
-import com.app.backend.models.enums.CheDoHienThi;
-import com.app.backend.models.enums.TrangThaiBoCauHoi;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bo_cau_hoi")
@@ -28,22 +25,26 @@ public class BoCauHoi extends BaseEntity {
     private String moTa;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "chu_de_id", nullable = false)
     private ChuDe chuDe;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "tao_boi_id", nullable = false)
     private NguoiDung taoBoi;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "che_do_hien_thi", columnDefinition = "ENUM('PUBLIC','PRIVATE') DEFAULT 'PUBLIC'")
-    private CheDoHienThi cheDoHienThi = CheDoHienThi.PUBLIC;
+    @Column(name = "che_do_hien_thi")
+    private String cheDoHienThi;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "trang_thai", columnDefinition = "ENUM('CHO_DUYET','DA_DUYET','TU_CHOI') DEFAULT 'DA_DUYET'")
-    private TrangThaiBoCauHoi trangThai = TrangThaiBoCauHoi.DA_DUYET;
+    @Column(name = "trang_thai")
+    private String trangThai;
 
     @Column(name = "ly_do_tu_choi")
     private String lyDoTuChoi;
+
+    @Column(name = "is_delete")
+    private Boolean isDelete = false;
+
 
 }

@@ -1,6 +1,7 @@
 package com.app.backend.models;
 
-import com.app.backend.models.enums.LoaiThongBao;
+import com.app.backend.models.constant.LoaiThongBao;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,16 +22,17 @@ public class ThongBao {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "nguoi_gui_id", nullable = false)
     private NguoiDung nguoiGui;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "nguoi_nhan_id", nullable = false)
     private NguoiDung nguoiNhan;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "loai", columnDefinition = "ENUM('FRIEND_REQUEST','BATTLE_INVITE','SYSTEM')")
-    private LoaiThongBao loai;
+    private String loai;
 
     @Column(name = "noi_dung")
     private String noiDung;

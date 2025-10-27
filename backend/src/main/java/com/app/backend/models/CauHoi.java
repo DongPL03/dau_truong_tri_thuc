@@ -1,8 +1,8 @@
 package com.app.backend.models;
 
 
-import com.app.backend.models.enums.DoKho;
-import com.app.backend.models.enums.LoaiNoiDung;
+import com.app.backend.models.constant.LoaiNoiDung;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,20 +23,18 @@ public class CauHoi {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "bo_cau_hoi_id", nullable = false)
     private BoCauHoi boCauHoi;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "do_kho", columnDefinition = "ENUM('DE','TRUNG_BINH','KHO') DEFAULT 'TRUNG_BINH'")
-    private DoKho doKho = DoKho.TRUNG_BINH;
+    @Column(name = "do_kho")
+    private String doKho;
 
-    @Lob
     @Column(name = "noi_dung", nullable = false)
     private String noiDung;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "loai_noi_dung", columnDefinition = "ENUM('VAN_BAN','HINH_ANH','AM_THANH','VIDEO') DEFAULT 'VAN_BAN'")
-    private LoaiNoiDung loaiNoiDung = LoaiNoiDung.VAN_BAN;
+    @Column(name = "loai_noi_dung")
+    private String loaiNoiDung = LoaiNoiDung.VAN_BAN;
 
     @Column(name = "duong_dan_tep")
     private String duongDanTep;
@@ -56,7 +54,6 @@ public class CauHoi {
     @Column(name = "dap_an_dung", length = 1, nullable = false)
     private Character dapAnDung; // A, B, C, D
 
-    @Lob
     @Column(name = "giai_thich")
     private String giaiThich;
 

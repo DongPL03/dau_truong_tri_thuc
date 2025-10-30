@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class CauHoiService implements ICauHoiService {
@@ -47,11 +49,11 @@ public class CauHoiService implements ICauHoiService {
     }
 
     @Override
-    public CauHoi create(CauHoiDTO cauHoiDTO, Long currentUserId, boolean isAdmin) {
+    public CauHoi create(CauHoiDTO cauHoiDTO, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException {
         BoCauHoi boCauHoi = boCauHoiRepository.findById(cauHoiDTO.getBoCauHoiId())
-                .orElseThrow(() -> new IllegalArgumentException("Bộ câu hỏi không tồn tại"));
+                .orElseThrow(() -> new DataNotFoundException("Bộ câu hỏi không tồn tại"));
         if (!isAdmin && !boCauHoi.getTaoBoi().getId().equals(currentUserId)) {
-            throw new SecurityException("Bạn chỉ được thêm câu hỏi vào bộ do bạn tạo");
+            throw new PermissionDenyException("Bạn chỉ được thêm câu hỏi vào bộ do bạn tạo");
         }
         CauHoi cauHoi = CauHoi.builder()
                 .boCauHoi(boCauHoi)
@@ -111,5 +113,13 @@ public class CauHoiService implements ICauHoiService {
         cauHoiRepository.delete(cauHoi);
     }
 
-
+    public CauHoi findById(Long id, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException {
+        CauHoi cauHoi = cauHoiRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Câu hỏi không tồn tại"));
+        if (!isAdmin && !Objects.equals(cauHoi.getBoCauHoi().getCheDoHienThi(), "PUBLIC")
+                && !cauHoi.getBoCauHoi().getTaoBoi().getId().equals(currentUserId)) {
+            throw new PermissionDenyException("Bạn không có quyền xem câu hỏi này");
+        }
+        return cauHoi;
+    }
 }

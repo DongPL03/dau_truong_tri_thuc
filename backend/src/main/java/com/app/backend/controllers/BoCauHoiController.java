@@ -22,6 +22,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("${api.prefix}/boCauHoi")
@@ -62,20 +63,37 @@ public class BoCauHoiController {
         );
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<ResponseObject> getById(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
+        Long currentUserId = securityUtils.getLoggedInUserId();
+        boolean isAdmin = securityUtils.isAdmin();
+        BoCauHoi boCauHoi = boCauHoiService.getById(id, currentUserId, isAdmin);
+        BoCauHoiResponse boCauHoiResponse = BoCauHoiResponse.from(boCauHoi);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Lấy bộ câu hỏi thành công")
+                        .status(HttpStatus.OK)
+                        .data(boCauHoiResponse)
+                        .build()
+        );
+    }
 
     @PostMapping("")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody BoCauHoiDTO boCauHoiDTO, BindingResult result) throws DataNotFoundException {
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody BoCauHoiDTO boCauHoiDTO, BindingResult result) throws DataNotFoundException, PermissionDenyException {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
                     .stream()
                     .map(FieldError::getDefaultMessage)
                     .toList();
-            return ResponseEntity.ok().body(ResponseObject.builder()
-                    .message(errorMessages.toString())
-                    .status(HttpStatus.BAD_REQUEST)
-                    .data(null)
-                    .build());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .message(String.join(", ", errorMessages))
+                            .status(HttpStatus.BAD_REQUEST)
+                            .data(null)
+                            .build()
+            );
 
         }
         Long userId = securityUtils.getLoggedInUser().getId();
@@ -102,21 +120,29 @@ public class BoCauHoiController {
 
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public BoCauHoi approve(@PathVariable Long id) {
-        // throw nếu không phải admin
-        if (securityUtils.requireAdmin()) {
-            System.out.println(("Bạn không có quyền ADMIN"));
-        }
-        Long adminId = securityUtils.getLoggedInUser().getId();
-        return boCauHoiService.approve(id, adminId);
+    public ResponseEntity<ResponseObject> approve(@PathVariable Long id) {
+        securityUtils.requireAdmin();
+        Long adminId = securityUtils.getLoggedInUserId();
+        BoCauHoi boCauHoi = boCauHoiService.approve(id, adminId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .message("Duyệt thành công")
+                .status(HttpStatus.OK)
+                .data(BoCauHoiResponse.from(boCauHoi))
+                .build());
     }
 
     @PutMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    public BoCauHoi reject(@PathVariable Long id, @RequestBody TuChoiBoCauHoiDTO lyDo) {
+    public ResponseEntity<ResponseObject> reject(@PathVariable Long id, @RequestBody TuChoiBoCauHoiDTO lyDo) {
         securityUtils.requireAdmin();
         Long adminId = securityUtils.getLoggedInUser().getId();
-        return boCauHoiService.reject(id, lyDo, adminId);
+//        return boCauHoiService.reject(id, lyDo, adminId);
+        BoCauHoi boCauHoi = boCauHoiService.reject(id, lyDo, adminId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .message("Từ chối thành công")
+                .status(HttpStatus.OK)
+                .data(BoCauHoiResponse.from(boCauHoi))
+                .build());
     }
 
     @DeleteMapping("/{id}")
@@ -130,6 +156,19 @@ public class BoCauHoiController {
                         .message("Xóa bộ câu hỏi thành công")
                         .status(HttpStatus.OK)
                         .data(null)
+                        .build()
+        );
+    }
+
+    @GetMapping("/{id}/thong-ke")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<ResponseObject> thongKeBoCauHoi(@PathVariable Long id) throws DataNotFoundException {
+        Map<String, Object> data = boCauHoiService.thongKeBoCauHoi(id);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Thống kê bộ câu hỏi thành công")
+                        .status(HttpStatus.OK)
+                        .data(data)
                         .build()
         );
     }

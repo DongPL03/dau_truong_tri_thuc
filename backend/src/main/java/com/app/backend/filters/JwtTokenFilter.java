@@ -30,60 +30,160 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtils jwtTokenUtil;
 
+    //    @Override
+//    protected void doFilterInternal(@NonNull HttpServletRequest request,
+//                                    @NonNull HttpServletResponse response,
+//                                    @NonNull FilterChain filterChain) throws IOException {
+//        try {
+//            String path = request.getRequestURI();
+//            if (path.startsWith("/ws") || path.startsWith("/topic") || path.startsWith("/app")) {
+//                filterChain.doFilter(request, response);
+//                return;
+//            }
+//
+//            if (isBypassToken(request)) {
+//                filterChain.doFilter(request, response); //enable bypass
+//                return;
+//            }
+//            final String authHeader = request.getHeader("Authorization");
+//            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//                response.sendError(
+//                        HttpServletResponse.SC_UNAUTHORIZED,
+//                        "authHeader null or not started with Bearer");
+//                return;
+//            }
+//            final String token = authHeader.substring(7);
+//            final String phoneNumber = jwtTokenUtil.getSubject(token);
+//            if (phoneNumber != null
+//                    && SecurityContextHolder.getContext().getAuthentication() == null) {
+//                NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(phoneNumber);
+//                if (jwtTokenUtil.validateToken(token, userDetails)) {
+////                    UsernamePasswordAuthenticationToken authenticationToken =
+////                            new UsernamePasswordAuthenticationToken(
+////                                    userDetails,
+////                                    null,
+////                                    userDetails.getAuthorities()
+////                            );
+//                    List<String> roles = jwtTokenUtil.extractRoles(token);
+//                    List<SimpleGrantedAuthority> authorities = roles.stream()
+//                            .map(SimpleGrantedAuthority::new)
+//                            .toList();
+//                    UsernamePasswordAuthenticationToken authenticationToken =
+//                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+//                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+//                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+//                }
+//            }
+//            filterChain.doFilter(request, response); //enable bypass
+//        } catch (Exception e) {
+//            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.getWriter().write(e.getMessage());
+//        }
+//
+//    }
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+                                    @NonNull FilterChain filterChain) throws IOException {
         try {
+            String path = request.getRequestURI();
+
+            // ✅ 1. Bỏ qua request SockJS "info" (handshake đầu tiên)
+            if (path.equals("/ws/info") || path.startsWith("/ws/info")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // ✅ 2. Cho phép toàn bộ WebSocket / STOMP endpoints
+            if (path.startsWith("/ws") || path.startsWith("/topic") || path.startsWith("/app")) {
+
+                // Thử đọc token từ query param nếu có (?token=Bearer%20xxxxx)
+                String queryToken = request.getParameter("token");
+                if (queryToken != null && queryToken.startsWith("Bearer ")) {
+                    String token = queryToken.substring(7);
+                    try {
+                        String phoneNumber = jwtTokenUtil.getSubject(token);
+                        if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                            NguoiDung user = (NguoiDung) userDetailsService.loadUserByUsername(phoneNumber);
+                            if (jwtTokenUtil.validateToken(token, user)) {
+                                List<String> roles = jwtTokenUtil.extractRoles(token);
+                                List<SimpleGrantedAuthority> authorities = roles.stream()
+                                        .map(SimpleGrantedAuthority::new)
+                                        .toList();
+
+                                UsernamePasswordAuthenticationToken auth =
+                                        new UsernamePasswordAuthenticationToken(user, null, authorities);
+                                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                                SecurityContextHolder.getContext().setAuthentication(auth);
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Không chặn WS nếu token sai, chỉ log cảnh báo
+                        System.out.println("Warning: Invalid WebSocket token - " + e.getMessage());
+                    }
+                }
+
+                // Luôn cho phép WebSocket request tiếp tục (kể cả không có token)
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // ✅ 3. Bỏ qua các API công khai trong hệ thống
             if (isBypassToken(request)) {
-                filterChain.doFilter(request, response); //enable bypass
+                filterChain.doFilter(request, response);
                 return;
             }
-            final String authHeader = request.getHeader("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                response.sendError(
-                        HttpServletResponse.SC_UNAUTHORIZED,
-                        "authHeader null or not started with Bearer");
+
+            // ✅ 4. Đọc token từ Header (Bearer)
+            String token = null;
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+
+            // ✅ 5. Không có token header → chặn (chỉ với API)
+            if (token == null) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization token");
                 return;
             }
-            final String token = authHeader.substring(7);
-            final String phoneNumber = jwtTokenUtil.getSubject(token);
-            if (phoneNumber != null
-                    && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            // ✅ 6. Giải mã & xác thực token
+            String phoneNumber = jwtTokenUtil.getSubject(token);
+            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(phoneNumber);
+
                 if (jwtTokenUtil.validateToken(token, userDetails)) {
-//                    UsernamePasswordAuthenticationToken authenticationToken =
-//                            new UsernamePasswordAuthenticationToken(
-//                                    userDetails,
-//                                    null,
-//                                    userDetails.getAuthorities()
-//                            );
                     List<String> roles = jwtTokenUtil.extractRoles(token);
                     List<SimpleGrantedAuthority> authorities = roles.stream()
                             .map(SimpleGrantedAuthority::new)
                             .toList();
+
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
-            filterChain.doFilter(request, response); //enable bypass
-        } catch (Exception e) {
-            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(e.getMessage());
-        }
 
+            // ✅ 7. Cho phép request tiếp tục
+            filterChain.doFilter(request, response);
+
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized: " + e.getMessage());
+        }
     }
+
+
 
     private boolean isBypassToken(@NonNull HttpServletRequest request) {
         final List<Pair<String, String>> bypassTokens = Arrays.asList(
                 // Healthcheck request, no JWT token required
                 Pair.of(String.format("%s/roles**", apiPrefix), "GET"),
 
-                Pair.of(String.format("%s/products**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/tranDau**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/categories**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/users/register", apiPrefix), "POST"),
@@ -93,7 +193,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                 Pair.of(String.format("%s/users/verify-email", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/resend-verification", apiPrefix), "POST")
-
         );
 
         String requestPath = request.getServletPath();

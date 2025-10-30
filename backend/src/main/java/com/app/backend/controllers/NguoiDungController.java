@@ -425,7 +425,7 @@ public class NguoiDungController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> updateRole(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateRoleRequest request
+            @Valid @RequestBody UpdateRoleRequestDTO request
     ) throws Exception {
         // Trong SecurityConfig bạn đã hạn chế /users/role/** = ADMIN, nên ở đây không cần check lại
         userService.updateRole(userId, request.role());

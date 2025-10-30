@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -21,11 +22,7 @@ public class SubmitLuyenTapResponse {
     private Integer thoiGianTbMs;
     private List<AnswerResult> chiTiet;
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Builder
+    @Getter @Setter @AllArgsConstructor @NoArgsConstructor @Builder
     public static class AnswerResult {
         private Long cauHoiId;
         private Character luaChon;
@@ -41,17 +38,14 @@ public class SubmitLuyenTapResponse {
                 .diemSo(phien.getDiemSo())
                 .doChinhXac(phien.getDoChinhXac())
                 .thoiGianTbMs(phien.getThoiGianTbMs())
-                .chiTiet(
-                        traLois.stream()
-                                .map(t -> SubmitLuyenTapResponse.AnswerResult.builder()
-                                        .cauHoiId(t.getCauHoi().getId())
-                                        .luaChon(t.getLuaChon())
-                                        .dungHaySai(t.getDungHaySai())
-                                        .thoiGianMs(t.getThoiGianMs())
-                                        .build())
-                                .toList()
-                )
+                .chiTiet(traLois.stream().map(t ->
+                        AnswerResult.builder()
+                                .cauHoiId(t.getCauHoi().getId())
+                                .luaChon(t.getLuaChon())
+                                .dungHaySai(t.getDungHaySai())
+                                .thoiGianMs(t.getThoiGianMs())
+                                .build()
+                ).collect(Collectors.toList()))
                 .build();
     }
-
 }

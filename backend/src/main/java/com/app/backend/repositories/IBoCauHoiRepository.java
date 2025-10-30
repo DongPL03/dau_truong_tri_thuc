@@ -8,16 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface IBoCauHoiRepository extends JpaRepository<BoCauHoi, Long> {
-    //    @Query("""
-//                SELECT b FROM BoCauHoi b
-//                WHERE (:keyword IS NULL OR :keyword = '' OR LOWER(b.tieuDe) LIKE LOWER(CONCAT('%', :keyword, '%')))
-//                  AND (:chuDeId IS NULL OR :chuDeId = 0 OR b.chuDe.id = :chuDeId)
-//                  AND (:cheDoHienThi IS NULL OR b.cheDoHienThi = :cheDoHienThi)
-//                  AND (:isAdmin = TRUE OR b.trangThai = com.app.backend.models.enums.TrangThaiBoCauHoi.DA_DUYET OR b.taoBoi.id = :creatorId)
-//                ORDER BY b.id DESC
-//            """)
     @Query("SELECT b FROM BoCauHoi b WHERE " +
-            "b.isDeleted = false AND" +
+            "b.isDelete = false AND " +
             "(:keyword IS NULL OR :keyword = '' OR LOWER(b.tieuDe) LIKE %:keyword%) " +
             "AND (:chuDeId IS NULL OR :chuDeId = 0 OR b.chuDe.id = :chuDeId) " +
             "AND (:cheDoHienThi IS NULL OR :cheDoHienThi = '' OR b.cheDoHienThi = :cheDoHienThi) " +

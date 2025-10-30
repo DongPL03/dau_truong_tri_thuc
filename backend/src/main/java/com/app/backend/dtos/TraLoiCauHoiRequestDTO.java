@@ -1,5 +1,6 @@
 package com.app.backend.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -13,9 +14,11 @@ import java.util.List;
 @Setter
 public class TraLoiCauHoiRequestDTO {
     @NotNull
+    @JsonProperty("phien_id")
     private Long phienId;
 
     @NotNull
+    @JsonProperty("cau_tra_loi_list")
     private List<CauTraLoiRequest> cauTraLoiList;
 
     @Data

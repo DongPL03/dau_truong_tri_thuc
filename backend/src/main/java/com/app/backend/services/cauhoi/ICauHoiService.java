@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.repository.query.Param;
 
 public interface ICauHoiService {
-    CauHoi create(CauHoiDTO dto, Long currentUserId, boolean isAdmin);
+    CauHoi create(CauHoiDTO dto, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException;
 
     CauHoi update(Long id, CauHoiDTO dto, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException;
 
@@ -24,4 +24,6 @@ public interface ICauHoiService {
                          PageRequest pageRequest);
 
     void changeMedia(Long cauHoiId, String duongDanTep) throws DataNotFoundException;
+
+    CauHoi findById(Long id, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException;
 }

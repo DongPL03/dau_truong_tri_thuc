@@ -3,6 +3,8 @@ package com.app.backend.models;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "bo_cau_hoi")
@@ -44,7 +46,9 @@ public class BoCauHoi extends BaseEntity {
     private String lyDoTuChoi;
 
     @Column(name = "is_delete")
+    @Where(clause = "is_delete = false")
     private Boolean isDelete = false;
 
-
+    @Formula("(SELECT COUNT(ch.id) FROM cau_hoi ch WHERE ch.bo_cau_hoi_id = id)")
+    private int soCauHoi;
 }

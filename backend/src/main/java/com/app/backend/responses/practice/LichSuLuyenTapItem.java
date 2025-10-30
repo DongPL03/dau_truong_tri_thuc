@@ -42,12 +42,10 @@ public class LichSuLuyenTapItem {
                 .doChinhXac(p.getDoChinhXac())
                 .thoiGianTbMs(p.getThoiGianTbMs())
                 .ngayTao(p.getTaoLuc())
-                .nguoiDung(
-                        LichSuLuyenTapItem.UserInfo.builder()
-                                .id(p.getNguoiDung().getId())
-                                .ten(p.getNguoiDung().getHoTen())
-                                .build()
-                )
+                .nguoiDung(UserInfo.builder()
+                        .id(p.getNguoiDung().getId())
+                        .ten(p.getNguoiDung().getHoTen())
+                        .build())
                 .build();
     }
 

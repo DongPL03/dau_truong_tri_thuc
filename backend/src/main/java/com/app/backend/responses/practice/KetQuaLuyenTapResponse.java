@@ -3,9 +3,11 @@ package com.app.backend.responses.practice;
 import com.app.backend.models.PhienLuyenTap;
 import com.app.backend.models.TraLoiLuyenTap;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -47,18 +49,16 @@ public class KetQuaLuyenTapResponse {
                 .doChinhXac(phien.getDoChinhXac())
                 .thoiGianTbMs(phien.getThoiGianTbMs())
                 .taoLuc(phien.getTaoLuc())
-                .chiTiet(
-                        traLois.stream()
-                                .map(t -> KetQuaLuyenTapResponse.AnswerDetail.builder()
-                                        .cauHoiId(t.getCauHoi().getId())
-                                        .noiDung(t.getCauHoi().getNoiDung())
-                                        .dapAnDung(t.getCauHoi().getDapAnDung())
-                                        .luaChon(t.getLuaChon())
-                                        .dungHaySai(t.getDungHaySai())
-                                        .thoiGianMs(t.getThoiGianMs())
-                                        .build())
-                                .toList()
-                )
+                .chiTiet(traLois.stream().map(t ->
+                        AnswerDetail.builder()
+                                .cauHoiId(t.getCauHoi().getId())
+                                .noiDung(t.getCauHoi().getNoiDung())
+                                .dapAnDung(t.getCauHoi().getDapAnDung())
+                                .luaChon(t.getLuaChon())
+                                .dungHaySai(t.getDungHaySai())
+                                .thoiGianMs(t.getThoiGianMs())
+                                .build()
+                ).collect(Collectors.toList()))
                 .build();
     }
 

@@ -5,6 +5,7 @@ import com.app.backend.models.PhienLuyenTap;
 import lombok.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -36,18 +37,16 @@ public class BatDauLuyenTapResponse {
                 .phienId(phien.getId())
                 .boCauHoi(phien.getBoCauHoi().getTieuDe())
                 .tongCauHoi(selected.size())
-                .cauHoiList(
-                        selected.stream()
-                                .map(c -> CauHoiItem.builder()
-                                        .id(c.getId())
-                                        .noiDung(c.getNoiDung())
-                                        .luaChonA(c.getLuaChonA())
-                                        .luaChonB(c.getLuaChonB())
-                                        .luaChonC(c.getLuaChonC())
-                                        .luaChonD(c.getLuaChonD())
-                                        .build())
-                                .toList()
-                )
+                .cauHoiList(selected.stream().map(c ->
+                        CauHoiItem.builder()
+                                .id(c.getId())
+                                .noiDung(c.getNoiDung())
+                                .luaChonA(c.getLuaChonA())
+                                .luaChonB(c.getLuaChonB())
+                                .luaChonC(c.getLuaChonC())
+                                .luaChonD(c.getLuaChonD())
+                                .build()
+                ).collect(Collectors.toList()))
                 .build();
     }
 

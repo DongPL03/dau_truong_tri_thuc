@@ -3,6 +3,7 @@ package com.app.backend.models;
 import com.app.backend.models.constant.LuatTinhDiem;
 import com.app.backend.models.constant.TrangThaiTranDau;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,9 @@ public class TranDau {
 
     @Column(name = "ma_phong", length = 10, nullable = false, unique = true)
     private String maPhong;
+
+    @Column(name = "ten_phong")
+    private String tenPhong;
 
     @Column(name = "trang_thai", columnDefinition = "ENUM('PENDING','ONGOING','FINISHED') DEFAULT 'PENDING'")
     private String trangThai = TrangThaiTranDau.PENDING;

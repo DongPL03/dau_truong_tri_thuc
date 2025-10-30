@@ -40,15 +40,9 @@ public class WebSecurityConfig {
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> {
                     requests
-                            .requestMatchers(
-                                    String.format("%s/users/register", apiPrefix),
-                                    String.format("%s/users/login", apiPrefix)
-                            )
-                            .permitAll()
-                            .requestMatchers(GET,
-                                    String.format("%s/roles**", apiPrefix)).permitAll()
-                            .requestMatchers(PUT,
-                                    String.format("%s/users/change-password", apiPrefix)).hasAuthority("ROLE_USER")
+                            .requestMatchers("/ws/**").permitAll()
+                            .requestMatchers("/topic/**").permitAll()
+                            .requestMatchers("/app/**").permitAll()
                             .requestMatchers(
                                     String.format("%s/users/register", apiPrefix),
                                     String.format("%s/users/login", apiPrefix),
@@ -56,29 +50,15 @@ public class WebSecurityConfig {
                                     String.format("%s/users/resend-verification", apiPrefix)
                             ).permitAll()
                             .requestMatchers(GET,
-                                    String.format("%s/users/profile-images/**", apiPrefix))
-                            .permitAll()
-//
-//                            .requestMatchers(GET,
-//                                    String.format("%s/policies/**", apiPrefix)).permitAll()
-//
-//                            .requestMatchers(GET,
-//                                    String.format("%s/categories/**", apiPrefix)).permitAll()
-//
-//                            .requestMatchers(GET,
-//                                    String.format("%s/products/**", apiPrefix)).permitAll()
-//
-//                            .requestMatchers(GET,
-//                                    String.format("%s/products/images/*", apiPrefix)).permitAll()
-//
-//                            .requestMatchers(GET,
-//                                    String.format("%s/orders/**", apiPrefix)).permitAll()
-//                            .requestMatchers(GET,
-//                                    String.format("%s/users/profile-images/**", apiPrefix))
-//                            .permitAll()
-//
-//                            .requestMatchers(GET,
-//                                    String.format("%s/order_details/**", apiPrefix)).permitAll()
+                                    String.format("%s/roles**", apiPrefix)).permitAll()
+                            .requestMatchers(PUT,
+                                    String.format("%s/users/change-password", apiPrefix)).hasAuthority("ROLE_USER")
+                            .requestMatchers(GET,
+                                    String.format("%s/users/profile-images/**", apiPrefix),
+                                    String.format("%s/chuDe/**", apiPrefix),
+                                    String.format("%s/boCauHoi/**", apiPrefix),
+                                    String.format("%s/tranDau/**", apiPrefix)
+                            ).permitAll()
 
                             .anyRequest()
                             .authenticated();
@@ -86,7 +66,6 @@ public class WebSecurityConfig {
                 })
                 .csrf(AbstractHttpConfigurer::disable)
         ;
-//        http.securityMatcher(String.valueOf(EndpointRequest.toAnyEndpoint()));
         return http.build();
     }
 }

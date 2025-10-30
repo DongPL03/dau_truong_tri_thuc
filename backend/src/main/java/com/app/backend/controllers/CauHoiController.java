@@ -42,7 +42,7 @@ public class CauHoiController {
     ) {
         Long currentUserId = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();
-        var pageRequest = PageRequest.of(page, limit);
+        PageRequest pageRequest = PageRequest.of(page, limit);
         var result = cauHoiService.findAll(
                 boCauHoiId,
                 keyword,
@@ -110,21 +110,36 @@ public class CauHoiController {
         }
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<ResponseObject> getById(@PathVariable("id") Long id) throws DataNotFoundException, PermissionDenyException {
+        Long uid = securityUtils.getLoggedInUserId();
+        boolean isAdmin = securityUtils.isAdmin();
+        CauHoi cauhoi = cauHoiService.findById(id, uid, isAdmin);
+        CauHoiResponse cauHoiResponse = CauHoiResponse.from(cauhoi);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy câu hỏi thành công")
+                .status(HttpStatus.OK)
+                .data(cauHoiResponse)
+                .build());
+    }
+
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody CauHoiDTO cauHoiDTO,
-                                                 BindingResult result) {
+                                                 BindingResult result) throws DataNotFoundException, PermissionDenyException {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
                     .stream()
                     .map(FieldError::getDefaultMessage)
                     .toList();
-            return ResponseEntity.ok().body(ResponseObject.builder()
-                    .message(errorMessages.toString())
-                    .status(HttpStatus.BAD_REQUEST)
-                    .data(null)
-                    .build());
-
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .message(String.join(", ", errorMessages))
+                            .status(HttpStatus.BAD_REQUEST)
+                            .data(null)
+                            .build()
+            );
         }
         Long uid = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();

@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class TheGhiNhoResponse {
+    @JsonProperty("phien_id")
+    private Long phienId;
 
     @JsonProperty("bo_cau_hoi")
     private String boCauHoi;
@@ -25,16 +27,17 @@ public class TheGhiNhoResponse {
     @JsonProperty("giai_thich")
     private String giaiThich;
 
-    @JsonProperty("ngay_luu")
-    private LocalDateTime ngayLuu;
+    @JsonProperty("tao_luc")
+    private LocalDateTime taoLuc;
 
     public static TheGhiNhoResponse from(TheGhiNho entity) {
         return TheGhiNhoResponse.builder()
+                .phienId(entity.getPhien().getId())
                 .boCauHoi(entity.getPhien().getBoCauHoi().getTieuDe())
                 .cauHoi(entity.getCauHoi().getNoiDung())
                 .dapAnDung(entity.getCauHoi().getDapAnDung())
                 .giaiThich(entity.getCauHoi().getGiaiThich())
-                .ngayLuu(entity.getTaoLuc())
+                .taoLuc(entity.getTaoLuc())
                 .build();
     }
 }

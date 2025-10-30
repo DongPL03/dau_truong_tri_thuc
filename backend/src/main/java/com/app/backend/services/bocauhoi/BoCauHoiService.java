@@ -9,15 +9,15 @@ import com.app.backend.models.ChuDe;
 import com.app.backend.models.NguoiDung;
 import com.app.backend.models.constant.CheDoHienThi;
 import com.app.backend.models.constant.TrangThaiBoCauHoi;
-import com.app.backend.repositories.IBoCauHoiRepository;
-import com.app.backend.repositories.IChuDeRepository;
-import com.app.backend.repositories.INguoiDungRepository;
-import com.app.backend.repositories.IVaiTroRepository;
-import jakarta.transaction.Transactional;
+import com.app.backend.repositories.*;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,11 +25,12 @@ public class BoCauHoiService implements IBoCauHoiService {
     private final IBoCauHoiRepository boCauHoiRepository;
     private final IChuDeRepository chuDeRepository;
     private final INguoiDungRepository nguoiDungRepository;
+    private final IPhienLuyenTapRepository phienLuyenTapRepository;
     private final IVaiTroRepository vaiTroRepository;
 
 
     @Override
-    public BoCauHoi create(BoCauHoiDTO boCauHoiDTO, Long currentUserId) throws DataNotFoundException {
+    public BoCauHoi create(BoCauHoiDTO boCauHoiDTO, Long currentUserId) throws DataNotFoundException, PermissionDenyException {
         ChuDe chuDe = chuDeRepository.findById(boCauHoiDTO.getChuDeId())
                 .orElseThrow(() -> new DataNotFoundException("Chủ đề không tồn tại"));
 
@@ -38,9 +39,11 @@ public class BoCauHoiService implements IBoCauHoiService {
         String RoleUser = vaiTroRepository.findById(taoBoi.getVaiTro().getId())
                 .orElseThrow(() -> new DataNotFoundException("Vai trò không tồn tại")).getTenVaiTro();
 
-        if (!RoleUser.equals("user") && !RoleUser.equals("admin")) {
-            throw new DataNotFoundException("Người dùng không có quyền tạo bộ câu hỏi");
+        String role = taoBoi.getVaiTro().getTenVaiTro();
+        if (!List.of("user", "admin").contains(role.toLowerCase())) {
+            throw new PermissionDenyException("Bạn không có quyền tạo bộ câu hỏi");
         }
+
 
         String AdminRoleName = "admin";
         BoCauHoi boCauHoi = BoCauHoi.builder()
@@ -173,5 +176,27 @@ public class BoCauHoiService implements IBoCauHoiService {
         boCauHoi.setIsDelete(true);
         boCauHoiRepository.save(boCauHoi);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> thongKeBoCauHoi(Long id) throws DataNotFoundException {
+        BoCauHoi boCauHoi = boCauHoiRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Bộ câu hỏi không tồn tại"));
+
+        long tongCauHoi = boCauHoi.getSoCauHoi();
+        long soNguoiLuyen = phienLuyenTapRepository.countDistinctUsersByBoCauHoi(id);
+        Double diemTb = phienLuyenTapRepository.avgScoreByBoCauHoi(id);
+        if (diemTb == null) diemTb = 0.0;
+
+        return Map.of(
+                "id", boCauHoi.getId(),
+                "tieu_de", boCauHoi.getTieuDe(),
+                "chu_de", boCauHoi.getChuDe() != null ? boCauHoi.getChuDe().getTen() : null,
+                "tong_cau_hoi", tongCauHoi,
+                "so_nguoi_luyen", soNguoiLuyen,
+                "diem_trung_binh", diemTb
+        );
+    }
+
 
 }

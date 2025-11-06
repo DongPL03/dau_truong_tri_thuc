@@ -1,0 +1,345 @@
+<!--@if (!loading) {-->
+<!--  <div class="profile-wrapper">-->
+<!--    <div class="profile-header">-->
+<!--      <h1>Hồ sơ người dùng</h1>-->
+<!--      <a routerLink="/home" class="btn-link">&larr; Về trang chủ</a>-->
+<!--    </div>-->
+
+<!--    <div class="profile-grid">-->
+<!--      &lt;!&ndash; 🖼️ Ảnh đại diện &ndash;&gt;-->
+<!--      <section class="card avatar-card">-->
+<!--        <h3>Ảnh đại diện</h3>-->
+
+<!--        <div class="avatar-box">-->
+<!--          <img-->
+<!--            [src]="avatarPreview || 'assets/images/default-profile-image.jpeg'"-->
+<!--            alt="avatar"-->
+<!--          />-->
+<!--        </div>-->
+
+<!--        <label class="btn btn-gray">-->
+<!--          <input type="file" accept="image/*" (change)="onAvatarSelected($event)" hidden/>-->
+<!--          {{ uploading ? 'Đang tải...' : 'Chọn ảnh mới' }}-->
+<!--        </label>-->
+<!--        <p class="hint">Định dạng JPG/PNG, tối đa 10MB</p>-->
+<!--      </section>-->
+
+<!--      &lt;!&ndash; 👤 Thông tin cá nhân &ndash;&gt;-->
+<!--      <section class="card info-card">-->
+<!--        <h3>Thông tin cá nhân</h3>-->
+
+<!--        <form #infoForm="ngForm" (ngSubmit)="onSaveInfo(infoForm)">-->
+<!--          <div class="form-row">-->
+<!--            <label>Tên đăng nhập</label>-->
+<!--            <input type="text" [value]="me?.ten_dang_nhap" disabled/>-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Vai trò</label>-->
+<!--            <input type="text" [value]="me?.vai_tro?.ten_vai_tro || 'Người dùng'" disabled/>-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Email</label>-->
+<!--            <input type="email" [(ngModel)]="updateDto.email" name="email" disabled/>-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Họ và tên</label>-->
+<!--            <input-->
+<!--              type="text"-->
+<!--              [(ngModel)]="updateDto.ho_ten"-->
+<!--              name="ho_ten"-->
+<!--              maxlength="100"-->
+<!--              placeholder="VD: Nguyễn Văn A"-->
+<!--            />-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Tên hiển thị</label>-->
+<!--            <input-->
+<!--              type="text"-->
+<!--              [(ngModel)]="updateDto.ten_hien_thi"-->
+<!--              name="ten_hien_thi"-->
+<!--              maxlength="100"-->
+<!--              placeholder="Tên hiển thị công khai"-->
+<!--            />-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Địa chỉ</label>-->
+<!--            <input-->
+<!--              type="text"-->
+<!--              [(ngModel)]="updateDto.dia_chi"-->
+<!--              name="dia_chi"-->
+<!--              maxlength="255"-->
+<!--              placeholder="Số nhà, đường, phường/xã..."-->
+<!--            />-->
+<!--          </div>-->
+
+<!--          <div class="action-row">-->
+<!--            <button-->
+<!--              class="btn btn-green"-->
+<!--              type="submit"-->
+<!--              [disabled]="saving || infoForm.invalid"-->
+<!--            >-->
+<!--              {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}-->
+<!--            </button>-->
+<!--          </div>-->
+<!--        </form>-->
+<!--      </section>-->
+
+<!--      &lt;!&ndash; 🔑 Đổi mật khẩu &ndash;&gt;-->
+<!--      <section class="card password-card">-->
+<!--        <h3>Đổi mật khẩu</h3>-->
+
+<!--        <form #passwordForm="ngForm" (ngSubmit)="onChangePassword(passwordForm)">-->
+<!--          <div class="form-row">-->
+<!--            <label>Mật khẩu hiện tại</label>-->
+<!--            <input-->
+<!--              type="password"-->
+<!--              name="oldPassword"-->
+<!--              [(ngModel)]="passwordModel.oldPassword"-->
+<!--              required-->
+<!--              placeholder="••••••"-->
+<!--            />-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Mật khẩu mới</label>-->
+<!--            <input-->
+<!--              type="password"-->
+<!--              name="newPassword"-->
+<!--              [(ngModel)]="passwordModel.newPassword"-->
+<!--              required-->
+<!--              minlength="6"-->
+<!--              placeholder="Tối thiểu 6 ký tự"-->
+<!--            />-->
+<!--          </div>-->
+
+<!--          <div class="form-row">-->
+<!--            <label>Nhập lại mật khẩu mới</label>-->
+<!--            <input-->
+<!--              type="password"-->
+<!--              name="retypePassword"-->
+<!--              [(ngModel)]="passwordModel.retypePassword"-->
+<!--              required-->
+<!--              placeholder="Nhập lại mật khẩu mới"-->
+<!--            />-->
+<!--          </div>-->
+
+<!--          <div class="action-row">-->
+<!--            <button-->
+<!--              class="btn btn-blue"-->
+<!--              type="submit"-->
+<!--              [disabled]="changingPass"-->
+<!--            >-->
+<!--              {{ changingPass ? 'Đang đổi...' : 'Đổi mật khẩu' }}-->
+<!--            </button>-->
+<!--          </div>-->
+<!--        </form>-->
+<!--      </section>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--} @else {-->
+<!--  <div class="loading">-->
+<!--    <i class="fas fa-spinner fa-spin"></i> Đang tải hồ sơ...-->
+<!--  </div>-->
+<!--}-->
+@if (!loading) {
+  <div class="profile-wrapper">
+    <header class="profile-header">
+      <h1><i class="fas fa-user-circle"></i> Hồ sơ người dùng</h1>
+      <a routerLink="/home" class="btn-link">
+        <i class="fas fa-home"></i> Về trang chủ
+      </a>
+    </header>
+
+    <div class="profile-grid">
+      <!-- 🖼️ Ảnh đại diện -->
+      <section class="card avatar-card">
+        <h3><i class="fas fa-camera"></i> Ảnh đại diện</h3>
+
+        <div class="avatar-box">
+          <img
+            [src]="avatarPreview || 'assets/images/default-profile-image.jpeg'"
+            alt="avatar"
+          />
+        </div>
+
+        <label class="btn btn-outline">
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onAvatarSelected($event)"
+            hidden
+          />
+          <i
+            class="fas"
+            [class.fa-spinner]="uploading"
+            [class.fa-spin]="uploading"
+            [class.fa-upload]="!uploading"
+          ></i>
+          {{ uploading ? 'Đang tải...' : 'Chọn ảnh mới' }}
+        </label>
+        <p class="hint">Định dạng JPG/PNG, tối đa 10MB</p>
+      </section>
+
+      <!-- 👤 Thông tin cá nhân -->
+      <section class="card info-card">
+        <h3><i class="fas fa-id-card"></i> Thông tin cá nhân</h3>
+
+        <form #infoForm="ngForm" (ngSubmit)="onSaveInfo(infoForm)">
+          <div class="form-grid">
+            <div class="form-row">
+              <label>Tên đăng nhập</label>
+              <input type="text" [value]="me?.ten_dang_nhap" disabled/>
+            </div>
+
+            <div class="form-row">
+              <label>Vai trò</label>
+              <input
+                type="text"
+                [value]="me?.vai_tro?.ten_vai_tro || 'Người dùng'"
+                disabled
+              />
+            </div>
+
+            <div class="form-row">
+              <label>Email</label>
+              <input
+                type="email"
+                [(ngModel)]="updateDto.email"
+                name="email"
+                disabled
+              />
+            </div>
+
+            <div class="form-row">
+              <label>Họ và tên</label>
+              <input
+                type="text"
+                [(ngModel)]="updateDto.ho_ten"
+                name="ho_ten"
+                maxlength="100"
+                placeholder="VD: Nguyễn Văn A"
+              />
+            </div>
+
+            <div class="form-row">
+              <label>Tên hiển thị</label>
+              <input
+                type="text"
+                [(ngModel)]="updateDto.ten_hien_thi"
+                name="ten_hien_thi"
+                maxlength="100"
+                placeholder="Tên hiển thị công khai"
+              />
+            </div>
+
+            <!--            <div class="form-row full">-->
+            <!--              <label>Địa chỉ</label>-->
+            <!--              <input-->
+            <!--                type="text"-->
+            <!--                [(ngModel)]="updateDto.dia_chi"-->
+            <!--                name="dia_chi"-->
+            <!--                maxlength="255"-->
+            <!--                placeholder="Số nhà, đường, phường/xã..."-->
+            <!--              />-->
+            <!--            </div>-->
+            <div class="form-row full">
+              <label>Địa chỉ</label>
+              <app-address-selector (addressChange)="updateDto.dia_chi = $event"></app-address-selector>
+
+              <input
+                type="text"
+                [(ngModel)]="updateDto.dia_chi"
+                name="dia_chi"
+                readonly
+                placeholder="Địa chỉ đã chọn sẽ hiển thị ở đây"
+              />
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button
+              class="btn btn-green"
+              type="submit"
+              [disabled]="saving || infoForm.invalid"
+            >
+              <i
+                class="fas"
+                [class.fa-spinner]="saving"
+                [class.fa-spin]="saving"
+                [class.fa-save]="!saving"
+              ></i>
+              {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 🔑 Đổi mật khẩu -->
+      <section class="card password-card">
+        <h3><i class="fas fa-lock"></i> Đổi mật khẩu</h3>
+
+        <form #passwordForm="ngForm" (ngSubmit)="onChangePassword(passwordForm)">
+          <div class="form-row">
+            <label>Mật khẩu hiện tại</label>
+            <input
+              type="password"
+              name="oldPassword"
+              [(ngModel)]="passwordModel.oldPassword"
+              required
+              placeholder="••••••"
+            />
+          </div>
+
+          <div class="form-row">
+            <label>Mật khẩu mới</label>
+            <input
+              type="password"
+              name="newPassword"
+              [(ngModel)]="passwordModel.newPassword"
+              required
+              minlength="6"
+              placeholder="Tối thiểu 6 ký tự"
+            />
+          </div>
+
+          <div class="form-row">
+            <label>Nhập lại mật khẩu mới</label>
+            <input
+              type="password"
+              name="retypePassword"
+              [(ngModel)]="passwordModel.retypePassword"
+              required
+              placeholder="Nhập lại mật khẩu mới"
+            />
+          </div>
+
+          <div class="action-row">
+            <button
+              class="btn btn-blue"
+              type="submit"
+              [disabled]="changingPass"
+            >
+              <i
+                class="fas"
+                [class.fa-spinner]="changingPass"
+                [class.fa-spin]="changingPass"
+                [class.fa-key]="!changingPass"
+              ></i>
+              {{ changingPass ? 'Đang đổi...' : 'Đổi mật khẩu' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+} @else {
+  <div class="loading">
+    <i class="fas fa-spinner fa-spin"></i> Đang tải hồ sơ...
+  </div>
+}
+

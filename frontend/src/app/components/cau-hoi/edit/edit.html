@@ -1,0 +1,115 @@
+@if (!loading) {
+  <div class="page-container">
+    <header class="page-header">
+      <h1>
+        <i class="fas fa-edit"></i>
+        Chỉnh sửa Câu Hỏi — {{ question?.bo_cau_hoi_tieu_de }}
+      </h1>
+      <button class="btn-secondary" (click)="backToBoCauHoiDetail()">
+        <i class="fas fa-arrow-left"></i> Quay lại
+      </button>
+    </header>
+
+    <div class="question-form-layout">
+      <form #form="ngForm" (ngSubmit)="onSubmit(form)">
+        <section>
+          <h3>1. Nội dung & Loại câu hỏi</h3>
+
+          <div class="input-group">
+            <label for="loaiNoiDung">Loại câu hỏi</label>
+            <select id="loaiNoiDung" name="loai_noi_dung"
+                    [(ngModel)]="model.loai_noi_dung"
+                    (change)="onLoaiNoiDungChange()">
+              <option value="VAN_BAN">Văn bản</option>
+              <option value="HINH_ANH">Hình ảnh</option>
+              <option value="AM_THANH">Âm thanh</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="noiDung">Nội dung <span class="required">*</span></label>
+            <textarea id="noiDung" name="noi_dung" rows="4"
+                      [(ngModel)]="model.noi_dung"
+                      required></textarea>
+          </div>
+
+          @if (model.loai_noi_dung !== 'VAN_BAN') {
+            <div class="input-group">
+              <label for="tepUpload">Tệp phương tiện (ảnh hoặc âm thanh)</label>
+              <input type="file" id="tepUpload" (change)="onFileSelected($event)" accept="image/*,audio/*"/>
+
+              @if (previewUrl) {
+                <div class="preview-media">
+                  @switch (model.loai_noi_dung) {
+                    @case ('HINH_ANH') {
+                      <img [src]="previewUrl" alt="Ảnh câu hỏi"/>
+                    }
+                    @case ('AM_THANH') {
+                      <audio controls [src]="previewUrl"></audio>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <section>
+          <h3>2. Lựa chọn & Đáp án</h3>
+
+          @for (opt of ['A', 'B', 'C', 'D']; track opt) {
+            <div class="option-group">
+              <input type="radio" name="dapAnDung" [value]="opt" [(ngModel)]="model.dap_an_dung"/>
+              <span class="option-label">{{ opt }}</span>
+              <input type="text"
+                     class="option-input"
+                     placeholder="Nhập lựa chọn {{ opt }}"
+                     required
+                     [name]="'lua_chon_' + opt.toLowerCase()"
+                     [(ngModel)]="model['lua_chon_' + opt.toLowerCase()]"/>
+            </div>
+          }
+
+          <div class="answer-tip">
+            <i class="fas fa-check-circle"></i> Chọn đáp án đúng bằng cách tích vào ô tròn.
+          </div>
+        </section>
+
+        <section>
+          <h3>3. Giải thích & Độ khó</h3>
+
+          <div class="input-group">
+            <label for="giaiThich">Giải thích đáp án</label>
+            <textarea id="giaiThich" name="giai_thich"
+                      [(ngModel)]="model.giai_thich"
+                      rows="3"
+                      placeholder="Nhập giải thích ngắn gọn..."></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="doKho">Độ khó</label>
+            <select id="doKho" name="do_kho" [(ngModel)]="model.do_kho">
+              <option value="DE">Dễ</option>
+              <option value="TRUNG_BINH">Trung bình</option>
+              <option value="KHO">Khó</option>
+            </select>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button class="btn-secondary" type="button"
+                  (click)="backToBoCauHoiDetail()">
+            Hủy bỏ
+          </button>
+          <button class="btn-primary" type="submit" [disabled]="saving">
+            {{ saving ? 'Đang lưu...' : 'Cập nhật câu hỏi' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+} @else {
+  <div class="loading">
+    <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu câu hỏi...
+  </div>
+}

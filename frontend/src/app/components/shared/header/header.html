@@ -1,0 +1,75 @@
+<header class="global-navbar">
+  <!-- 🧠 Logo -->
+  <div class="logo">ĐẤU TRƯỜNG TRI THỨC</div>
+
+  <!-- 🔗 Navigation -->
+  <nav class="main-nav">
+    <a routerLink="/home" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-home"></i> Trang Chủ
+    </a>
+    <a routerLink="/battles" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-bolt"></i> Đấu Trường
+    </a>
+    <a routerLink="/bo-cau-hoi/list" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-book-open"></i> Quản Lý Câu hỏi
+    </a>
+    <a routerLink="/ranking" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-trophy"></i> BXH
+    </a>
+  </nav>
+
+  <!-- 👤 Thông tin người dùng -->
+  <div class="user-profile-actions">
+
+    <!-- 🔔 Thông báo -->
+    <div class="notification-wrapper" (click)="$event.stopPropagation()">
+      <button class="nav-btn notification-btn" (click)="toggleNotif()">
+        <i class="fas fa-bell"></i>
+        @if (unreadCount > 0) {
+          <span class="badge">{{ unreadCount }}</span>
+        }
+      </button>
+
+      <!-- Dropdown thông báo -->
+      <div class="notif-dropdown" [class.show]="notifOpen">
+        <div class="notif-header">Thông báo mới</div>
+        <ul class="notif-list">
+          @for (n of notifications; track n.id) {
+            <li>
+              <i [class]="n.icon"></i>
+              <span>{{ n.text }}</span>
+            </li>
+          }
+        </ul>
+        <div class="notif-footer">
+          <button>Xem tất cả</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 👤 Avatar + menu người dùng -->
+    <div class="user-dropdown" (click)="$event.stopPropagation()">
+      <button class="avatar-btn" (click)="toggleUserMenu()">
+        <img
+          [src]="avatarUrl || 'assets/images/default-profile-image.jpeg'"
+          alt="avatar"
+          class="nav-avatar"
+        />
+        <span class="user-display-name">
+          {{ user?.ho_ten || user?.ten_dang_nhap || 'Người dùng' }}
+        </span>
+        <i class="fa-solid fa-chevron-down"></i>
+      </button>
+
+      <!-- Dropdown menu người dùng -->
+      <ul class="user-menu" [class.show]="userMenuOpen">
+        <li (click)="goProfile()">
+          <i class="fa-regular fa-user"></i> Hồ sơ cá nhân
+        </li>
+        <li (click)="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>

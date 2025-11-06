@@ -1,0 +1,37 @@
+.address-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  div {
+    flex: 1 1 45%;
+    min-width: 240px;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #334155;
+    display: block;
+  }
+
+  select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #fff;
+
+    &:focus {
+      border-color: #2563eb;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    &:disabled {
+      background-color: #f1f5f9;
+      color: #94a3b8;
+    }
+  }
+}

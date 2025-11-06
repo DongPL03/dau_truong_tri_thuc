@@ -1,0 +1,21 @@
+<div class="address-grid">
+  <div>
+    <label>Tỉnh / Thành phố</label>
+    <select [(ngModel)]="selectedProvince" (change)="onProvinceChange()">
+      <option value="">-- Chọn Tỉnh/TP --</option>
+      @for (p of provinces; track p.code) {
+        <option [value]="p.code">{{ p.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div>
+    <label>Phường / Xã</label>
+    <select [(ngModel)]="selectedWard" (change)="emitAddress()">
+      <option value="">-- Chọn Phường/Xã --</option>
+      @for (w of filteredWards; track w.code) {
+        <option [value]="w.code">{{ w.name }}</option>
+      }
+    </select>
+  </div>
+</div>

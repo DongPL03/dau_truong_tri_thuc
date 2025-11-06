@@ -1,0 +1,82 @@
+.friend-sidebar {
+  width: 260px;
+  background-color: #f5f7fa;
+  height: 100vh;
+  padding: 20px 10px;
+  position: fixed;
+  right: 0;
+  top: 60px;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  font-family: 'Segoe UI';
+}
+
+.friend-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #4caf50;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 15px;
+  h3 {
+    font-size: 1.1em;
+    margin: 0;
+  }
+}
+
+.friend-live-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.friend-live-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.friend-live-name {
+  flex-grow: 1;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 5px;
+  &.online {
+    background-color: #4caf50;
+  }
+  &.busy {
+    background-color: #f39c12;
+  }
+}
+
+.btn-live-action {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-left: 5px;
+
+  &.invite:hover {
+    color: #2196f3;
+  }
+  &.chat:hover {
+    color: #4caf50;
+  }
+}
+
+.offline-section {
+  margin-top: 20px;
+  h4 {
+    color: #777;
+    border-top: 1px solid #ddd;
+    padding-top: 8px;
+  }
+}

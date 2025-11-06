@@ -1,0 +1,136 @@
+<div class="question-page">
+  <div class="question-container">
+    <!-- 🧭 Header -->
+    <header class="header">
+      <h1><i class="fas fa-plus-circle"></i> Thêm Câu Hỏi Mới</h1>
+      <button type="button" class="btn btn-gray" (click)="cancel()">
+        <i class="fas fa-arrow-left"></i> Quay Lại
+      </button>
+    </header>
+
+    <form #form="ngForm" (ngSubmit)="onSubmit(form)" class="form-card animate-fade">
+      <!-- 1️⃣ Nội dung -->
+      <section class="section">
+        <h2><i class="fas fa-file-alt"></i> 1. Nội dung & Loại câu hỏi</h2>
+
+        <div class="input-group">
+          <label>Loại câu hỏi</label>
+          <select [(ngModel)]="model.loai_noi_dung" name="loai_noi_dung" class="input-control">
+            <option value="VAN_BAN">Văn bản</option>
+            <option value="HINH_ANH">Hình ảnh</option>
+            <option value="AM_THANH">Âm thanh</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Nội dung <span class="required">*</span></label>
+          <textarea [(ngModel)]="model.noi_dung" name="noi_dung" rows="4"
+                    placeholder="Nhập nội dung câu hỏi..." required></textarea>
+        </div>
+
+        @if (model.loai_noi_dung !== 'VAN_BAN') {
+          <div class="input-group">
+            <label>Tệp đính kèm</label>
+            <input type="file" accept="image/*,audio/*" (change)="onFileSelected($event)">
+            <!--            @if (previewUrl) {-->
+            <!--              <div class="media-preview">-->
+            <!--                <div class="media-box" (mouseenter)="hovering = true" (mouseleave)="hovering = false">-->
+            <!--                  <img [src]="previewUrl" alt="preview" class="media-img">-->
+
+            <!--                  @if (hovering) {-->
+            <!--                    <button type="button" class="remove-btn" (click)="removeSelectedFile()">-->
+            <!--                      <i class="fas fa-times"></i>-->
+            <!--                    </button>-->
+            <!--                  }-->
+
+            <!--                </div>-->
+            <!--              </div>-->
+            <!--            }-->
+            @if (previewUrl) {
+              <div class="media-preview">
+                <div class="media-box" (mouseenter)="hovering = true" (mouseleave)="hovering = false">
+                  @switch (model.loai_noi_dung) {
+                    @case ('HINH_ANH') {
+                      <img [src]="previewUrl" alt="preview" class="media-img"/>
+                    }
+                    @case ('AM_THANH') {
+                      <div class="audio-wrapper">
+                        <audio controls [src]="previewUrl"></audio>
+                      </div>
+                    }
+                  }
+                  @if (hovering) {
+                    <button type="button" class="remove-btn" (click)="removeSelectedFile()">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- 2️⃣ Lựa chọn -->
+      <section class="section">
+        <h2><i class="fas fa-list-ul"></i> 2. Lựa chọn & Đáp án</h2>
+
+        <div class="options-wrapper">
+          @for (opt of ['A', 'B', 'C', 'D']; track opt) {
+            <label class="option-card" [class.selected]="model.dap_an_dung === opt">
+              <input type="radio"
+                     name="dap_an_dung"
+                     [value]="opt"
+                     [(ngModel)]="model.dap_an_dung"
+                     class="radio-hidden">
+
+              <div class="option-circle">{{ opt }}</div>
+              <input type="text"
+                     class="option-input"
+                     [(ngModel)]="model['lua_chon_' + opt.toLowerCase()]"
+                     name="lua_chon_{{opt}}"
+                     placeholder="Nhập lựa chọn {{opt}}"
+                     required>
+            </label>
+          }
+        </div>
+
+        <p class="hint">
+          <i class="fas fa-lightbulb"></i>
+          Hãy tích vào ô tròn hoặc nhấp thẻ để chọn đáp án đúng.
+        </p>
+      </section>
+
+
+      <!-- 3️⃣ Giải thích -->
+      <section class="section">
+        <h2><i class="fas fa-brain"></i> 3. Giải thích & Độ khó</h2>
+
+        <div class="input-group">
+          <label>Giải thích</label>
+          <textarea [(ngModel)]="model.giai_thich" name="giai_thich" rows="3"
+                    placeholder="Nhập giải thích cho đáp án đúng (nếu có)"></textarea>
+        </div>
+
+        <div class="input-group half">
+          <label>Độ khó</label>
+          <select [(ngModel)]="model.do_kho" name="do_kho" class="input-control">
+            <option value="DE">Dễ</option>
+            <option value="TRUNG_BINH">Trung Bình</option>
+            <option value="KHO">Khó</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 4️⃣ Buttons -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-gray" (click)="cancel()">
+          <i class="fas fa-times"></i> Hủy
+        </button>
+        <button type="submit" class="btn btn-green">
+          <i class="fas fa-save"></i> Lưu & Thêm Mới
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,207 @@
+.dashboard-container {
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+}
+
+.dashboard-greeting {
+  background: #fff;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  text-align: center;
+
+  h1 {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #222;
+  }
+
+  .username {
+    color: #4caf50;
+  }
+
+  p {
+    margin-top: 5px;
+    color: #666;
+  }
+}
+
+.dashboard-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.dashboard-sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.quick-stats-card,
+.quick-actions-card,
+.activity-feed-card,
+.battle-pending-card,
+.featured-quiz-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.quick-stats-card h2,
+.quick-actions-card h2,
+.activity-feed-card h2,
+.battle-pending-card h2,
+.featured-quiz-card h2 {
+  color: #4caf50;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-box-small {
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+
+  i {
+    font-size: 1.5em;
+    color: #2196f3;
+  }
+
+  .stat-value {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .stat-label {
+    font-size: 0.85em;
+    color: #777;
+  }
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.battle-search {
+  background: #2196f3;
+}
+.practice-select {
+  background: #4caf50;
+}
+.create-quiz {
+  background: #666;
+}
+.btn-action:hover {
+  opacity: 0.9;
+}
+
+.dashboard-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed #eee;
+  padding: 10px 0;
+  font-size: 0.95em;
+
+  .feed-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px;
+  }
+
+  .win-icon {
+    background: #4caf50;
+  }
+
+  .loss-icon {
+    background: #e53935;
+  }
+
+  .friend-icon {
+    background: #f39c12;
+  }
+
+  .feed-time {
+    color: #999;
+    font-size: 0.8em;
+  }
+}
+
+.battle-item,
+.quiz-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.btn-join,
+.btn-train {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.btn-join:hover,
+.btn-train:hover {
+  background: #43a047;
+}
+
+.quiz-category-tag {
+  background: #e3f2fd;
+  color: #2196f3;
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.quiz-title {
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.no-data {
+  color: #888;
+  font-style: italic;
+}

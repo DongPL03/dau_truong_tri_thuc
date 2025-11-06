@@ -1,0 +1,28 @@
+<aside class="friend-sidebar">
+  <div class="friend-sidebar-header">
+    <h3>Bạn Bè Trực Tuyến ({{ onlineFriends.length }})</h3>
+    <button class="btn-manage-friends">
+      <i class="fas fa-cog"></i>
+    </button>
+  </div>
+
+  @for (f of onlineFriends; track f.id) {
+    <div class="friend-live-item">
+      <img [src]="f.avatar" class="friend-live-avatar"/>
+      <span class="friend-live-name">{{ f.name }}</span>
+      <span class="status-dot" [class.online]="f.status === 'online'" [class.busy]="f.status === 'busy'"></span>
+      <button class="btn-live-action invite"><i class="fas fa-bolt"></i></button>
+      <button class="btn-live-action chat"><i class="fas fa-comment"></i></button>
+    </div>
+  }
+  <div class="offline-section">
+    <h4>Offline ({{ offlineFriends.length }})</h4>
+    <div class="friend-live-item">
+      @for (f of offlineFriends; track f.id) {
+        <img [src]="f.avatar" class="friend-live-avatar"/>
+        <span class="friend-live-name">{{ f.name }}</span>
+        <span class="last-seen">Xem lần cuối {{ f.lastSeen }}</span>
+      }
+    </div>
+  </div>
+</aside>

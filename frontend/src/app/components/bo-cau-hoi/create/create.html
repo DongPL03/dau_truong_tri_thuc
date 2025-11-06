@@ -1,0 +1,88 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <header class="page-header">
+      <h1><i class="fas fa-magic"></i> Tạo Bộ Câu Hỏi Mới</h1>
+    </header>
+
+    <div class="form-card">
+      <form #createForm="ngForm" (ngSubmit)="onSubmit(createForm)">
+        <section class="section-details">
+          <h3>Thông Tin Chung</h3>
+
+          <div class="input-group">
+            <label for="title">Tiêu đề Bộ Câu Hỏi <span class="required">*</span></label>
+            <input type="text"
+                   id="title"
+                   name="tieu_de"
+                   [(ngModel)]="model.tieu_de"
+                   maxlength="100"
+                   placeholder="Ví dụ: 50 Câu Hỏi Lịch Sử Cổ Đại"
+                   required>
+          </div>
+
+          <div class="input-group">
+            <label for="category">Chủ Đề <span class="required">*</span></label>
+            <select id="category"
+                    name="chu_de_id"
+                    required
+                    [(ngModel)]="model.chu_de_id">
+              <option value="0">-- Chọn chủ đề --</option>
+              @for (c of chuDes; track c.id) {
+                <option [value]="c.id">{{ c.ten }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="description">Mô Tả</label>
+            <textarea id="description"
+                      name="mo_ta"
+                      rows="4"
+                      maxlength="255"
+                      [(ngModel)]="model.mo_ta"
+                      placeholder="Mô tả ngắn gọn về bộ câu hỏi..."></textarea>
+          </div>
+        </section>
+
+        <section class="section-settings">
+          <h3>Cài Đặt Truy Cập</h3>
+
+          <div class="input-group-1 radio-group">
+            <label style="margin-bottom: 10px">Chế độ hiển thị <span class="required">*</span></label>
+            <div class="input-label-div">
+
+                <input type="radio"
+                       id="public"
+                       name="che_do_hien_thi"
+                       value="PUBLIC"
+                       [(ngModel)]="model.che_do_hien_thi">
+                <label class="label-radio" for="public">Công khai (Mọi người đều thấy)</label>
+
+
+              <input type="radio"
+                     id="private"
+                     name="che_do_hien_thi"
+                     value="PRIVATE"
+                     [(ngModel)]="model.che_do_hien_thi">
+              <label class="label-radio" for="private">Riêng tư (Chỉ mình tôi thấy)</label>
+
+            </div>
+          </div>
+
+          <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <p>Bộ câu hỏi công khai cần được Admin duyệt trước khi hiển thị.</p>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancel()">Hủy</button>
+          <button type="submit" class="btn-primary" [disabled]="creating">
+            <i class="fas fa-save"></i>
+            {{ creating ? 'Đang lưu...' : 'Lưu & Quay lại' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

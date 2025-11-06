@@ -1,0 +1,164 @@
+@if (!loading) {
+  <div class="page-container">
+    <header class="page-header">
+      <h1>📘 Quản Lý Bộ Câu Hỏi</h1>
+      <div class="header-actions">
+        <button class="btn-primary" (click)="goToCreateQuiz()">
+          <i class="fas fa-plus"></i> Tạo Bộ Câu Hỏi Mới
+        </button>
+      </div>
+    </header>
+
+    <div class="quiz-management-layout">
+      <aside class="filter-sidebar">
+        <div class="search-box">
+          <input [(ngModel)]="keyword"
+                 (keyup.enter)="applyFilter()"
+                 placeholder="Tìm kiếm theo tiêu đề..."
+                 class="search-input"/>
+          <i class="fas fa-search"></i>
+        </div>
+        <div class="filter-group">
+          <h3>Sắp xếp theo</h3>
+          <label><input type="radio" name="sort" value="NEWEST" [(ngModel)]="sortOrder"/> Mới nhất</label>
+          <label><input type="radio" name="sort" value="OLDEST" [(ngModel)]="sortOrder"/> Cũ nhất</label>
+        </div>
+        <div class="filter-group">
+          <h3>Chế Độ Hiển Thị</h3>
+          <label><input type="radio" name="vis" value="" [(ngModel)]="cheDoHienThi"/> Tất cả</label>
+          <label><input type="radio" name="vis" value="PUBLIC" [(ngModel)]="cheDoHienThi"/> Công khai</label>
+          <label><input type="radio" name="vis" value="PRIVATE" [(ngModel)]="cheDoHienThi"/> Riêng tư</label>
+        </div>
+        <!-- ✅ Trong <aside class="filter-sidebar"> -->
+        <div class="filter-group">
+          <h3>Chủ Đề</h3>
+          <select [(ngModel)]="chuDeId" class="filter-select">
+            <option [value]="0">Tất cả</option>
+            @for (cd of chuDes; track cd.id) {
+              <option [value]="cd.id">{{ cd.ten }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <h3>Trạng Thái Duyệt</h3>
+          <select [(ngModel)]="trangThai" class="filter-select">
+            @for (opt of trangThaiOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+
+        <button class="btn-secondary apply-filter" (click)="applyFilter()">Áp Dụng Lọc</button>
+        <button class="btn-secondary apply-filter" style="margin-top:10px;background:#888;" (click)="clearFilter()">Xóa
+          lọc
+        </button>
+      </aside>
+
+      <main class="quiz-list-area">
+        @if (items.length > 0) {
+
+          @for (quiz of items; track quiz) {
+            <div class="quiz-card"
+                 [class.public]="quiz.che_do_hien_thi === 'PUBLIC'"
+                 [class.private]="quiz.che_do_hien_thi === 'PRIVATE'">
+              <div class="quiz-info">
+                <div class="quiz-header-row">
+                  <span class="quiz-category">{{ quiz.chu_de || 'Chưa có chủ đề' }}</span>
+                  <h3>
+                    <!-- highlight từ khóa -->
+                    <span [innerHTML]="highlightKeyword(quiz.tieu_de)"></span>
+                  </h3>
+                  <span class="badge"
+                        [ngClass]="{
+                                    'badge-green': quiz.trang_thai === 'DA_DUYET',
+                                    'badge-yellow': quiz.trang_thai === 'CHO_DUYET',
+                                    'badge-red': quiz.trang_thai === 'TU_CHOI'
+                                  }">
+                        @if (quiz.trang_thai === 'DA_DUYET') {
+                          Đã duyệt
+                        } @else if (quiz.trang_thai === 'CHO_DUYET') {
+                          Chờ duyệt
+                        } @else if (quiz.trang_thai === 'TU_CHOI') {
+                          Từ chối
+                        }
+                  </span>
+                </div>
+                <h3>{{ quiz.tieu_de }}</h3>
+                <p class="quiz-meta">
+                  👤 <b>{{ quiz.nguoi_tao || 'Ẩn danh' }}</b> &nbsp;|&nbsp;
+                  👁️ {{ quiz.che_do_hien_thi === 'PUBLIC' ? 'Công khai' : 'Riêng tư' }}
+                </p>
+                <p class="quiz-desc">{{ quiz.mo_ta || 'Không có mô tả' }}</p>
+              </div>
+              <div class="quiz-actions">
+                <button class="btn-action view" (click)="navigateDetail(quiz.id)" [attr.title]="'Xem chi tiết bộ câu hỏi này'">
+                  <i class="fas fa-list"></i> Xem
+                </button>
+                <!-- Sửa -->
+                <button
+                  class="btn-action edit"
+                  [ngClass]="{ 'disabled': !canEdit(quiz), 'editable': canEdit(quiz) }"
+                  (click)="canEdit(quiz) ? navigateEdit(quiz.id) : showAccessDeniedAlert('chỉnh sửa')"
+                  [attr.title]="canEdit(quiz) ? 'Chỉnh sửa bộ câu hỏi' : 'Bạn không thể chỉnh sửa bộ này'"
+                >
+                  <i class="fas" [ngClass]="canEdit(quiz) ? 'fa-edit' : 'fa-lock'"></i>
+                  {{ canEdit(quiz) ? 'Sửa' : 'Khoá' }}
+                </button>
+
+                <!-- Xóa -->
+                <button
+                  class="btn-action delete"
+                  [ngClass]="{ 'disabled': !canDelete(quiz), 'editable': canDelete(quiz) }"
+                  (click)="canDelete(quiz) ? confirmDelete(quiz.id) : showAccessDeniedAlert('xóa')"
+                  [attr.title]="canDelete(quiz) ? 'Xóa bộ câu hỏi' : 'Bạn không thể xóa bộ này'"
+                >
+                  <i class="fas" [ngClass]="canDelete(quiz) ? 'fa-trash' : 'fa-lock'"></i>
+                  {{ canDelete(quiz) ? 'Xóa' : 'Khoá' }}
+                </button>
+
+                <!-- Luyện -->
+                <button class="btn-action practice" [attr.title]="'Luyện bộ câu hỏi này'">
+                  <i class="fas fa-brain"></i> Luyện
+                </button>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <p>Không có bộ câu hỏi nào.</p>
+          </div>
+        }
+
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <!-- Nút Previous -->
+            <a (click)="changePage(page - 1)" [class.disabled]="page === 0">&laquo;</a>
+
+            <!-- Dải trang động -->
+            @for (p of getVisiblePages(); track $index) {
+              @if (p >= 0) {
+                <a [class.active]="p === page" (click)="changePage(p)">
+                  {{ p + 1 }}
+                </a>
+              } @else {
+                <span class="ellipsis">...</span>
+              }
+            }
+
+            <!-- Nút Next -->
+            <a (click)="changePage(page + 1)" [class.disabled]="page === totalPages - 1">&raquo;</a>
+          </div>
+        }
+
+      </main>
+    </div>
+  </div>
+
+} @else {
+  <div class="empty-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+}

@@ -1,0 +1,246 @@
+:host {
+  --primary-color: #4caf50;
+  --secondary-color: #2196f3;
+  --facebook-blue: #1877f2;
+  --google-text: #555;
+  --bg-color: #f0f2f5;
+  --card-bg: #fff;
+  --text-color: #333;
+  --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --radius: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+}
+
+/* Toàn bộ CSS phần còn lại giữ nguyên */
+.login-card {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.logo-title {
+  font-size: 1.8em;
+  color: var(--primary-color);
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.login-card h2 {
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* FORM */
+.input-group {
+  position: relative;
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #444;
+}
+
+.input-group i {
+  position: absolute;
+  top: 42px;
+  color: #999;
+}
+
+.input-group .fa-user {
+  left: 12px;
+}
+
+.input-group .fa-lock {
+  left: 12px;
+}
+
+.input-group .toggle-password {
+  right: 12px;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.3s;
+}
+
+.input-group .toggle-password:hover {
+  color: var(--secondary-color);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 38px 12px 36px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 1em;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+  outline: none;
+}
+
+.options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+  margin-bottom: 20px;
+}
+
+.forgot-password {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.btn-primary-auth {
+  width: 100%;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: var(--radius);
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+}
+
+.btn-primary-auth:hover {
+  background-color: #3e8e41;
+  transform: translateY(-1px);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0;
+  color: #888;
+  font-size: 0.9em;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider:not(:empty)::before {
+  margin-right: 0.5em;
+}
+
+.divider:not(:empty)::after {
+  margin-left: 0.5em;
+}
+
+.social-login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.btn-social {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-facebook {
+  background: var(--facebook-blue);
+  color: white;
+}
+
+.btn-facebook:hover {
+  background: #166fe5;
+}
+
+.btn-google {
+  background: white;
+  color: var(--google-text);
+  border: 1px solid #dadce0;
+}
+
+.btn-google:hover {
+  background: #f8f8f8;
+  border-color: #ccc;
+}
+
+.switch-auth {
+  margin-top: 25px;
+  font-size: 0.95em;
+  color: #777;
+}
+
+.switch-auth a {
+  color: var(--primary-color);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.switch-auth a:hover {
+  text-decoration: underline;
+}
+
+.error-msg {
+  color: #e53935;
+  font-size: 0.9em;
+  margin-top: 8px;
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 20px;
+  }
+
+  .logo-title {
+    font-size: 1.5em;
+  }
+}

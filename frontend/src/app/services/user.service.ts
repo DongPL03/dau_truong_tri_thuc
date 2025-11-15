@@ -60,6 +60,15 @@ export class UserService {
     });
   }
 
+  currentUser(): UserResponse | null {
+    return this.getUserResponseFromLocalStorage();
+  }
+
+  getUserId(): number {
+    const userResponse = this.getUserResponseFromLocalStorage();
+    return userResponse ? userResponse.id : 0;
+  }
+
   updateUserDetail(token: string, updateUserDTO: UpdateUserDTO): Observable<ResponseObject> {
     let userResponse = this.getUserResponseFromLocalStorage();
     return this.http.put<ResponseObject>(`${this.apiUserDetail}/${userResponse?.id}`, updateUserDTO, {

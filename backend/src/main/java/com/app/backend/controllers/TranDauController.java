@@ -31,8 +31,6 @@ public class TranDauController {
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> taoPhong(@Valid @RequestBody TaoTranDauDTO dto) throws Exception {
         Long uid = securityUtils.getLoggedInUserId();
-//        return tranDauService.taoPhong(dto, uid);
-
         TranDau tranDau = tranDauService.taoPhong(dto, uid);
         TranDauResponse data = TranDauResponse.fromEntity(tranDau);
         return ResponseEntity.ok(
@@ -106,6 +104,17 @@ public class TranDauController {
         );
     }
 
+    @GetMapping("/sync/{id}")
+//    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> sync(@PathVariable Long id) throws Exception {
+        Long uid = securityUtils.getLoggedInUserIdSafe();
+        var data = tranDauService.syncState(id, uid);
+        return ResponseEntity.ok(
+                ResponseObject.builder().status(HttpStatus.OK)
+                        .message("Đồng bộ trạng thái thành công").data(data).build()
+        );
+    }
+
     @PutMapping("/start/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> startBattle(@PathVariable("id") Long tranDauId) throws Exception {
@@ -138,6 +147,7 @@ public class TranDauController {
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> finishBattle(@PathVariable Long id) throws Exception {
         Long uid = securityUtils.getLoggedInUserId();
+        System.out.println(">>> [CTRL] finishBattle called, tranDauId=" + id + ", currentUserId=" + uid);
         BattleFinishResponse data = tranDauService.finishBattle(id, uid, false);
         return ResponseEntity.ok(
                 ResponseObject.builder()

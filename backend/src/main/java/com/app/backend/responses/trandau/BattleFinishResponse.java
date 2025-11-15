@@ -3,6 +3,7 @@ package com.app.backend.responses.trandau;
 
 import com.app.backend.models.NguoiDung;
 import com.app.backend.models.TranDau;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,14 +23,23 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class BattleFinishResponse {
 
+    @JsonProperty("tran_dau_id")
     private Long tranDauId;
+    @JsonProperty("ten_phong")
     private String tenPhong;
+    @JsonProperty("ma_phong")
     private String maPhong;
+    @JsonProperty("bat_dau_luc")
     private LocalDateTime batDauLuc;
+    @JsonProperty("ket_thuc_luc")
     private LocalDateTime ketThucLuc;
+    @JsonProperty("tong_nguoi_choi")
     private int tongNguoiChoi;
+    @JsonProperty("winner_id")
     private Long winnerId;
+    @JsonProperty("winner_ten")
     private String winnerTen;
+    @JsonProperty("bang_xep_hang")
     private List<PlayerScore> bangXepHang;
 
     @Data
@@ -37,10 +47,14 @@ public class BattleFinishResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PlayerScore {
+        @JsonProperty("user_id")
         private Long userId;
+        @JsonProperty("ho_ten")
         private String hoTen;
+        @JsonProperty("diem")
         private int diem;
-        private int thuHang;
+        @JsonProperty("xep_hang")
+        private int xepHang;
     }
 
     /**
@@ -69,7 +83,7 @@ public class BattleFinishResponse {
                             .userId(e.getKey())
                             .hoTen(nameMap.getOrDefault(e.getKey(), "Người chơi"))
                             .diem(e.getValue())
-                            .thuHang(rankCounter.getAndIncrement())
+                            .xepHang(rankCounter.getAndIncrement())
                             .build())
                     .collect(Collectors.toList());
         }

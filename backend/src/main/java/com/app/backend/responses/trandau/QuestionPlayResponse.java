@@ -34,6 +34,7 @@ public class QuestionPlayResponse {
     /**
      * tổng thời gian cho câu (giây) để client hiển thị đếm ngược
      */
+    @JsonProperty("thoi_gian_cau_giay")
     private int thoiGianCauGiay;
 
     public static QuestionPlayResponse from(CauHoi q, int seconds) {

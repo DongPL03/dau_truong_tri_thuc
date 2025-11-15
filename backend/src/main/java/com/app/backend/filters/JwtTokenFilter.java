@@ -30,16 +30,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtils jwtTokenUtil;
 
-    //    @Override
+//    @Override
 //    protected void doFilterInternal(@NonNull HttpServletRequest request,
 //                                    @NonNull HttpServletResponse response,
 //                                    @NonNull FilterChain filterChain) throws IOException {
 //        try {
-//            String path = request.getRequestURI();
-//            if (path.startsWith("/ws") || path.startsWith("/topic") || path.startsWith("/app")) {
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
+////            String path = request.getRequestURI();
+////            if (path.startsWith("/ws") || path.startsWith("/topic") || path.startsWith("/app")) {
+////                filterChain.doFilter(request, response);
+////                return;
+////            }
 //
 //            if (isBypassToken(request)) {
 //                filterChain.doFilter(request, response); //enable bypass
@@ -53,10 +53,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 //                return;
 //            }
 //            final String token = authHeader.substring(7);
-//            final String phoneNumber = jwtTokenUtil.getSubject(token);
-//            if (phoneNumber != null
+//            final String tenDangNhap = jwtTokenUtil.getSubject(token);
+//            if (tenDangNhap != null
 //                    && SecurityContextHolder.getContext().getAuthentication() == null) {
-//                NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(phoneNumber);
+//                NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(tenDangNhap);
 //                if (jwtTokenUtil.validateToken(token, userDetails)) {
 ////                    UsernamePasswordAuthenticationToken authenticationToken =
 ////                            new UsernamePasswordAuthenticationToken(
@@ -80,7 +80,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 //            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 //            response.getWriter().write(e.getMessage());
 //        }
-//
 //    }
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -90,7 +89,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String path = request.getRequestURI();
 
             // ✅ 1. Bỏ qua request SockJS "info" (handshake đầu tiên)
-            if (path.equals("/ws/info") || path.startsWith("/ws/info")) {
+            if (path.startsWith("/ws/info")) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -103,19 +102,29 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 if (queryToken != null && queryToken.startsWith("Bearer ")) {
                     String token = queryToken.substring(7);
                     try {
-                        String phoneNumber = jwtTokenUtil.getSubject(token);
-                        if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                            NguoiDung user = (NguoiDung) userDetailsService.loadUserByUsername(phoneNumber);
-                            if (jwtTokenUtil.validateToken(token, user)) {
+                        String tenDangNhap = jwtTokenUtil.getSubject(token);
+                        if (tenDangNhap != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                            NguoiDung userDetails = null;
+                            try {
+                                userDetails = (NguoiDung) userDetailsService.loadUserByUsername(tenDangNhap);
+                            } catch (Exception ex) {
+                                System.err.println("⚠️ User not found for subject: " + tenDangNhap);
+                            }
+
+                            if (userDetails != null && jwtTokenUtil.validateToken(token, userDetails)) {
                                 List<String> roles = jwtTokenUtil.extractRoles(token);
                                 List<SimpleGrantedAuthority> authorities = roles.stream()
                                         .map(SimpleGrantedAuthority::new)
                                         .toList();
 
-                                UsernamePasswordAuthenticationToken auth =
-                                        new UsernamePasswordAuthenticationToken(user, null, authorities);
-                                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                                SecurityContextHolder.getContext().setAuthentication(auth);
+                                UsernamePasswordAuthenticationToken authenticationToken =
+                                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                            } else {
+                                // Không chặn request WS, chỉ log cảnh báo
+                                System.err.println("⚠️ Token valid nhưng userDetails null hoặc validation fail");
                             }
                         }
                     } catch (Exception e) {
@@ -149,9 +158,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
 
             // ✅ 6. Giải mã & xác thực token
-            String phoneNumber = jwtTokenUtil.getSubject(token);
-            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(phoneNumber);
+            String tenDangNhap = jwtTokenUtil.getSubject(token);
+            if (tenDangNhap != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(tenDangNhap);
 
                 if (jwtTokenUtil.validateToken(token, userDetails)) {
                     List<String> roles = jwtTokenUtil.extractRoles(token);
@@ -171,8 +180,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Unauthorized: " + e.getMessage());
+            // ⚠️ Log nội bộ (tránh stacktrace tràn)
+            System.err.println("❌ JwtTokenFilter error: " + e.getMessage());
+
+            // ⚙️ Chỉ set status + header, KHÔNG flush buffer
+            if (!response.isCommitted()) {
+                response.resetBuffer();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\": \"Unauthorized: " + e.getMessage() + "\"}");
+            }
+
+            // 🔒 Không gọi flushBuffer hoặc filterChain nữa
+            return;
         }
     }
 
@@ -194,8 +214,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/users/idVaiTro/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/resend-verification", apiPrefix), "POST"),
 
-                Pair.of(String.format("%s/cauHoi/media/**", apiPrefix), "GET"),
-                Pair.of(String.format("%s/provinces/**", apiPrefix), "GET")
+                Pair.of(String.format("%s/tranDau/sync**", apiPrefix), "GET"),
+
+                Pair.of(String.format("%s/cauHoi/media**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/provinces**", apiPrefix), "GET")
         );
 
         String requestPath = request.getServletPath();

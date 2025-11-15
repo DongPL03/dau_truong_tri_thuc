@@ -71,7 +71,7 @@ public class BoCauHoiController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getById(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
         Long currentUserId = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();
@@ -87,7 +87,7 @@ public class BoCauHoiController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody BoCauHoiDTO boCauHoiDTO, BindingResult result) throws DataNotFoundException, PermissionDenyException {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
@@ -113,7 +113,7 @@ public class BoCauHoiController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody BoCauHoiDTO boCauHoiDTO) throws DataNotFoundException, PermissionDenyException {
         Long userId = securityUtils.getLoggedInUser().getId();
         boolean isAdmin = securityUtils.isAdmin();
@@ -126,7 +126,7 @@ public class BoCauHoiController {
     }
 
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> approve(@PathVariable Long id) {
         securityUtils.requireAdmin();
         Long adminId = securityUtils.getLoggedInUserId();
@@ -139,7 +139,7 @@ public class BoCauHoiController {
     }
 
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> reject(@PathVariable Long id, @RequestBody TuChoiBoCauHoiDTO lyDo) {
         securityUtils.requireAdmin();
         Long adminId = securityUtils.getLoggedInUser().getId();
@@ -153,7 +153,7 @@ public class BoCauHoiController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> delete(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
         Long userId = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();
@@ -168,7 +168,7 @@ public class BoCauHoiController {
     }
 
     @GetMapping("/{id}/thong-ke")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> thongKeBoCauHoi(@PathVariable Long id) throws DataNotFoundException {
         Map<String, Object> data = boCauHoiService.thongKeBoCauHoi(id);
         return ResponseEntity.ok(

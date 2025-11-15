@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ResponseObject} from '../../responses/response-object';
-import {TrandauResponse} from '../../responses/trandau/trandau-response';
+import {TranDauResponse} from '../../responses/trandau/trandau-response';
 import {BoCauHoiResponse} from '../../responses/bocauhoi/bocauhoi-response';
 import {PageResponse} from '../../responses/page-response';
 import {UserResponse} from '../../responses/nguoidung/user-response';
@@ -15,7 +15,7 @@ import {Base} from '../base/base';
   styleUrl: './home.scss'
 })
 export class Home extends Base implements OnInit {
-  pendingBattles: TrandauResponse[] = [];
+  pendingBattles: TranDauResponse[] = [];
   featuredQuizzes: BoCauHoiResponse[] = [];
   user?: UserResponse | null;
 
@@ -28,7 +28,7 @@ export class Home extends Base implements OnInit {
 
   loadPendingBattles() {
     this.tranDauService.getPendingBattles(0, 5).subscribe({
-      next: (res: ResponseObject<PageResponse<TrandauResponse>>) => {
+      next: (res: ResponseObject<PageResponse<TranDauResponse>>) => {
         // ✅ Backend trả về "items", không phải "content"
         this.pendingBattles = res.data?.items ?? [];
       },
@@ -47,6 +47,10 @@ export class Home extends Base implements OnInit {
   }
 
   navigateQuiz() {
-    this.router.navigate(['/bo-cau-hoi/list']);
+    this.router.navigate(['/bo-cau-hoi/list']).then(r => {});
+  }
+
+  navigateBattle() {
+    this.router.navigate(['/battle/pending']).then(r => {});
   }
 }

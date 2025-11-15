@@ -23,7 +23,6 @@ export class ChudeService {
   }
 
   xoaChuDe(id: number): Observable<ApiResponse> {
-    debugger
     return this.http.delete<ApiResponse>(`${this.apiBaseUrl}/chuDe/${id}`);
   }
 

@@ -32,6 +32,19 @@ public class SecurityUtils {
         return null;
     }
 
+    public Long getLoggedInUserIdSafe() {
+        try {
+            Authentication authentication = getAuthentication();
+            if (authentication != null &&
+                    authentication.getPrincipal() instanceof NguoiDung selectedUser) {
+                if (!selectedUser.isActive()) return null;
+                return selectedUser.getId();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
     public Long getLoggedInUserId() {
         Authentication authentication = getAuthentication();
         if (authentication != null &&
@@ -84,14 +97,14 @@ public class SecurityUtils {
      * 🔹 Kiểm tra có phải ADMIN không
      */
     public boolean isAdmin() {
-        return hasRole("ADMIN");
+        return hasRole("ROLE_ADMIN");
     }
 
     /**
      * 🔹 Kiểm tra có phải USER không
      */
     public boolean isUser() {
-        return hasRole("USER");
+        return hasRole("ROLE_USER");
     }
 
     /**

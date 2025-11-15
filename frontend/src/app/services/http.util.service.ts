@@ -23,7 +23,7 @@ export class HttpUtilService {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept-Language': 'vi',
-      ...(token ? {Authorization: `Bearer ${token}`} : {}),
+      'Authorization': `Bearer ${token}`
     });
   }
 }

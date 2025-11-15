@@ -1,0 +1,50 @@
+@if (!loading) {
+  <div class="page-container">
+    <header class="page-header">
+      <h1>🕹️ Phòng Đang Chờ</h1>
+    </header>
+
+
+    <div class="grid">
+      @if (items.length > 0) {
+
+        @for (r of items; track r.id) {
+          <div class="room-card">
+            <div class="room-head">
+              <span class="badge" [class.pub]="r.cong_khai"
+                    [class.pri]="!r.cong_khai">{{ r.cong_khai ? 'PUBLIC' : 'PRIVATE' }}</span>
+              <h3>{{ r.ten_phong || ('Phòng #' + r.id) }}</h3>
+              <p class="sub">Bộ câu hỏi: <b>{{ r.bo_cau_hoi_tieu_de }}</b></p>
+            </div>
+            <div class="room-body">
+              <div>Chủ phòng: <b>{{ r.chu_phong_ten }}</b></div>
+              <div>Giới hạn người chơi: {{ r.gioi_han_nguoi_choi }}</div>
+              <div>Thời gian mỗi câu: {{ r.gioi_han_thoi_gian_cau_giay }}s</div>
+              <div>Luật tính điểm: {{ r.luat_tinh_diem }}</div>
+            </div>
+            <div class="room-actions">
+              <button (click)="tryJoin(r)">Tham gia</button>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="empty-state">Không có phòng chờ.</div>
+      } </div>
+
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <a (click)="changePage(page-1)" [class.disabled]="page === 0">«</a>
+
+        @for (p of [].constructor(totalPages); track $index; let i = $index) {
+          <a (click)="changePage(i)" [class.active]="i===page">{{ i + 1 }}</a>
+        }
+
+        <a (click)="changePage(page+1)" [class.disabled]="page === totalPages - 1">»</a>
+      </div>
+    }
+
+  </div>
+} @else {
+  <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Đang tải…</div>
+}

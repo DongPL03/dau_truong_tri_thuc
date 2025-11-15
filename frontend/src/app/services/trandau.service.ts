@@ -6,7 +6,13 @@ import {HttpUtilService} from './http.util.service';
 
 import {ResponseObject} from '../responses/response-object';
 import {PageResponse} from '../responses/page-response';
-import {TrandauResponse} from '../responses/trandau/trandau-response';
+import {TranDauResponse} from '../responses/trandau/trandau-response';
+import {ThamGiaTranDauDTO} from '../dtos/tran-dau/thamgiatrandau-dto';
+import {TaoTranDauDTO} from '../dtos/tran-dau/taotran-dto';
+import {RoiTranDauDTO} from '../dtos/tran-dau/roitran-dto';
+import {SubmitAnswerDTO} from '../dtos/tran-dau/submitanswer-dto';
+import {SyncStateResponse} from '../responses/trandau/syncstate-response';
+
 
 @Injectable({providedIn: 'root'})
 export class TrandauService {
@@ -24,9 +30,9 @@ export class TrandauService {
   getPendingBattles(
     page: number = 0,
     size: number = 5
-  ): Observable<ResponseObject<PageResponse<TrandauResponse>>> {
+  ): Observable<ResponseObject<PageResponse<TranDauResponse>>> {
     const params = {page, size};
-    return this.http.get<ResponseObject<PageResponse<TrandauResponse>>>(
+    return this.http.get<ResponseObject<PageResponse<TranDauResponse>>>(
       `${this.api}/pending`,
       {
         headers: this.httpUtil.createAuthHeaders(),
@@ -38,8 +44,8 @@ export class TrandauService {
   /**
    * 🔹 Chi tiết 1 trận đấu
    */
-  getBattleDetail(id: number): Observable<ResponseObject<TrandauResponse>> {
-    return this.http.get<ResponseObject<TrandauResponse>>(
+  getBattleDetail(id: number): Observable<ResponseObject<TranDauResponse>> {
+    return this.http.get<ResponseObject<TranDauResponse>>(
       `${this.api}/${id}`,
       {headers: this.httpUtil.createAuthHeaders()}
     );
@@ -48,10 +54,10 @@ export class TrandauService {
   /**
    * 🔹 Tạo phòng đấu
    */
-  createBattle(payload: any): Observable<ResponseObject<TrandauResponse>> {
-    return this.http.post<ResponseObject<TrandauResponse>>(
+  createBattle(dto: TaoTranDauDTO): Observable<ResponseObject<TranDauResponse>> {
+    return this.http.post<ResponseObject<TranDauResponse>>(
       `${this.api}/create`,
-      payload,
+      dto,
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }
@@ -59,10 +65,10 @@ export class TrandauService {
   /**
    * 🔹 Tham gia phòng đấu
    */
-  joinBattle(payload: any): Observable<ResponseObject<TrandauResponse>> {
-    return this.http.post<ResponseObject<TrandauResponse>>(
+  joinBattle(dto: ThamGiaTranDauDTO): Observable<ResponseObject<TranDauResponse>> {
+    return this.http.post<ResponseObject<TranDauResponse>>(
       `${this.api}/join`,
-      payload,
+      dto,
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }
@@ -70,13 +76,21 @@ export class TrandauService {
   /**
    * 🔹 Rời phòng đấu
    */
-  leaveBattle(payload: any): Observable<ResponseObject<null>> {
+  leaveBattle(dto: RoiTranDauDTO): Observable<ResponseObject<void>> {
     return this.http.post<ResponseObject<null>>(
       `${this.api}/leave`,
-      payload,
+      dto,
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }
+
+  sync(id: number): Observable<ResponseObject<SyncStateResponse>> {
+    return this.http.get<ResponseObject<SyncStateResponse>>(
+      `${this.api}/sync/${id}`,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
 
   /**
    * 🔹 Bắt đầu trận đấu
@@ -92,10 +106,10 @@ export class TrandauService {
   /**
    * 🔹 Nộp đáp án
    */
-  submitAnswer(payload: any): Observable<ResponseObject<any>> {
+  submitAnswer(dto: SubmitAnswerDTO): Observable<ResponseObject<any>> {
     return this.http.post<ResponseObject<any>>(
       `${this.api}/submit-answer`,
-      payload,
+      dto,
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }

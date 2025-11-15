@@ -43,6 +43,7 @@ public class WebSecurityConfig {
                             .requestMatchers("/ws/**").permitAll()
                             .requestMatchers("/topic/**").permitAll()
                             .requestMatchers("/app/**").permitAll()
+                            .requestMatchers("/queue/**").permitAll()
                             .requestMatchers(
                                     String.format("%s/users/register", apiPrefix),
                                     String.format("%s/users/login", apiPrefix),

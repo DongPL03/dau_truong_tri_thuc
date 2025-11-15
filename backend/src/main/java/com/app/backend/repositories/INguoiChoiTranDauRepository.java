@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface INguoiChoiTranDauRepository extends JpaRepository<NguoiChoiTranDau, Long> {
@@ -15,4 +16,6 @@ public interface INguoiChoiTranDauRepository extends JpaRepository<NguoiChoiTran
     long countByTranDau_Id(Long tranDauId);
 
     Optional<NguoiChoiTranDau> findFirstByTranDau_IdOrderByIdAsc(Long tranDauId);
+
+    List<NguoiChoiTranDau> findAllByTranDau_Id(Long tranDauId);
 }

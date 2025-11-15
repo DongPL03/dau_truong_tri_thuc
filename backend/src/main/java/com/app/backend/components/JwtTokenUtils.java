@@ -127,26 +127,19 @@ public class JwtTokenUtils {
     public boolean validateToken(String token, NguoiDung userDetails) {
         try {
             String subject = extractClaim(token, Claims::getSubject);
-            //subject is phoneNumber or email
+            System.out.println("🎯 Subject in token: " + subject);
+            System.out.println("🧍 UserDetails username: " + userDetails.getUsername());
             Token existingToken = tokenRepository.findByToken(token);
-            if (existingToken == null ||
-                    existingToken.isRevoked() == true ||
-                    !userDetails.isActive()
-            ) {
+            if (existingToken == null || existingToken.isRevoked() || !userDetails.isActive()) {
+                System.out.println("🚫 Token bị revoke hoặc user không active");
                 return false;
             }
-            return (subject.equals(userDetails.getUsername()))
-                    && !isTokenExpired(token);
-        } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
-        } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            logger.error("JWT token is unsupported: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            logger.error("JWT claims string is empty: {}", e.getMessage());
+            boolean result = (subject.equals(userDetails.getUsername())) && !isTokenExpired(token);
+            System.out.println("✅ Token hợp lệ? " + result);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 }

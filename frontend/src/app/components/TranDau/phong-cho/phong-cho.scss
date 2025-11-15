@@ -1,0 +1,105 @@
+.page-container {
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.room-card {
+  border: 1px solid #2d2f3a;
+  border-radius: 12px;
+  padding: 12px;
+  //background: #1b1d26;
+}
+
+.room-head h3 {
+  margin: 8px 0 4px;
+  font-size: 18px;
+}
+
+.sub {
+  opacity: .8;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #444;
+}
+
+.badge.pub {
+  background: #204d2a;
+  color: #9effc1
+}
+
+.badge.pri {
+  background: #4d2020;
+  color: #ffb3b3
+}
+
+.room-body {
+  margin: 8px 0;
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.room-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.room-actions button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #6a5acd;
+  color: white;
+  cursor: pointer;
+}
+
+.room-actions button:hover {
+  filter: brightness(1.1)
+}
+
+.pagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.pagination a {
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #262938
+}
+
+.pagination a.active {
+  background: #6a5acd;
+  color: #fff
+}
+
+.pagination a.disabled {
+  pointer-events: none;
+  opacity: .5
+}
+
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  opacity: .8
+}

@@ -35,11 +35,14 @@ public class LichSuTranDau {
     @Column(name = "tong_diem", nullable = false)
     private Integer tongDiem;
 
-    @Column(name = "tong_cau_dung", nullable = false)
-    private Integer tongCauDung;
+    @Column(name = "so_cau_dung", nullable = false)
+    private Integer soCauDung;
 
     @Column(name = "tong_thoi_gian_ms")
     private Integer tongThoiGianMs;
+
+    @Column(name = "xep_hang")
+    private Integer xepHang;
 
     @Column(name = "hoan_thanh_luc", updatable = false)
     private LocalDateTime hoanThanhLuc;

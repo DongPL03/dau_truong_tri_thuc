@@ -73,7 +73,7 @@ public class CauHoiController {
     }
 
     @PostMapping("/upload/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> uploadMedia(
             @PathVariable("id") Long cauHoiId,
             @RequestParam("file") MultipartFile file,
@@ -141,7 +141,7 @@ public class CauHoiController {
 
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> getById(@PathVariable("id") Long id) throws DataNotFoundException, PermissionDenyException {
         Long uid = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();
@@ -155,7 +155,7 @@ public class CauHoiController {
     }
 
     @GetMapping("/bo/{boCauHoiId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getByBoCauHoi(
             @PathVariable Long boCauHoiId,
             @RequestParam(defaultValue = "0") int page,
@@ -176,7 +176,7 @@ public class CauHoiController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody CauHoiDTO cauHoiDTO,
                                                  BindingResult result) throws DataNotFoundException, PermissionDenyException {
         if (result.hasErrors()) {
@@ -203,7 +203,7 @@ public class CauHoiController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> update(@PathVariable Long id, @RequestBody CauHoiDTO dto) throws DataNotFoundException, PermissionDenyException {
         Long uid = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();
@@ -216,7 +216,7 @@ public class CauHoiController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> delete(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
         Long uid = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();

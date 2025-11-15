@@ -7,7 +7,7 @@ import {AuthGuardFn} from './guards/auth.guard';
 import {GuestGuardFn} from './guards/guest.guard';
 import {MainLayout} from './layout/main-layout/main-layout';
 import {BoCauHoiList} from './components/bo-cau-hoi/list/list';
-import {BoCauHoiEdit} from './components/bo-cau-hoi/edit/edit';
+import {PhongCho} from './components/TranDau/phong-cho/phong-cho';
 
 export const routes: Routes = [
   {
@@ -44,8 +44,12 @@ export const routes: Routes = [
         loadComponent: () => import('./components/bo-cau-hoi/edit/edit').then(m => m.BoCauHoiEdit),
         title: 'Chỉnh sửa bộ câu hỏi',
       },
-
-    ],
+      {path: 'battle/pending', component: PhongCho, title: 'Phòng đang chờ'},
+      {
+        path: 'battle/room/:id',
+        loadComponent: () => import('./components/TranDau/chi-tiet-phong/chi-tiet-phong').then(m => m.ChiTietPhong)
+      },
+    ]
   },
   {path: 'login', component: Login, canActivate: [GuestGuardFn], title: 'Đăng nhập'},
   {path: 'register', component: Register, canActivate: [GuestGuardFn], title: 'Đăng ký'},

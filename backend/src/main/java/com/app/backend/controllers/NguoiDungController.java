@@ -31,6 +31,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -48,6 +49,7 @@ import java.util.UUID;
 public class NguoiDungController {
     private final INguoiDungService userService;
     private final LocalizationUtils localizationUtils;
+    private final UserDetailsService userDetailsService;
     private final ITokenService tokenService;
     private final SecurityUtils securityUtils;
     private final IEmailVerificationService emailVerificationService;
@@ -171,6 +173,7 @@ public class NguoiDungController {
     ) throws Exception {
         // Gọi hàm login từ UserService cho đăng nhập truyền thống
         String token = userService.login(userLoginDTO);
+        NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(userLoginDTO.getTenDangNhap());
 
         // Xử lý token và thông tin người dùng
         String userAgent = request.getHeader("User-Agent");

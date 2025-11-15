@@ -5,6 +5,7 @@ import com.app.backend.models.BattleState;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -25,5 +26,14 @@ public class BattleStateManager {
 
     public boolean exists(Long tranDauId) {
         return activeBattles.containsKey(tranDauId);
+    }
+
+    public void cleanupFinishedBattles() {
+        activeBattles.entrySet().removeIf(e -> e.getValue().isFinished());
+    }
+
+    // ✅ Thêm: xem danh sách trận đang chạy (debug)
+    public Set<Long> listActive() {
+        return activeBattles.keySet();
     }
 }

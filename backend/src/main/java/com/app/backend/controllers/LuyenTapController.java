@@ -38,7 +38,7 @@ public class LuyenTapController {
     private final SecurityUtils securityUtils;
 
     @PostMapping("/start")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> batDauLuyenTap(@RequestBody BatDauLuyenTapRequestDTO request) throws DataNotFoundException {
         Long userId = securityUtils.getLoggedInUserId();
         PhienLuyenTap phien = luyenTapService.batDau(request, userId);
@@ -53,7 +53,7 @@ public class LuyenTapController {
     }
 
     @PostMapping("/submit")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> submitPractice(@RequestBody TraLoiCauHoiRequestDTO request) throws DataNotFoundException, PermissionDenyException {
         Long userId = securityUtils.getLoggedInUserId();
         PhienLuyenTap phien = luyenTapService.guiDapAn(request, userId);
@@ -68,7 +68,7 @@ public class LuyenTapController {
     }
 
     @GetMapping("/{phienId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> layKetQuaLuyenTap(@PathVariable Long phienId) throws DataNotFoundException, PermissionDenyException {
         Long userId = securityUtils.getLoggedInUserId();
         List<TraLoiLuyenTap> traLois = luyenTapService.getTraLoiByPhien(phienId, userId);
@@ -83,7 +83,7 @@ public class LuyenTapController {
     }
 
     @GetMapping("/history")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getHistory(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -104,7 +104,7 @@ public class LuyenTapController {
     }
 
     @PostMapping("/memo/{phienId}/{cauHoiId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> saveMemo(@PathVariable Long phienId, @PathVariable Long cauHoiId) throws DataNotFoundException, PermissionDenyException {
         Long userId = securityUtils.getLoggedInUserId();
         TheGhiNho memo = luyenTapService.saveTheGhiNho(phienId, cauHoiId, userId);
@@ -127,7 +127,7 @@ public class LuyenTapController {
     }
 
     @GetMapping("/memo/list")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getMemoList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -149,7 +149,7 @@ public class LuyenTapController {
 
     // 7️⃣ Xóa thẻ ghi nhớ
     @DeleteMapping("/memo/delete/{memoId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> deleteMemo(@PathVariable Long memoId) throws DataNotFoundException, PermissionDenyException {
         Long userId = securityUtils.getLoggedInUserId();
         luyenTapService.deleteTheGhiNho(memoId, userId);

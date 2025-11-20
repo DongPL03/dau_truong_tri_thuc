@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 public interface IBoCauHoiRepository extends JpaRepository<BoCauHoi, Long> {
     @Query("""
             SELECT b FROM BoCauHoi b
-            WHERE b.isDelete = false
+            WHERE b.isXoa = false
             AND (:keyword IS NULL OR :keyword = '' OR LOWER(b.tieuDe) LIKE %:keyword%)
             AND (:chuDeId IS NULL OR :chuDeId = 0 OR b.chuDe.id = :chuDeId)
             AND (:cheDoHienThi IS NULL OR :cheDoHienThi = '' OR b.cheDoHienThi = :cheDoHienThi)

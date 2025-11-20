@@ -2,10 +2,11 @@ package com.app.backend.responses.practice;
 
 import com.app.backend.models.PhienLuyenTap;
 import com.app.backend.models.TraLoiLuyenTap;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,13 +17,22 @@ import java.util.stream.Collectors;
 @Builder
 public class KetQuaLuyenTapResponse {
     private Long phienId;
+
     private String boCauHoi;
+
     private Integer tongCauHoi;
+
     private Integer soCauDung;
+
     private Integer diemSo;
+
     private BigDecimal doChinhXac;
+
     private Integer thoiGianTbMs;
-    private LocalDateTime taoLuc;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant taoLuc;
+
     private List<AnswerDetail> chiTiet;
 
     @Getter

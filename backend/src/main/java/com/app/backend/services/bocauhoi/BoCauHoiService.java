@@ -98,7 +98,7 @@ public class BoCauHoiService implements IBoCauHoiService {
                 .moTa(boCauHoiDTO.getMoTa())
                 .chuDe(chuDe)
                 .cheDoHienThi(boCauHoiDTO.getCheDoHienThi())
-                .isDelete(false)
+                .isXoa(false)
                 .taoBoi(taoBoi)
                 .trangThai(trangThaiMoi) // Sử dụng trạng thái đã được xác định ở trên
                 .build();
@@ -224,7 +224,7 @@ public class BoCauHoiService implements IBoCauHoiService {
             throw new PermissionDenyException("Bạn không thể xóa bộ câu hỏi của người khác");
         }
 
-        boCauHoi.setIsDelete(true);
+        boCauHoi.setIsXoa(true);
         boCauHoiRepository.save(boCauHoi);
     }
 

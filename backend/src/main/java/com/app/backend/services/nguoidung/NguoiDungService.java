@@ -119,7 +119,7 @@ public class NguoiDungService implements INguoiDungService {
             throw new DataNotFoundException("User is locked");
         }
 
-        if (existingUser.isDelete()) {
+        if (existingUser.isXoa()) {
             throw new DataNotFoundException("This account has been deactivated.");
         }
 
@@ -359,11 +359,11 @@ public class NguoiDungService implements INguoiDungService {
         NguoiDung user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
-        if (user.isDelete()) {
+        if (user.isXoa()) {
             throw new IllegalStateException("User already deactivated");
         }
 
-        user.setDelete(true);
+        user.setXoa(true);
         user.setActive(false); // vô hiệu hóa luôn
         userRepository.save(user);
     }
@@ -373,7 +373,7 @@ public class NguoiDungService implements INguoiDungService {
     public void restoreUser(Long userId) throws Exception {
         NguoiDung user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
-        user.setDelete(false);
+        user.setXoa(false);
         user.setActive(true);
         userRepository.save(user);
     }

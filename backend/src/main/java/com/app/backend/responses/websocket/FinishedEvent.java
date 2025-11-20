@@ -1,10 +1,11 @@
 package com.app.backend.responses.websocket;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -12,20 +13,31 @@ import java.util.List;
 public class FinishedEvent {
     @JsonProperty("type")
     private String type;       // "FINISHED"
+
     @JsonProperty("tran_dau_id")
     private Long tranDauId;
+
     @JsonProperty("ten_phong")
     private String tenPhong;
+
     @JsonProperty("ma_phong")
     private String maPhong;
+
     @JsonProperty("bat_dau_luc")
-    private LocalDateTime batDauLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant batDauLuc;
+
     @JsonProperty("ket_thuc_luc")
-    private LocalDateTime ketThucLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant ketThucLuc;
+
     @JsonProperty("timestamp")
-    private LocalDateTime timestamp;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant timestamp;
+
     @JsonProperty("winner")
     private Winner winner;
+
     @JsonProperty("leaderboard")
     private List<Player> leaderboard;
 

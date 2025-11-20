@@ -1,0 +1,226 @@
+/* --- COPY TẤT CẢ TỪ ĐÂY TRỞ XUỐNG --- */
+
+/* 1. Biến màu toàn cục (Lấy từ file CSS xịn của bạn) */
+:host {
+  --primary-color: #4caf50;
+  --secondary-color: #2196f3;
+  --accent-warning: #ffc107;
+  --bg-color: #f7f9fc;
+  --card-bg: #ffffff;
+  --border-color: #e0e0e0;
+  --text-color: #333;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --admin-option-bg: #fffbe6;
+}
+
+/* 2. Style cho layout (Đã đổi tên .page-wrapper -> .page) */
+.page {
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 20px;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh; /* Thêm này để background full trang */
+}
+
+/* 3. Container (Lấy từ file CSS xịn) */
+.page-container {
+  max-width: 800px; /* Dùng 800px cho giống file xịn */
+  width: 100%;
+}
+
+/* 4. Header (Lấy từ file CSS xịn và điều chỉnh) */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  color: var(--primary-color); /* Style h1 giống file xịn */
+  margin: 0;
+  font-size: 2em;
+}
+
+/* Style cho nút "Quay lại" trong header (giống cái link trong ảnh) */
+.page-header .btn-secondary {
+  background: none;
+  color: #777;
+  font-weight: 600;
+  padding: 5px;
+  border: none;
+  font-size: 1em; /* Thêm cho nhất quán */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-header .btn-secondary:hover {
+  background: none;
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+/* 5. Form (Đã đổi tên .form-card -> .form-layout) */
+.form-layout {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-light);
+}
+
+/* 6. Inputs & Labels (Lấy từ file CSS xịn) */
+label {
+  display: block;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+  margin-top: 20px; /* Thêm margin-top cho thống nhất */
+}
+
+/* Cần override label bên trong radio-group */
+.radio-group label {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+.required {
+  color: #f44336;
+  margin-left: 5px;
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1em;
+  transition: border-color 0.3s;
+  margin-top: 5px; /* Giữ lại từ code cũ của bạn */
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--secondary-color);
+  outline: none;
+}
+
+textarea {
+  min-height: 100px;
+  resize: none;
+}
+
+/* 7. Radio Buttons (Style lại cho khớp HTML mới) */
+.radio-group {
+  margin-top: 10px;
+  display: flex;
+  gap: 25px; /* Khoảng cách giữa các nút radio */
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  width: auto; /* Thu nhỏ radio button */
+  margin-right: 8px; /* Khoảng cách giữa nút và chữ */
+  margin-top: 0; /* Reset margin */
+}
+
+/* 8. Form Actions (Lấy từ file CSS xịn) */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+/*
+ * 9. Các nút bấm (Lấy style từ .btn-primary và .btn-secondary)
+ */
+
+/* Nút chính (Style cho .btn-green giống .btn-primary) */
+.btn-green {
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.btn-green:hover {
+  background-color: #388e3c; /* Darken của primary-color */
+}
+
+.btn-green:disabled {
+  background-color: #a5d6a7; /* Màu nhạt hơn khi disable */
+  cursor: not-allowed;
+}
+
+
+/* Nút phụ (Hủy) */
+.btn-secondary {
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ccc;
+  color: var(--text-color);
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #bbb;
+}
+
+/* 10. Loading (Lấy từ code mới cho hoàn chỉnh) */
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-style: italic;
+  font-size: 1.1em;
+  color: #777;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.btn-gray {
+    background: #e5e7eb;
+    color: #374151;
+
+    &:hover {
+      background: #d1d5db;
+    }
+  }
+}

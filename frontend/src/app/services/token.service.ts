@@ -41,11 +41,35 @@ export class TokenService {
   }
 
   // 🔹 Decode userId từ claim (BE claim: "userId")
+  // getUserId(): number {
+  //   const token = this.getAccessToken();
+  //   if (!token) return 0;
+  //   const obj = this.jwtHelper.decodeToken(token) || {};
+  //   return 'userId' in obj ? parseInt(obj['userId']) : 0;
+  // }
   getUserId(): number {
     const token = this.getAccessToken();
     if (!token) return 0;
-    const obj = this.jwtHelper.decodeToken(token) || {};
-    return 'userId' in obj ? parseInt(obj['userId']) : 0;
+
+    const decodedToken = this.jwtHelper.decodeToken(token);
+
+    // 🛑 LOG ĐỂ DEBUG: Bật F12 lên xem nó in ra cái gì khi reload
+    console.log('🔍 Decoded Token:', decodedToken);
+
+    if (!decodedToken) return 0;
+
+    // Kiểm tra các trường có thể chứa ID (Backend thường dùng 'sub', 'id', hoặc 'userId')
+    // Hãy ưu tiên 'userId' nếu backend bạn custom, nếu không thì thử các key khác
+    if ('userId' in decodedToken) return parseInt(decodedToken['userId']);
+    if ('user_id' in decodedToken) return parseInt(decodedToken['user_id']);
+    if ('id' in decodedToken) return parseInt(decodedToken['id']);
+    if ('sub' in decodedToken) {
+      // Nếu sub là số thì parse, nếu là email/string thì phải sửa logic backend
+      const sub = parseInt(decodedToken['sub']);
+      return isNaN(sub) ? 0 : sub;
+    }
+
+    return 0;
   }
 
   // 🔹 Kiểm tra token còn hạn không

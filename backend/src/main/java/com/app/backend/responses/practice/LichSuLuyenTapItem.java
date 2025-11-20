@@ -1,10 +1,11 @@
 package com.app.backend.responses.practice;
 
 import com.app.backend.models.PhienLuyenTap;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -12,14 +13,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class LichSuLuyenTapItem {
+
     private Long phienId;
+
     private String boCauHoi;
+
     private Integer tongCauHoi;
+
     private Integer soCauDung;
+
     private Integer diemSo;
+
     private BigDecimal doChinhXac;
+
     private Integer thoiGianTbMs;
-    private LocalDateTime ngayTao;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant ngayTao;
+
     private UserInfo nguoiDung;
 
     @Getter

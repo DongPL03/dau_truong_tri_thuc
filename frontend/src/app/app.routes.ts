@@ -1,12 +1,12 @@
 import {Routes} from '@angular/router';
 import {Home} from './components/home/home';
-import {Register} from './components/register/register';
-import {Login} from './components/login/login';
+import {DangKy} from './components/dang-ky/dang-ky';
+import {DangNhap} from './components/dang-nhap/dang-nhap';
 import {Profile} from './components/profile/profile';
 import {AuthGuardFn} from './guards/auth.guard';
 import {GuestGuardFn} from './guards/guest.guard';
 import {MainLayout} from './layout/main-layout/main-layout';
-import {BoCauHoiList} from './components/bo-cau-hoi/list/list';
+import {BoCauHoiList} from './components/bo-cau-hoi/danh-sach-bo-cau-hoi/danh-sach-bo-cau-hoi';
 import {PhongCho} from './components/TranDau/phong-cho/phong-cho';
 
 export const routes: Routes = [
@@ -18,40 +18,55 @@ export const routes: Routes = [
       {path: '', redirectTo: 'home', pathMatch: 'full'},
       {path: 'home', component: Home, title: 'Trang chủ'},
       {path: 'profile', component: Profile, title: 'Thông tin cá nhân'},
-      {path: 'bo-cau-hoi/list', component: BoCauHoiList, title: 'Danh sách bộ câu hỏi'},
+      {path: 'bo-cau-hoi/danh-sach-bo-cau-hoi', component: BoCauHoiList, title: 'Danh sách bộ câu hỏi'},
       {
-        path: 'bo-cau-hoi/create',
-        loadComponent: () => import('./components/bo-cau-hoi/create/create').then(m => m.BoCauHoiCreate),
+        path: 'bo-cau-hoi/tao-moi-bo-cau-hoi',
+        loadComponent: () => import('./components/bo-cau-hoi/tao-moi-bo-cau-hoi/tao-moi-bo-cau-hoi').then(m => m.BoCauHoiCreate),
         title: 'Tạo bộ câu hỏi'
       },
       {
-        path: 'bo-cau-hoi/detail/:id',
-        loadComponent: () => import('./components/bo-cau-hoi/detail/detail').then(m => m.BoCauHoiDetail),
+        path: 'bo-cau-hoi/chi-tiet-bo-cau-hoi/:id',
+        loadComponent: () => import('./components/bo-cau-hoi/chi-tiet-bo-cau-hoi/chi-tiet-bo-cau-hoi').then(m => m.BoCauHoiDetail),
         title: 'Chi tiết bộ câu hỏi'
       },
       {
-        path: 'bo-cau-hoi/:id/questions/new',
-        loadComponent: () => import('./components/cau-hoi/create/create').then(m => m.CauHoiCreate),
+        path: 'bo-cau-hoi/:id/cau-hoi/tao-moi-cau-hoi',
+        loadComponent: () => import('./components/cau-hoi/tao-moi-cau-hoi/tao-moi-cau-hoi').then(m => m.CauHoiCreate),
         title: 'Tạo câu hỏi'
       },
       {
-        path: 'bo-cau-hoi/:boId/cau-hoi/:id/edit',
-        loadComponent: () => import('./components/cau-hoi/edit/edit').then(m => m.CauHoiEdit),
+        path: 'bo-cau-hoi/:boId/cau-hoi/:id/sua-bo-cau-hoi',
+        loadComponent: () => import('./components/cau-hoi/sua-cau-hoi/sua-cau-hoi').then(m => m.CauHoiEdit),
         title: 'Chỉnh sửa câu hỏi',
       },
       {
-        path: 'bo-cau-hoi/edit/:id',
-        loadComponent: () => import('./components/bo-cau-hoi/edit/edit').then(m => m.BoCauHoiEdit),
+        path: 'bo-cau-hoi/sua-bo-cau-hoi/:id',
+        loadComponent: () => import('./components/bo-cau-hoi/sua-bo-cau-hoi/sua-bo-cau-hoi').then(m => m.BoCauHoiEdit),
         title: 'Chỉnh sửa bộ câu hỏi',
       },
-      {path: 'battle/pending', component: PhongCho, title: 'Phòng đang chờ'},
+      {path: 'tran-dau/pending', component: PhongCho, title: 'Phòng đang chờ'},
       {
-        path: 'battle/room/:id',
+        path: 'tran-dau/phong/:id',
         loadComponent: () => import('./components/TranDau/chi-tiet-phong/chi-tiet-phong').then(m => m.ChiTietPhong)
       },
+      {
+        path: 'tran-dau/tao-moi-bo-cau-hoi',
+        loadComponent: () => import('./components/TranDau/tao-tran/tao-tran').then(m => m.TaoTran),
+        title: 'Tạo trận đấu'
+      },
+      {
+        path: 'tran-dau/lich-su-tran-dau',
+        loadComponent: () => import('./components/TranDau/lich-su-tran-dau/lich-su-tran-dau').then(m => m.LichSuTranDau),
+        title: 'Lịch sử trận đấu'
+      },
+      {
+        path: 'tran-dau/lich-su-tran-dau/:id',
+        loadComponent: () => import('./components/TranDau/lich-su-tran-dau-detail/lich-su-tran-dau-detail').then(m => m.LichSuTranDauDetail),
+        title: 'Chi tiết lịch sử trận đấu'
+      }
     ]
   },
-  {path: 'login', component: Login, canActivate: [GuestGuardFn], title: 'Đăng nhập'},
-  {path: 'register', component: Register, canActivate: [GuestGuardFn], title: 'Đăng ký'},
+  {path: 'login', component: DangNhap, canActivate: [GuestGuardFn], title: 'Đăng nhập'},
+  {path: 'register', component: DangKy, canActivate: [GuestGuardFn], title: 'Đăng ký'},
   {path: '**', redirectTo: 'home'},
 ];

@@ -1,13 +1,11 @@
-// bên trong file: guest.guard.ts
 import {inject, Injectable} from '@angular/core';
-import {ActivatedRouteSnapshot, CanActivate, CanActivateFn, Router, RouterStateSnapshot} from '@angular/router';
+import {ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot} from '@angular/router';
 import {TokenService} from '../services/token.service';
 
-// ... (code class GuestGuard của bạn ở đây) ...
 @Injectable({
   providedIn: 'root'
 })
-export class GuestGuard implements CanActivate {
+export class GuestGuard {
   constructor(
     private tokenService: TokenService,
     private router: Router,
@@ -15,19 +13,29 @@ export class GuestGuard implements CanActivate {
   }
 
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if (this.tokenService.isAuthenticated()) {
-      this.router.navigate(['/home']);
-      return false;
-    } else {
-      return true;
+    const isTokenExpired = this.tokenService.isTokenExpired();
+    const isUserIdValid = this.tokenService.getUserId() > 0;
+
+    // Nếu user ĐÃ ĐĂNG NHẬP (Token còn hạn & UserId ok)
+    if (!isTokenExpired && isUserIdValid) {
+      // 👇 1. Lấy returnUrl từ query params (nếu AuthGuard đã gửi sang)
+      const returnUrl = next.queryParams['returnUrl'];
+
+      // 👇 2. Nếu có returnUrl thì quay lại đó, nếu không mới về home
+      if (returnUrl) {
+        this.router.navigateByUrl(returnUrl).then(r => {
+        });
+      } else {
+        this.router.navigate(['/home']).then(r => {
+        });
+      }
+      return false; // Chặn không cho vào trang Login
     }
+
+    return true; // Cho phép vào trang Login
   }
 }
 
-// === DÁN ĐOẠN NÀY VÀO CUỐI FILE ===
-export const GuestGuardFn: CanActivateFn = (
-  next: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
-): boolean => {
+export const GuestGuardFn: CanActivateFn = (next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean => {
   return inject(GuestGuard).canActivate(next, state);
 }

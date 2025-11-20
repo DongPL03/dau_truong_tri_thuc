@@ -1,0 +1,195 @@
+.quiz-detail-container {
+  max-width: 1000px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 20px;
+}
+
+.quiz-header h1 {
+  margin: 0;
+  color: #2196f3;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-green {
+  background: #4caf50;
+  color: #fff;
+}
+
+.btn-gray {
+  background: #ccc;
+  color: #333;
+}
+
+.question-list {
+  margin-top: 30px;
+}
+
+.question-card {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8em;
+}
+
+.badge.easy {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.badge.medium {
+  background: #fff8e1;
+  color: #f9a825;
+}
+
+.badge.hard {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.options {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.options li {
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: #fff;
+  border: 1px solid #eee;
+}
+
+.options li.correct {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  font-weight: 600;
+}
+
+.question-media img {
+  max-width: 400px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.explanation {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 0.95em;
+  color: #333;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 40px;
+}
+
+.loading {
+  text-align: center;
+  color: #555;
+  font-style: italic;
+}
+
+/*
+ * CSS CHO CÁC NÚT HÀNH ĐỘNG CỦA CARD CÂU HỎI
+ * (Dán vào cuối file .css của bạn)
+ */
+
+/* * 1. Định dạng vùng chứa nút
+ * (Căn phải, tạo khoảng cách)
+ */
+.question-actions {
+  display: flex;
+  justify-content: flex-end; /* Đẩy các nút về bên phải */
+  gap: 10px; /* Khoảng cách giữa hai nút */
+  margin-top: 15px; /* Khoảng cách với nội dung bên trên (phần giải thích) */
+  padding-top: 15px; /* Thêm khoảng cách nếu nội dung trên quá sát */
+  border-top: 1px solid #eee; /* Thêm 1 đường kẻ mờ để phân tách */
+}
+
+/* * 2. Kiểu chung cho cả hai nút
+ * (Kích thước, bo góc, icon)
+ */
+.btn-edit,
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* Khoảng cách giữa icon và chữ */
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px; /* Bo góc giống các nút trên header */
+  border: 1px solid transparent; /* Đặt border trong suốt để không bị "nhảy" khi hover */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* * 3. Kiểu riêng cho nút "Chỉnh sửa" (Màu xanh dương)
+ * Dùng kiểu "outline" để trông nhẹ nhàng, ít xung đột với màu xanh lá của đáp án.
+ */
+.btn-edit {
+  background-color: #e3f2fd; /* Nền xanh nhạt (giống ô giải thích) */
+  color: #2196f3; /* Chữ xanh đậm (giống tiêu đề) */
+  border-color: #2196f3;
+}
+
+.btn-edit:hover {
+  background-color: #2196f3; /* Khi hover thì đổi thành nền đặc */
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+/* * 4. Kiểu riêng cho nút "Xóa" (Màu đỏ)
+ * Dùng màu đỏ đặc để cảnh báo hành động nguy hiểm.
+ */
+.btn-delete {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background-color: #d32f2f; /* Đậm hơn khi hover (giống màu badge "Khó") */
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}

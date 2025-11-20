@@ -18,4 +18,6 @@ public interface INguoiChoiTranDauRepository extends JpaRepository<NguoiChoiTran
     Optional<NguoiChoiTranDau> findFirstByTranDau_IdOrderByIdAsc(Long tranDauId);
 
     List<NguoiChoiTranDau> findAllByTranDau_Id(Long tranDauId);
+
+    boolean existsByTranDauIdAndNguoiDungId(Long tranDauId, Long nguoiDungId);
 }

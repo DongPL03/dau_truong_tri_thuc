@@ -1,0 +1,130 @@
+<div class="auth-container">
+  <div class="register-card">
+    <h1 class="logo-title">Đăng Ký Tài Khoản</h1>
+    <h2>Tham gia Đấu Trường Tri Thức</h2>
+
+    <form #registerForm="ngForm" novalidate>
+      <!-- Tên đăng nhập -->
+      <div class="input-group">
+        <label for="tenDangNhap">Tên đăng nhập</label>
+        <i class="fa-solid fa-user"></i>
+        <input
+          type="text"
+          id="tenDangNhap"
+          class="form-control"
+          name="tenDangNhap"
+          [(ngModel)]="tenDangNhap"
+          required
+          minlength="3"
+        />
+        @if(registerForm.submitted && tenDangNhap.length < 3){
+          <p class="text-danger">Tên đăng nhập ít nhất 3 ký tự</p>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="input-group">
+        <label for="email">Email</label>
+        <i class="fa-solid fa-envelope"></i>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-control"
+          [(ngModel)]="email"
+          email
+          required
+        />
+        @if(registerForm.submitted && email === ''){
+          <p class="text-danger">Vui lòng nhập email hợp lệ</p>
+        }
+      </div>
+
+      <!-- Mật khẩu -->
+      <div class="input-group password-field">
+        <label for="password">Mật khẩu</label>
+        <i class="fa-solid fa-lock"></i>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          id="password"
+          name="password"
+          class="form-control"
+          [(ngModel)]="password"
+          required
+          minlength="6"
+          (input)="checkPasswordsMatch()"
+        />
+        <i
+          class="fa-solid password-toggle"
+          [ngClass]="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+          (click)="togglePassword()"
+        ></i>
+        @if(registerForm.submitted && password.length < 6){
+          <p class="text-danger">Mật khẩu phải có ít nhất 6 ký tự</p>
+        }
+      </div>
+
+      <!-- Nhập lại mật khẩu -->
+      <div class="input-group password-field">
+        <label for="retypePassword">Nhập lại mật khẩu</label>
+        <i class="fa-solid fa-lock"></i>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          id="retypePassword"
+          name="retypePassword"
+          class="form-control"
+          [(ngModel)]="retypePassword"
+          required
+          (input)="checkPasswordsMatch()"
+        />
+        <i
+          class="fa-solid password-toggle"
+          [ngClass]="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+          (click)="toggleRetypePassword()"
+        ></i>
+        @if(registerForm.controls['retypePassword']?.hasError('passwordMismatch') && registerForm.form.touched){
+          <p class="text-danger">Mật khẩu không khớp</p>
+        }
+      </div>
+
+      <!-- Họ tên -->
+      <div class="input-group">
+        <label for="hoTen">Họ và tên</label>
+        <input
+          type="text"
+          id="hoTen"
+          class="form-control"
+          name="hoTen"
+          [(ngModel)]="hoTen"
+          required
+        />
+      </div>
+
+      <!-- Địa chỉ -->
+      <div class="input-group">
+        <label for="diaChi">Địa chỉ</label>
+        <input
+          type="text"
+          id="diaChi"
+          class="form-control"
+          name="diaChi"
+          [(ngModel)]="diaChi"
+        />
+      </div>
+
+      <!-- Nút đăng ký -->
+      <button
+        type="button"
+        class="btn-primary-auth"
+        (click)="register()"
+      >
+        Đăng ký
+      </button>
+
+      <p class="switch-auth">
+        Đã có tài khoản?
+        <a (click)="login()">Đăng nhập ngay</a>
+      </p>
+    </form>
+  </div>
+</div>

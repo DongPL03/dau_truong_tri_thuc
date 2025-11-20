@@ -77,6 +77,15 @@ export type BattleEvent =
     so_cau_dung: number;
     xep_hang: number;
   }>;
+}
+  | {
+  type: 'CHAT_MESSAGE';
+  tran_dau_id: number;
+  user_id: number;
+  ho_ten: string;
+  noi_dung: string;
+  is_system: boolean;
+  timestamp: string;
 };
 
 export interface QuestionPayload {

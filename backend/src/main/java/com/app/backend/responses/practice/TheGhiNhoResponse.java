@@ -4,7 +4,7 @@ import com.app.backend.models.TheGhiNho;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -28,7 +28,7 @@ public class TheGhiNhoResponse {
     private String giaiThich;
 
     @JsonProperty("tao_luc")
-    private LocalDateTime taoLuc;
+    private Instant taoLuc;
 
     public static TheGhiNhoResponse from(TheGhiNho entity) {
         return TheGhiNhoResponse.builder()

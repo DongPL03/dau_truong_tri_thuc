@@ -1,11 +1,12 @@
 package com.app.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "phien_luyen_tap")
@@ -47,10 +48,11 @@ public class PhienLuyenTap {
     private Integer thoiGianTbMs = 0;
 
     @Column(name = "tao_luc", updatable = false)
-    private LocalDateTime taoLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant taoLuc;
 
     @PrePersist
     protected void onCreate() {
-        taoLuc = LocalDateTime.now();
+        taoLuc = Instant.now();
     }
 }

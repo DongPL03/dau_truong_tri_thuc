@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,8 +45,8 @@ public class NguoiDung implements UserDetails {
     @Column(name = "is_active")
     private boolean active;
 
-    @Column(name = "is_delete", nullable = false)
-    private boolean delete = false;
+    @Column(name = "is_xoa", nullable = false)
+    private boolean isXoa = false;
 
     @Column(name = "ten_hien_thi", length = 100)
     private String tenHienThi;
@@ -65,25 +65,27 @@ public class NguoiDung implements UserDetails {
     private String trangThai = TrangThaiNguoiDung.OFFLINE;
 
 
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
+    @Column(name = "dang_nhap_lan_cuoi")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant dangNhapLanCuoi;
+
     @Column(name = "tao_luc", updatable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
-    private LocalDateTime taoLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant taoLuc;
 
     @Column(name = "cap_nhat_luc")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
-    private LocalDateTime capNhatLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant capNhatLuc;
 
     @PrePersist
     protected void onCreate() {
-        taoLuc = LocalDateTime.now();
-        capNhatLuc = LocalDateTime.now();
+        taoLuc = Instant.now();
+        capNhatLuc = Instant.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        capNhatLuc = LocalDateTime.now();
+        capNhatLuc = Instant.now();
     }
 
     @Override

@@ -1,10 +1,11 @@
 package com.app.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "tokens")
@@ -24,21 +25,24 @@ public class Token {
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
-    @Column(name = "token_type", length = 50)
+    @Column(name = "loai_token", length = 50)
     private String tokenType;
 
-    @Column(name = "expiration_date")
-    private LocalDateTime expirationDate;
+    @Column(name = "ngay_het_han")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant expirationDate;
 
-    @Column(name = "refresh_expiration_date")
-    private LocalDateTime refreshExpirationDate;
+    @Column(name = "refresh_ngay_het_han")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant refreshExpirationDate;
 
     @Column(name = "is_mobile", columnDefinition = "TINYINT(1)")
     private boolean isMobile;
 
-    @Column(name = "revoked", columnDefinition = "TINYINT(1)")
+    @Column(name = "thu_hoi", columnDefinition = "TINYINT(1)")
     private boolean revoked;
-    @Column(name = "expired", columnDefinition = "TINYINT(1)")
+
+    @Column(name = "het_han", columnDefinition = "TINYINT(1)")
     private boolean expired;
 
 

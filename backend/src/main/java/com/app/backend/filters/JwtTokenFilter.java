@@ -202,7 +202,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 // Healthcheck request, no JWT token required
                 Pair.of(String.format("%s/roles**", apiPrefix), "GET"),
 
-                Pair.of(String.format("%s/tranDau**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/tranDau/pending", apiPrefix), "GET"),
+                Pair.of(String.format("%s/tranDau/sync/**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/tranDau/\\d+", apiPrefix), "GET"),
+
                 Pair.of(String.format("%s/chuDe**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/users/register", apiPrefix), "POST"),
@@ -214,9 +217,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/users/idVaiTro/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/users/resend-verification", apiPrefix), "POST"),
 
-                Pair.of(String.format("%s/tranDau/sync**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/cauHoi/media**", apiPrefix), "GET"),
+                Pair.of(String.format("%s/cauHoi/bo/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/provinces**", apiPrefix), "GET")
         );
 

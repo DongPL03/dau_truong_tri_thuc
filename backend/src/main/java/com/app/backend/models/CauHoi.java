@@ -3,10 +3,11 @@ package com.app.backend.models;
 
 import com.app.backend.models.constant.LoaiNoiDung;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "cau_hoi")
@@ -58,10 +59,11 @@ public class CauHoi {
     private String giaiThich;
 
     @Column(name = "cap_nhat_luc")
-    private LocalDateTime capNhatLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant capNhatLuc;
 
     @PreUpdate
     protected void onUpdate() {
-        capNhatLuc = LocalDateTime.now();
+        capNhatLuc = Instant.now();
     }
 }

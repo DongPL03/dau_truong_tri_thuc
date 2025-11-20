@@ -45,9 +45,9 @@ public class BoCauHoi extends BaseEntity {
     @Column(name = "ly_do_tu_choi")
     private String lyDoTuChoi;
 
-    @Column(name = "is_delete")
-    @Where(clause = "is_delete = false")
-    private Boolean isDelete = false;
+    @Column(name = "is_xoa")
+    @Where(clause = "is_xoa = false")
+    private Boolean isXoa = false;
 
     @Formula("(SELECT COUNT(ch.id) FROM cau_hoi ch WHERE ch.bo_cau_hoi_id = id)")
     private int soCauHoi;

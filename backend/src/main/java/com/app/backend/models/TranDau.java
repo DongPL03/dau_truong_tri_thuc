@@ -3,11 +3,12 @@ package com.app.backend.models;
 import com.app.backend.models.constant.LuatTinhDiem;
 import com.app.backend.models.constant.TrangThaiTranDau;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "tran_dau")
@@ -63,16 +64,19 @@ public class TranDau {
     private NguoiDung winner;
 
     @Column(name = "tao_luc", updatable = false)
-    private LocalDateTime taoLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant taoLuc;
 
     @Column(name = "bat_dau_luc")
-    private LocalDateTime batDauLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant batDauLuc;
 
     @Column(name = "ket_thuc_luc")
-    private LocalDateTime ketThucLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant ketThucLuc;
 
     @PrePersist
     protected void onCreate() {
-        taoLuc = LocalDateTime.now();
+        taoLuc = Instant.now();
     }
 }

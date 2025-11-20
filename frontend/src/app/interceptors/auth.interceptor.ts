@@ -10,8 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
 
   // Danh sách endpoint công khai không cần JWT
   const publicUrls = [
-    '/users/login',
-    '/users/register',
+    '/users/dang-nhap',
+    '/users/dang-ky',
     '/users/verify-email',
     '/users/resend-verification'
   ];

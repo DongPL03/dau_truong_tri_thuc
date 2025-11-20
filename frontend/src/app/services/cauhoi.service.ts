@@ -29,7 +29,7 @@ export class CauHoiService {
     const params = {page, limit};
     return this.http.get<ResponseObject<PageResponse<CauHoiResponse>>>(
       `${this.api}/bo/${boCauHoiId}`,
-      {params, headers: this.httpUtil.createAuthHeaders()}
+      {params}
     );
   }
 

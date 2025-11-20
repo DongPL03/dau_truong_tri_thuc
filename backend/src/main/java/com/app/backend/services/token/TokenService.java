@@ -12,9 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
@@ -39,16 +37,16 @@ public class TokenService implements ITokenService {
         if (existingToken == null) {
             throw new DataNotFoundException("Refresh token does not exist");
         }
-        if (existingToken.getRefreshExpirationDate().compareTo(LocalDateTime.now()) < 0) {
+        if (existingToken.getRefreshExpirationDate().compareTo(Instant.now()) < 0) {
             tokenRepository.delete(existingToken);
             throw new ExpiredTokenException("Refresh token is expired");
         }
         String token = jwtTokenUtil.generateToken(user);
-        LocalDateTime expirationDateTime = LocalDateTime.now().plusSeconds(expiration);
+        Instant expirationDateTime = Instant.now().plusSeconds(expiration);
         existingToken.setExpirationDate(expirationDateTime);
         existingToken.setToken(token);
         existingToken.setRefreshToken(UUID.randomUUID().toString());
-        existingToken.setRefreshExpirationDate(LocalDateTime.now().plusSeconds(expirationRefreshToken));
+        existingToken.setRefreshExpirationDate(Instant.now().plusSeconds(expirationRefreshToken));
         return existingToken;
     }
 
@@ -76,7 +74,7 @@ public class TokenService implements ITokenService {
             tokenRepository.delete(tokenToDelete);
         }
         long expirationInSeconds = expiration;
-        LocalDateTime expirationDateTime = LocalDateTime.now().plusSeconds(expirationInSeconds);
+        Instant expirationDateTime = Instant.now().plusSeconds(expirationInSeconds);
         // Tạo mới một token cho người dùng
         Token newToken = Token.builder()
                 .nguoiDung(user)
@@ -89,7 +87,7 @@ public class TokenService implements ITokenService {
                 .build();
 
         newToken.setRefreshToken(UUID.randomUUID().toString());
-        newToken.setRefreshExpirationDate(LocalDateTime.now().plusSeconds(expirationRefreshToken));
+        newToken.setRefreshExpirationDate(Instant.now().plusSeconds(expirationRefreshToken));
         tokenRepository.save(newToken);
         return newToken;
     }

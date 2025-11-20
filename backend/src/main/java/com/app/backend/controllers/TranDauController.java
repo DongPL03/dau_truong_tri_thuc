@@ -5,6 +5,8 @@ import com.app.backend.dtos.*;
 import com.app.backend.models.TranDau;
 import com.app.backend.responses.PageResponse;
 import com.app.backend.responses.ResponseObject;
+import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
+import com.app.backend.responses.trandau.LichSuTranDauDetailResponse;
 import com.app.backend.responses.trandau.BattleFinishResponse;
 import com.app.backend.responses.trandau.BattleStartResponse;
 import com.app.backend.responses.trandau.SubmitAnswerResponse;
@@ -56,7 +58,6 @@ public class TranDauController {
                         .data(tranDau)
                         .build()
         );
-//        return tranDauService.thamGia(dto, uid);
     }
 
     @PostMapping("/leave")
@@ -73,18 +74,28 @@ public class TranDauController {
         );
     }
 
+    //    @GetMapping("/{id}")
+//    public ResponseEntity<ResponseObject> chiTiet(@PathVariable Long id) throws Exception {
+//        TranDau td = tranDauService.chiTietPhong(id);
+//        TranDauResponse data = TranDauResponse.fromEntity(td);
+//        return ResponseEntity.ok(
+//                ResponseObject.builder()
+//                        .status(HttpStatus.OK)
+//                        .message("Lấy thông tin phòng thành công")
+//                        .data(data)
+//                        .build()
+//        );
+//    }
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject> chiTiet(@PathVariable Long id) throws Exception {
-        Long uid = securityUtils.getLoggedInUserId();
-        TranDau td = tranDauService.chiTietPhong(id, uid);
-        TranDauResponse data = TranDauResponse.fromEntity(td);
-        return ResponseEntity.ok(
-                ResponseObject.builder()
-                        .status(HttpStatus.OK)
-                        .message("Lấy thông tin phòng thành công")
-                        .data(data)
-                        .build()
-        );
+    public ResponseEntity<ResponseObject> getBattleDetail(@PathVariable Long id) throws Exception {
+        // Gọi hàm service mới trả về DTO
+        TranDauResponse response = tranDauService.getBattleDetailResponse(id);
+
+        return ResponseEntity.ok(ResponseObject.<TranDauResponse>builder()
+                .message("Lấy thông tin phòng thành công")
+                .status(HttpStatus.OK)
+                .data(response)
+                .build());
     }
 
     @GetMapping("/pending")
@@ -157,4 +168,55 @@ public class TranDauController {
                         .build()
         );
     }
+
+    @GetMapping("/history/my")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> getMyHistory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Long uid = securityUtils.getLoggedInUserId();
+        Page<LichSuTranDauResponse> result = tranDauService.getMyHistory(uid, page, limit);
+
+        PageResponse<LichSuTranDauResponse> pageRes = PageResponse.fromPage(result);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy lịch sử trận đấu thành công")
+                        .data(pageRes)
+                        .build()
+        );
+    }
+
+    @GetMapping("/history/my/{tranDauId}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> getMyHistoryDetail(
+            @PathVariable("tranDauId") Long tranDauId
+    ) throws Exception {
+        Long uid = securityUtils.getLoggedInUserId();
+        LichSuTranDauDetailResponse data = tranDauService.getMyHistoryDetail(tranDauId, uid);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy chi tiết lịch sử trận đấu thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
+    @PostMapping("/chat")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> guiChat(@Valid @RequestBody GuiChatDTO dto) throws Exception {
+        Long uid = securityUtils.getLoggedInUserId();
+        tranDauService.guiChatTrongTran(dto, uid);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Đã gửi tin nhắn")
+                        .build()
+        );
+    }
+
 }

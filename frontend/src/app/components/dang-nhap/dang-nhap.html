@@ -1,0 +1,84 @@
+<div class="auth-container">
+  <div class="login-card">
+    <h1 class="logo-title">Đấu Trường Tri Thức</h1>
+    <h2>Đăng Nhập Tài Khoản</h2>
+
+    <form #loginForm="ngForm" novalidate>
+      <div class="input-group">
+        <label for="username">Tên đăng nhập / Email</label>
+        <i class="fa-solid fa-user"></i>
+        <input
+          type="text"
+          id="username"
+          name="usernameOrEmail"
+          class="form-control"
+          placeholder="Nhập tên đăng nhập hoặc email"
+          [(ngModel)]="usernameOrEmail"
+          required
+          (input)="loginForm.form.markAsTouched()"
+        />
+        @if(loginForm.submitted && !usernameOrEmail){
+          <p class="text-danger">Vui lòng nhập tên đăng nhập hoặc email</p>
+        }
+      </div>
+
+      <div class="input-group password-field">
+        <label for="password">Mật khẩu</label>
+        <i class="fa-solid fa-lock"></i>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          id="password"
+          name="password"
+          class="form-control"
+          placeholder="Nhập mật khẩu của bạn"
+          [(ngModel)]="password"
+          required
+          minlength="6"
+        />
+        <i
+          class="fa-solid toggle-password"
+          [ngClass]="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+          (click)="togglePassword()"
+          title="Hiện mật khẩu"
+        ></i>
+        @if(loginForm.submitted && password.length < 6){
+          <p class="text-danger">Mật khẩu phải có ít nhất 6 ký tự</p>
+        }
+      </div>
+
+      <div class="options-row">
+        <a routerLink="/auth/forgot-password" class="forgot-password">
+          Quên mật khẩu?
+        </a>
+        <label class="remember-me">
+          <input type="checkbox" [(ngModel)]="rememberMe" name="remember" /> Ghi nhớ
+        </label>
+      </div>
+
+      <button
+        type="button"
+        class="btn-primary-auth"
+        (click)="login()"
+        [disabled]="loginForm.invalid"
+      >
+        ĐĂNG NHẬP
+      </button>
+    </form>
+
+    <div class="divider"><span>HOẶC</span></div>
+
+    <div class="social-login-buttons">
+      <button type="button" class="btn-social btn-facebook">
+        <i class="fab fa-facebook-f"></i> Tiếp tục với Facebook
+      </button>
+      <button type="button" class="btn-social btn-google">
+        <i class="fab fa-google"></i> Tiếp tục với Google
+      </button>
+    </div>
+
+    <p class="switch-auth">
+      Chưa có tài khoản?
+      <a (click)="createAccount()">Đăng ký ngay</a>
+    </p>
+  </div>
+</div>

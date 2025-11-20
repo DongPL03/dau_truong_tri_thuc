@@ -1,0 +1,150 @@
+<div class="page">
+  <div class="container">
+    @if (loading()) {
+      <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Đang tải chi tiết trận đấu...
+      </div>
+    } @else {
+      @if (data(); as d) {
+        <!-- Banner kết quả -->
+        <section class="hero-card" [class.is-winner]="isWinner()">
+          <div class="hero-left">
+            <div class="quiz-title">
+              {{ d.bo_cau_hoi_tieu_de || 'Bộ Quiz' }}
+            </div>
+            <div class="hero-main">
+              <h1>{{ isWinner() ? 'CHIẾN THẮNG!' : 'Hoàn thành trận đấu' }}</h1>
+              <p class="room-info">
+                Phòng: {{ d.ten_phong || ('#' + d.tran_dau_id) }} ·
+                Mã phòng: {{ d.ma_phong }} ·
+                Luật: {{ d.luat_tinh_diem }}
+              </p>
+            </div>
+          </div>
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="label">Xếp hạng cuối cùng</span>
+              <span class="value">#{{ d.my_xep_hang }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">Tổng điểm</span>
+              <span class="value">{{ d.my_tong_diem }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">Câu trả lời đúng</span>
+              <span class="value">{{ d.my_so_cau_dung }}</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="layout">
+          <!-- Cột trái: leaderboard -->
+          <section class="leaderboard-card">
+            <h3>Bảng xếp hạng chung cuộc</h3>
+            <table>
+              <thead>
+              <tr>
+                <th>Hạng</th>
+                <th>Người chơi</th>
+                <th>Điểm</th>
+                <th>Đúng</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (p of d.leaderboard; track p.user_id) {
+                  <tr [class.is-me]="isMyRow(p)" [class.is-top]="p.xep_hang === 1">
+                    <td>#{{ p.xep_hang }}</td>
+                    <td>{{ p.ho_ten }}</td>
+                    <td>{{ p.diem }}</td>
+                    <td>{{ p.so_cau_dung }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </section>
+
+          <!-- Cột phải: câu hỏi -->
+          <section class="questions-card">
+            <h3>Chi tiết câu hỏi của bạn</h3>
+
+            @for (q of d.questions; track q.cau_hoi_id; let idx = $index) {
+              <article class="question-item" [class.correct]="q.dung_hay_sai" [class.incorrect]="!q.dung_hay_sai">
+                <header class="q-header">
+                  <div class="q-title">
+                    <span class="index">Câu {{ idx + 1 }}</span>
+                    <span class="status-chip">
+                    {{ q.dung_hay_sai ? 'Đúng' : 'Sai' }}
+                  </span>
+                  </div>
+                  <div class="q-meta">
+                    Thời gian trả lời: <strong>{{ seconds(q.thoi_gian_ms) }}</strong>
+                  </div>
+                </header>
+
+                <div class="q-content">
+                  {{ q.noi_dung }}
+                  @switch (q.loai_noi_dung) {
+                    @case ('HINH_ANH') {
+                      <div class="q-media-container">
+                        <img
+                          class="q-media-image"
+                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep"
+                          alt="Hình ảnh câu hỏi"
+                        >
+                      </div>
+                    }
+                    @case ('AM_THANH') {
+                      <div class="q-media-container">
+                        <audio
+                          class="q-media-audio"
+                          controls
+                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep"
+                        >
+                          Trình duyệt của bạn không hỗ trợ phát âm thanh.
+                        </audio>
+                      </div>
+                    }
+                  }
+                </div>
+
+                <div class="q-options">
+                  @for (opt of questionOptions; track $index) {
+                    <div
+                      class="option"
+                      [class.correct]="opt === q.dap_an_dung"
+                      [class.chosen]="opt === q.nguoi_dung_chon"
+                      [class.wrong-chosen]="opt === q.nguoi_dung_chon && !q.dung_hay_sai"
+                    >
+                      <span class="opt-label">{{ opt }}.</span>
+                      <span class="opt-text">{{ choiceText(q, opt) }}</span>
+                    </div>
+                  }
+                </div>
+
+                @if (!q.dung_hay_sai && q.giai_thich) {
+                  <div class="q-explain">
+                    <strong>Giải thích:</strong> {{ q.giai_thich }}
+                  </div>
+                }
+              </article>
+            } @empty {
+              <p>Không tìm thấy dữ liệu câu hỏi.</p>
+            }
+          </section>
+        </div>
+
+        <section class="actions">
+          <button class="btn" (click)="backToHistory()">← Quay lại lịch sử</button>
+          <button class="btn primary" (click)="practiceSet()">Luyện tập lại bộ này</button>
+        </section>
+      } @else {
+
+        <div class="error-message">
+          <p>Không thể tải chi tiết trận đấu.</p>
+          <button class="btn" (click)="backToHistory()">← Quay lại lịch sử</button>
+        </div>
+
+      }
+    }
+  </div>
+</div>

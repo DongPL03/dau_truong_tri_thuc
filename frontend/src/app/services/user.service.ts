@@ -1,7 +1,7 @@
 import {inject, Inject, Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {DOCUMENT} from '@angular/common';
-import {Observable, tap} from 'rxjs';
+import {Observable, of, switchMap, tap} from 'rxjs';
 import {environment} from '../environments/environment';
 import {TokenService} from './token.service';
 import {RegisterDto} from '../dtos/nguoi-dung/register-dto';
@@ -27,12 +27,33 @@ export class UserService {
     return this.http.post<ResponseObject>(`${this.baseUrl}/register`, dto);
   }
 
-  login(dto: LoginDTO): Observable<ResponseObject> {
+  login(dto: LoginDTO): Observable<ResponseObject<UserResponse>> {
     return this.http.post<ResponseObject>(`${this.baseUrl}/login`, dto).pipe(
+      // 1. Lưu token trước
       tap((res) => {
         const token = res.data?.token;
         const refresh = res.data?.refresh_token;
-        if (token) this.tokenService.setTokens(token, refresh);
+        if (token) {
+          this.tokenService.setTokens(token, refresh);
+        }
+      }),
+      // 2. Sau khi có token, gọi ngay API lấy thông tin user (switchMap để chuyển luồng)
+      switchMap((res) => {
+        const token = res.data?.token;
+        if (token) {
+          // Gọi hàm getUserDetail có sẵn để lấy thông tin
+          return this.getUserDetail(token).pipe(
+            tap((userRes) => {
+              // 3. Lưu thông tin user vào LocalStorage
+              if (userRes.data) {
+                this.saveUserResponseToLocalStorage(userRes.data);
+              }
+            })
+          );
+        } else {
+          // Trường hợp không có token (login lỗi), trả về luồng cũ
+          return of(res as any);
+        }
       })
     );
   }

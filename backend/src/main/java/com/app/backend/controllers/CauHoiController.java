@@ -155,7 +155,6 @@ public class CauHoiController {
     }
 
     @GetMapping("/bo/{boCauHoiId}")
-    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getByBoCauHoi(
             @PathVariable Long boCauHoiId,
             @RequestParam(defaultValue = "0") int page,

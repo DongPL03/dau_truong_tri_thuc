@@ -12,21 +12,36 @@ import {SubmitAnswerDTO} from '../../../dtos/tran-dau/submitanswer-dto';
 import {BattleEvent} from '../../../services/ws-trandau.service';
 import {environment} from '../../../environments/environment';
 import {FinishedPlayer} from '../../../responses/trandau/finished-player';
+import {ChatMessage} from '../../../responses/nguoidung/chatmessage';
+import {finalize} from 'rxjs/operators';
+import {PickerComponent} from '@ctrl/ngx-emoji-mart';
+import {UserResponse} from '../../../responses/nguoidung/user-response';
 
 @Component({
   selector: 'app-chi-tiet-phong',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PickerComponent],
   templateUrl: './chi-tiet-phong.html',
   styleUrl: './chi-tiet-phong.scss',
   standalone: true
 })
+
 export class ChiTietPhong extends Base implements OnInit, OnDestroy {
+
+  user?: UserResponse | null = null;
+  avatarUrl: string = 'assets/images/default-profile-image.jpeg';
+  readonly imageBaseUrl = 'http://localhost:8088/api/v1/users/profile-images/';
+
+  chatMessages = signal<ChatMessage[]>([]);
+  chatInput = signal<string>('');
+
   showSummary = signal<boolean>(false);
   finalResult?: {
     winner: any;
     leaderboard: any[];
     myId: number;
   };
+// Thêm signal để điều khiển việc hiện/ẩn bảng emoji
+  showEmojiPicker = signal<boolean>(false);
 
   preCountdown = signal<number>(0);
   private preCountdownTimer?: ReturnType<typeof setInterval>;
@@ -67,9 +82,19 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 // ====== CHỐNG NỘP NHIỀU LẦN ======
   submittedCurrentAnswer = signal<boolean>(false);
 
+  onlineCount = signal<number>(0);
+
+  localJoinedState = signal<boolean>(false);
+
 
   constructor() {
     super();
+    // Kiểm tra xem có cờ 'joined' được gửi từ PhongCho sang không
+    const nav = this.router.currentNavigation();
+    if (nav?.extras?.state?.['joined']) {
+      console.log('🚀 Đã verify PIN từ phòng chờ, set trạng thái đã tham gia.');
+      this.localJoinedState.set(true);
+    }
     effect(() => {
       const s = this.syncState();
       if (!s || s.current_question_index < 0) {
@@ -101,27 +126,75 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     });
   }
 
+  // ngOnInit(): void {
+  //   const id = Number(this.route.snapshot.paramMap.get('id'));
+  //   if (!id) return;
+  //
+  //   // ✅ Lấy token + user
+  //   const token = this.tokenService.getAccessToken();
+  //   const user = this.userService.currentUser();
+  //
+  //   // ✅ Kết nối WS
+  //   // @ts-ignore
+  //   this.wsTrandauService.connect(() => token, user.id, id)
+  //     .then(() => {
+  //       console.log('✅ WebSocket connected!');
+  //       this.wsTrandauService.subscribeBattle(id, (ev) => this.handleBattleEvent(ev));
+  //     })
+  //     .catch(err => console.error('❌ WebSocket connect failed:', err));
+  //
+  //   // ✅ Lần 1: Lấy thông tin ngay lập tức (để hiện giao diện nhanh)
+  //   this.fetchDetail(id, () => this.doSync());
+  //
+  //   // 🔥 Lần 2: FIX BUG NGƯỜI MỚI VÀO
+  //   // Tự động cập nhật lại sau 1.5 giây để lấy số lượng người chuẩn xác từ DB
+  //   // (Khắc phục tình trạng DB chưa lưu kịp khi vừa load trang)
+  //   setTimeout(() => {
+  //     console.log('🔄 Auto refreshing room info to sync online count...');
+  //     this.refreshRoomInfo();
+  //   }, 1500);
+  //
+  //   this.currentUserName();
+  //   setTimeout(() => this.syncState.update(s => s ? {...s} : s), 200);
+  //   this.loadUserInfo();
+  // }
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) return;
 
-    // ✅ Lấy token + user
     const token = this.tokenService.getAccessToken();
     const user = this.userService.currentUser();
 
-    // ✅ Kết nối WS duy nhất và lắng nghe realtime
     // @ts-ignore
     this.wsTrandauService.connect(() => token, user.id, id)
       .then(() => {
-        console.log('✅ WebSocket connected to backend!');
+        console.log('✅ WebSocket connected!');
         this.wsTrandauService.subscribeBattle(id, (ev) => this.handleBattleEvent(ev));
       })
       .catch(err => console.error('❌ WebSocket connect failed:', err));
 
-    // ✅ Lấy thông tin phòng & đồng bộ ban đầu
+    // Lấy dữ liệu lần đầu
     this.fetchDetail(id, () => this.doSync());
+
+    [500, 1500, 3000].forEach(time => {
+      setTimeout(() => {
+        console.log(`🔄 [${time}ms] Đang gọi lại API để check số người...`);
+        this.refreshRoomInfo();
+      }, time);
+    });
     this.currentUserName();
     setTimeout(() => this.syncState.update(s => s ? {...s} : s), 200);
+    this.loadUserInfo();
+  }
+
+  private loadUserInfo(): void {
+    this.user = this.userService.getUserResponseFromLocalStorage();
+    if (this.user?.avatar_url) {
+      this.avatarUrl = this.imageBaseUrl + this.user.avatar_url;
+      console.log('Avatar URL:', this.avatarUrl);
+    } else {
+      this.avatarUrl = 'assets/images/default-profile-image.jpeg';
+    }
   }
 
   ngOnDestroy() {
@@ -135,13 +208,58 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 // =====================================================
 
 
+  // fetchDetail(id: number, next ?: () => void) {
+  //   this.loading.set(true);
+  //   this.tranDauService.getBattleDetail(id).subscribe({
+  //     next: (res: ResponseObject<TranDauResponse>) => {
+  //       this.battle.set(res.data!);
+  //       this.loading.set(false);
+  //       next?.();
+  //       if (res.data && (res.data as any).so_luong_nguoi_tham_gia) {
+  //         this.onlineCount.set((res.data as any).so_luong_nguoi_tham_gia);
+  //         console.log('Số người online từ API:', this.onlineCount());
+  //       } else {
+  //         // Fallback: Set tạm là 1 (mình) hoặc độ dài leaderboard nếu có
+  //         this.onlineCount.set(this.leaderboard().length || 1);
+  //       }
+  //     },
+  //     error: () => {
+  //       this.loading.set(false);
+  //       Swal.fire('Lỗi', 'Không thể tải thông tin phòng', 'error').then(() => this.router.navigateByUrl('/home'));
+  //     },
+  //   });
+  // }
   fetchDetail(id: number, next ?: () => void) {
     this.loading.set(true);
     this.tranDauService.getBattleDetail(id).subscribe({
       next: (res: ResponseObject<TranDauResponse>) => {
-        this.battle.set(res.data!);
+        const data = res.data!;
+        this.battle.set(data);
+
+        // ============================================================
+        // 👇 THÊM ĐOẠN NÀY VÀO ĐỂ FIX LỖI
+        // ============================================================
+
+        // Lấy danh sách người chơi từ API và gán ngay vào leaderboard
+        // Bạn cần kiểm tra xem backend trả về key tên là 'leaderboard' hay 'nguoi_tham_gia'
+        const players = (data as any).leaderboard || (data as any).nguoi_tham_gia || [];
+
+        console.log('Danh sách người chơi init:', players);
+        this.leaderboard.set(players);
+
+        // Sau khi dòng trên chạy, signal isJoined sẽ tự động tính lại -> thành TRUE
+        // -> Ô nhập PIN sẽ biến mất ngay lập tức.
+        // ============================================================
+
         this.loading.set(false);
         next?.();
+
+        // Cập nhật số lượng người online
+        if ((data as any).so_luong_nguoi_tham_gia) {
+          this.onlineCount.set((data as any).so_luong_nguoi_tham_gia);
+        } else {
+          this.onlineCount.set(players.length || 1);
+        }
       },
       error: () => {
         this.loading.set(false);
@@ -163,17 +281,29 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     });
   }
 
-  isHostUser(): boolean {
-    const b = this.battle();
-    const u = this.userService.currentUser();
-    if (!b || !u) return false;
-    if (b.chu_phong_ten === u.ho_ten) return true;
-    return false;
-  }
-
 // =====================================================
 // THAM GIA PHÒNG + KẾT NỐI WS
 // =====================================================
+
+  isJoined = computed(() => {
+    const myId = this.userService.getUserId();
+    const players = this.leaderboard();
+
+    // 👇 SỬA LẠI: Xóa bỏ "|| this.isHostUser()"
+    // Logic đúng: Chỉ tính là đã join khi có tên trong danh sách HOẶC vừa nhập PIN xong
+    return players.some(p => p.user_id === myId) || this.localJoinedState();
+  });
+
+  // 3. Bổ sung hàm isHostUser cho chắc chắn (nếu chưa có logic chuẩn)
+  isHostUser(): boolean {
+    const b = this.battle();
+    const u = this.userService.currentUser(); // Đảm bảo lấy đúng user hiện tại
+    if (!b || !u) return false;
+    // So sánh ID hoặc Tên tùy vào dữ liệu backend trả về
+    // Tốt nhất là so sánh User ID nếu có, ở đây tạm dùng tên như code cũ của bạn
+    return b.chu_phong_ten === u.ho_ten;
+  }
+
   join() {
     const b = this.battle();
     if (!b) return;
@@ -181,32 +311,86 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     if (!b.cong_khai) dto.ma_pin = this.pinCode();
     this.saving.set(true);
 
-    this.tranDauService.joinBattle(dto as any).subscribe({
-      next: () => {
-        this.saving.set(false);
-        Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(r => {
-        });
-        this.doSync();
-      },
-      error: (e) => {
-        this.saving.set(false);
-        Swal.fire('Không thể tham gia', e?.error?.message || 'Vui lòng kiểm tra lại', 'error').then(r => {
-        });
-      },
-    });
+    //   this.tranDauService.joinBattle(dto as any).subscribe({
+    //     next: () => {
+    //       this.saving.set(false);
+    //       Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(r => {
+    //       });
+    //       this.doSync();
+    //     },
+    //     error: (e) => {
+    //       this.saving.set(false);
+    //       Swal.fire('Không thể tham gia', e?.error?.message || 'Vui lòng kiểm tra lại', 'error').then(r => {
+    //       });
+    //     },
+    //   });
+    // }
+    this.tranDauService.joinBattle(dto as any)
+      .pipe(finalize(() => this.saving.set(false)))
+      .subscribe({
+        next: () => {
+          Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(() => {
+          });
+
+          this.localJoinedState.set(true);
+          // ⬇️ Sau khi join xong, gọi lại detail để lấy đúng số người tham gia (lúc này DB đã là 2)
+          this.refreshRoomInfo();
+          this.doSync(); // giữ lại để lấy trạng thái câu hỏi
+        },
+        error: (e) => {
+          // Nếu lỗi là "User đã tham gia", ta coi như thành công
+          if (e?.error?.message?.includes('đã tham gia')) {
+            Swal.fire('Đã tham gia', 'Bạn đã ở trong phòng này rồi', 'info').then(() => {
+            });
+            this.refreshRoomInfo();
+            this.doSync();
+          } else {
+            Swal.fire(
+              'Không thể tham gia',
+              e?.error?.message || 'Vui lòng kiểm tra lại',
+              'error'
+            ).then(() => {
+            });
+          }
+        }
+      });
   }
 
   leave() {
-    const b = this.battle();
-    if (!b) return;
-    Swal.fire({title: 'Rời phòng?', icon: 'question', showCancelButton: true}).then((r) => {
+    // 1. Hỏi xác nhận trước cho chắc ăn
+    Swal.fire({
+      title: 'Rời phòng?',
+      text: 'Bạn có chắc muốn thoát không?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Rời đi',
+      cancelButtonText: 'Ở lại'
+    }).then((r) => {
       if (!r.isConfirmed) return;
+
+      // =========================================================
+      // 👇 LOGIC MỚI: KIỂM TRA XEM ĐÃ JOIN CHƯA
+      // =========================================================
+
+      // TRƯỜNG HỢP 1: Chưa tham gia (đang xem) -> Chỉ cần chuyển trang về Home
+      if (!this.isJoined()) {
+        this.wsTrandauService.disconnect(); // Ngắt kết nối socket cho sạch
+        this.router.navigateByUrl('/home').then(r => {
+        });
+        return; // Dừng hàm tại đây, không gọi API bên dưới
+      }
+
+      // TRƯỜNG HỢP 2: Đã tham gia -> Gọi API để Backend xóa tên khỏi danh sách
+      const b = this.battle();
+      if (!b) return;
+
       const dto: RoiTranDauDTO = {tran_dau_id: b.id};
       this.saving.set(true);
+
       this.tranDauService.leaveBattle(dto as any).subscribe({
         next: () => {
           this.saving.set(false);
-          Swal.fire('Đã rời phòng', '', 'success').then(r => {
+          Swal.fire('Đã rời phòng', '', 'success').then(() => {
           });
           this.wsTrandauService.disconnect();
           this.router.navigateByUrl('/home').then(r => {
@@ -214,8 +398,16 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         },
         error: (e) => {
           this.saving.set(false);
-          Swal.fire('Không thể rời phòng', e?.error?.message || 'Thử lại sau', 'error').then(r => {
+          // Dù lỗi API (do mạng lag hay gì đó) thì cũng nên cho người dùng thoát ra
+          // Nếu muốn chặt chẽ thì giữ alert, nếu muốn UX mượt thì navigate luôn
+          Swal.fire('Lỗi', e?.error?.message || 'Không thể rời phòng', 'error').then(r => {
           });
+
+          // Option: Nếu API lỗi "Bạn chưa ở trong phòng", ta vẫn cho họ về Home luôn
+          if (e?.error?.message?.includes('chưa ở trong phòng')) {
+            this.router.navigateByUrl('/home').then(r => {
+            });
+          }
         },
       });
     });
@@ -227,14 +419,32 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   handleBattleEvent(evt: BattleEvent) {
     console.log('📡 WS Event:', evt);
     switch (evt.type) {
-      case 'PLAYER_JOINED':
+      case 'PLAYER_JOINED': {
+        // const soNguoi = (evt as any).so_nguoi_hien_tai;
+        // if (typeof soNguoi === 'number') {
+        //   // 🟢 Server là nguồn sự thật
+        //   this.onlineCount.set(soNguoi);
+        // } else {
+        //   // fallback trong trường hợp cũ không có field này
+        //   this.onlineCount.update(n => n + 1);
+        // }
         Swal.fire('👋 Người chơi mới', `${evt.ho_ten} vừa tham gia phòng`, 'info').then(r => {
         });
+        this.refreshRoomInfo();
         break;
-      case 'PLAYER_LEFT':
+      }
+      case 'PLAYER_LEFT': {
+        // const soNguoi = (evt as any).so_nguoi_hien_tai;
+        // if (typeof soNguoi === 'number') {
+        //   this.onlineCount.set(soNguoi);
+        // } else {
+        //   this.onlineCount.update(n => Math.max(0, n - 1));
+        // }
         Swal.fire('🚪 Người chơi rời đi', `${evt.ho_ten} đã rời phòng`, 'warning').then(r => {
         });
+        this.refreshRoomInfo();
         break;
+      }
       case 'BATTLE_STARTED':
         Swal.fire({
           icon: 'success',
@@ -278,7 +488,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           current_question_index: evt.question_index,
           current_question_id: q.id,
           seconds_per_question: evt.thoi_gian_cau_giay,
-          // 💡 dùng timestamp từ server:
           current_question_start: evt.timestamp,
           noi_dung: q.noi_dung,
           loai_noi_dung: q.loai_noi_dung,
@@ -333,6 +542,9 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         // 🏅 Cập nhật leaderboard
         // @ts-ignore
         this.leaderboard.set(evt.players || []);
+        if (evt.players && evt.players.length > 0) {
+          this.onlineCount.set(evt.players.length);
+        }
         break;
 
 
@@ -359,6 +571,32 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         this.clearTimer();
         break;
       }
+
+      case 'CHAT_MESSAGE': {
+        const meId = this.userService.getUserId();
+
+        const msg: ChatMessage = {
+          user_id: evt.user_id,
+          ho_ten: evt.ho_ten,
+          noi_dung: evt.noi_dung,
+          is_system: (evt as any).is_system ?? false,
+          timestamp: evt.timestamp,
+          is_me: evt.user_id === meId,
+        };
+
+        this.chatMessages.update(list => [...list, msg]);
+
+        // auto scroll xuống cuối
+        setTimeout(() => {
+          const box = document.querySelector('.chat-messages');
+          if (box) {
+            (box as HTMLElement).scrollTop = (box as HTMLElement).scrollHeight;
+          }
+        }, 50);
+
+        break;
+      }
+
     }
   }
 
@@ -437,6 +675,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     this.tranDauService.submitAnswer(dto as any).subscribe({
       next: (res) => {
         this.saving.set(false);
+        // Đánh dấu đã nộp
+        this.submittedCurrentAnswer.set(true);
       },
       error: (e) => {
         this.saving.set(false);
@@ -446,6 +686,48 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  sendChat() {
+    // 1. Lấy dữ liệu và Validate đầu vào
+    const content = this.chatInput().trim();
+    const battleId = this.battle()?.id;
+
+    if (!content || !battleId) return;
+
+    // 2. Bật trạng thái loading
+    this.saving.set(true);
+
+    // 3. Gọi API
+    this.tranDauService.sendChat({tran_dau_id: battleId, noi_dung: content} as any)
+      .pipe(
+        // Dùng finalize để luôn tắt loading dù thành công hay thất bại
+        finalize(() => this.saving.set(false))
+      )
+      .subscribe({
+        next: () => {
+          // 4. Reset input & Đóng Emoji Picker (UX)
+          this.chatInput.set('');
+          this.showEmojiPicker.set(false);
+
+          // (Tùy chọn) Focus lại vào ô input để chat tiếp
+          // document.querySelector<HTMLInputElement>('input[name="chat_input"]')?.focus();
+        },
+        error: (err) => {
+          // 5. Xử lý lỗi
+          console.error('Chat error:', err);
+          // Toast nhỏ gọn thay vì Alert to đùng (Optional)
+          Swal.fire({
+            icon: 'error',
+            title: 'Không gửi được',
+            text: err?.error?.message || 'Vui lòng thử lại',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+        }
+      });
   }
 
 
@@ -490,14 +772,91 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     }
   }
 
+  // Thêm hàm này vào trong class ChiTietPhong
+  refreshRoomInfo() {
+    const id = this.battle()?.id;
+    if (!id) return;
+
+    this.tranDauService.getBattleDetail(id).subscribe({
+      next: (res: ResponseObject<TranDauResponse>) => {
+        const data = res.data!;
+        this.battle.set(data);
+
+        // 🔍 LOG DATA RA ĐỂ KIỂM TRA XEM BACKEND TRẢ VỀ CÁI GÌ
+        console.log('🔍 Full Data từ API:', data);
+
+        // Xử lý linh hoạt tên biến (Backend có thể trả về camelCase hoặc snake_case)
+        let count = 0;
+
+        if ('so_luong_nguoi_tham_gia' in data) {
+          count = (data as any).so_luong_nguoi_tham_gia;
+        } else if ('soLuongNguoiThamGia' in data) {
+          count = (data as any).soLuongNguoiThamGia;
+        }
+        // Fallback: Nếu API không trả về số lượng, dùng độ dài danh sách leaderboard/nguoi_tham_gia nếu có
+        else if ((data as any).leaderboard?.length > 0) {
+          count = (data as any).leaderboard.length;
+        }
+
+        console.log('📊 Số người chốt lại là:', count);
+
+        // Chỉ cập nhật nếu count hợp lệ (> 0)
+        if (count > 0) {
+          this.onlineCount.set(count);
+        }
+      },
+      error: (err) => console.error('Lỗi refresh room info', err)
+    });
+  }
+
+// Hàm toggle
+  toggleEmojiPicker() {
+    this.showEmojiPicker.update(v => !v);
+  }
+
+  // Hàm xử lý khi chọn 1 emoji
+  addEmoji(event: any) {
+    const emoji = event.emoji.native;
+    // Nối emoji vào chuỗi input hiện tại
+    this.chatInput.update(current => current + emoji);
+    // (Tùy chọn) Đóng bảng sau khi chọn xong nếu muốn
+    // this.showEmojiPicker.set(false);
+  }
+
+  // Trong class ChiTietPhong
+
+  getAvatarColor(name: string): string {
+    const colors = [
+      '#ef4444', '#f97316', '#f59e0b', '#84cc16',
+      '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
+      '#8b5cf6', '#d946ef', '#f43f5e'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash % colors.length);
+    return colors[index];
+  }
+
   selectAnswer(opt: string) {
     this.selectedAnswer.set(opt as any);
   }
 
+  is_room_full = computed(() => {
+    const b = this.battle();
+    if (!b) return false;
+    return this.onlineCount() >= (b.gioi_han_nguoi_choi ?? 0);
+  });
+
+  can_join = computed(() => {
+    return this.isPending() && !this.is_room_full();
+  });
+
 
   goBackToBattleList() {
-    this.router.navigateByUrl('/battle').then(r => {
-    }); // hoặc '/battle/list'
+    this.router.navigateByUrl('/tran-dau/pending').then(r => {
+    }); // hoặc '/battle/danh-sach-bo-cau-hoi'
   }
 
   goBackHome() {
@@ -519,6 +878,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     return w ?? null;
   }
 
+
   is_my_row(p: FinishedPlayer): boolean {
     return this.finalResult?.myId === p.user_id;
   }
@@ -531,7 +891,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     const b = this.battle();
     if (!b) return;
     // ví dụ: mở trang chi tiết bộ câu hỏi để luyện tập lại
-    this.router.navigate(['/bo-cau-hoi/detail', b.bo_cau_hoi_id]).then(r => {
+    this.router.navigate(['/bo-cau-hoi/chi-tiet-bo-cau-hoi', b.bo_cau_hoi_id]).then(r => {
     });
   }
 
@@ -560,5 +920,3 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     return u ? u.ho_ten : 'Người chơi';
   }
 }
-
-

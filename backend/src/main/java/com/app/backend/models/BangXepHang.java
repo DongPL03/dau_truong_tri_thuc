@@ -1,9 +1,10 @@
 package com.app.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "bang_xep_hang")
@@ -36,10 +37,11 @@ public class BangXepHang {
     private Long muaGiaiId; // Giả định Mùa giải (mua_giai) chưa được định nghĩa trong schema, nên dùng Long.
 
     @Column(name = "cap_nhat_luc")
-    private LocalDateTime capNhatLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant capNhatLuc;
 
     @PreUpdate
     protected void onUpdate() {
-        capNhatLuc = LocalDateTime.now();
+        capNhatLuc = Instant.now();
     }
 }

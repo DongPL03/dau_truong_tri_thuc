@@ -35,25 +35,49 @@
         <div class="left">
           <button class="btn" (click)="doSync()" [disabled]="saving()">Đồng bộ</button>
           @if (battle()?.chu_phong_ten === currentUserName()) {
-            <button class="btn primary" (click)="startBattle()" [disabled]="!isPending() || saving()">Bắt đầu</button>
-            <button class="btn warn" (click)="finishBattle()" [disabled]="!isOngoing() || saving()">Kết thúc</button>
+            <button
+              class="btn primary"
+              (click)="startBattle()"
+              [disabled]="!isPending() || saving() || !isJoined()"
+              [title]="!isJoined() ? 'Bạn cần bấm Tham Gia trước khi bắt đầu' : ''"
+            >
+              Bắt đầu
+            </button>
+
+            <button
+              class="btn warn"
+              (click)="finishBattle()"
+              [disabled]="!isOngoing() || saving() || !isJoined()"
+            >
+              Kết thúc
+            </button>
           }
           <button class="btn ghost" (click)="leave()" [disabled]="saving()">Rời phòng</button>
         </div>
 
-        @if (!battle()?.cong_khai && isPending()) {
-          <div class="right">
-            <input
-              class="pin"
-              placeholder="Nhập PIN"
-              [ngModel]="pinCode()"
-              (ngModelChange)="pinCode.set($event)"
-            />
-            <button class="btn" (click)="join()" [disabled]="saving() || !pinCode()">Tham gia</button>
-          </div>
-        } @else if (battle()?.cong_khai && isPending()) {
-          <div class="right">
-            <button class="btn" (click)="join()" [disabled]="saving()">Tham gia</button>
+        @if (!isJoined()) {
+          @if (!battle()?.cong_khai && isPending()) {
+            <div class="right">
+              <input
+                class="pin"
+                placeholder="Nhập PIN để vào"
+                [ngModel]="pinCode()"
+                (ngModelChange)="pinCode.set($event)"
+              />
+              <button class="btn" (click)="join()" [disabled]="saving() || !pinCode()">
+                Nhập mã pin & Tham gia
+              </button>
+            </div>
+          } @else if (battle()?.cong_khai && isPending()) {
+            <div class="right">
+              <button class="btn" (click)="join()" [disabled]="saving()">Tham gia ngay</button>
+            </div>
+          }
+        } @else {
+          <div class="right joined-status">
+       <span class="status-text">
+         <i class="fas fa-check-circle"></i> Bạn đã tham gia
+       </span>
           </div>
         }
       </section>
@@ -68,207 +92,6 @@
           </div>
         </div>
       }
-
-      <!-- ================== NẾU ĐÃ KẾT THÚC: MÀN HÌNH SUMMARY ================== -->
-      <!--      @if (showSummary()) {-->
-
-      <!--        <section class="summary-wrapper">-->
-      <!--          <div class="summary-left">-->
-      <!--            <div class="summary-header-card">-->
-      <!--              <h2>Trận đấu đã kết thúc 🎉</h2>-->
-      <!--              <p>Phòng: <strong>{{ battle()?.ten_phong }}</strong> (Mã: {{ battle()?.ma_phong }})</p>-->
-      <!--              <p>-->
-      <!--                Bắt đầu:-->
-      <!--                <strong>{{ battle()?.bat_dau_luc | date:'HH:mm:ss dd/MM/yyyy' }}</strong>-->
-      <!--                · Kết thúc:-->
-      <!--                <strong>{{ battle()?.ket_thuc_luc | date:'HH:mm:ss dd/MM/yyyy' }}</strong>-->
-      <!--              </p>-->
-      <!--            </div>-->
-
-      <!--            @if (summary_winner; as w) {-->
-      <!--              <div class="winner-card">-->
-      <!--                <div class="winner-badge">🏆 Quán quân</div>-->
-      <!--                <div class="winner-name">{{ w.ho_ten }}</div>-->
-      <!--                <div class="winner-meta">-->
-      <!--                  <span>Điểm: <strong>{{ w.diem }}</strong></span>-->
-      <!--                  <span>Số câu đúng: <strong>{{ w.so_cau_dung }}</strong></span>-->
-      <!--                </div>-->
-      <!--              </div>-->
-      <!--            }-->
-
-      <!--            <div class="summary-actions">-->
-      <!--              <button class="btn primary" (click)="router.navigateByUrl('/battle/room-list')">-->
-      <!--                Về danh sách phòng-->
-      <!--              </button>-->
-      <!--              <button class="btn" (click)="router.navigateByUrl('/home')">-->
-      <!--                Về trang chủ-->
-      <!--              </button>-->
-      <!--            </div>-->
-      <!--          </div>-->
-
-      <!--          <div class="summary-right">-->
-      <!--            <h3>Bảng xếp hạng</h3>-->
-
-      <!--            @if (summary_leaderboard.length > 0) {-->
-      <!--              <table class="leaderboard-table">-->
-      <!--                <thead>-->
-      <!--                <tr>-->
-      <!--                  <th>Hạng</th>-->
-      <!--                  <th>Người chơi</th>-->
-      <!--                  <th>Điểm</th>-->
-      <!--                  <th>Số câu đúng</th>-->
-      <!--                </tr>-->
-      <!--                </thead>-->
-      <!--                <tbody>-->
-      <!--                  @for (p of summary_leaderboard; track p.user_id) {-->
-      <!--                    <tr-->
-      <!--                      [class.is-me]="is_my_row(p)"-->
-      <!--                      [class.is-winner]="is_winner_row(p)"-->
-      <!--                    >-->
-      <!--                      <td>-->
-      <!--                      <span class="rank-chip">-->
-      <!--                        {{ p.xep_hang }}-->
-      <!--                        @if (p.xep_hang === 1) { 🥇 }-->
-      <!--                        @if (p.xep_hang === 2) { 🥈 }-->
-      <!--                        @if (p.xep_hang === 3) { 🥉 }-->
-      <!--                      </span>-->
-      <!--                      </td>-->
-      <!--                      <td>{{ p.ho_ten }}</td>-->
-      <!--                      <td>{{ p.diem }}</td>-->
-      <!--                      <td>{{ p.so_cau_dung }}</td>-->
-      <!--                    </tr>-->
-      <!--                  }-->
-      <!--                </tbody>-->
-      <!--              </table>-->
-      <!--            } @else {-->
-      <!--              <p class="text-muted">Chưa có dữ liệu xếp hạng.</p>-->
-      <!--            }-->
-      <!--          </div>-->
-      <!--        </section>-->
-
-      <!--      } @else {-->
-
-      <!--        &lt;!&ndash; ================== PHẦN THI ĐẤU ================== &ndash;&gt;-->
-      <!--        @if (syncState(); as s) {-->
-      <!--          <section class="play">-->
-      <!--            <h3>Trạng thái hiện tại</h3>-->
-      <!--            <div class="grid">-->
-      <!--              <div class="cell">-->
-      <!--                <div class="label">Câu hiện tại</div>-->
-      <!--                <div class="value">{{ s.current_question_index >= 0 ? s.current_question_index + 1 : '—' }}</div>-->
-      <!--              </div>-->
-      <!--              <div class="cell">-->
-      <!--                <div class="label">Điểm của bạn</div>-->
-      <!--                <div class="value highlight">{{ s.my_total_points }}</div>-->
-      <!--              </div>-->
-      <!--              <div class="cell">-->
-      <!--                <div class="label">Đếm ngược</div>-->
-      <!--                <div class="value countdown">-->
-      <!--                  {{ remainingSeconds() > 0 ? remainingSeconds() + 's' : '0s' }}-->
-      <!--                </div>-->
-      <!--              </div>-->
-      <!--            </div>-->
-
-      <!--            @if (s.current_question_index >= 0) {-->
-      <!--              <div class="question-block" [attr.data-question-id]="s.current_question_id"-->
-      <!--                   [attr.data-version]="s._version">-->
-      <!--                <div class="question">{{ s.noi_dung }}</div>-->
-
-      <!--                &lt;!&ndash; 🔹 MEDIA ĐA NỘI DUNG &ndash;&gt;-->
-      <!--                @if (s.duong_dan_tep && s.loai_noi_dung !== 'VAN_BAN') {-->
-
-      <!--                  @switch (s.loai_noi_dung) {-->
-
-      <!--                    @case ('HINH_ANH') {-->
-      <!--                      <div class="media" [attr.data-unique]="s.current_question_id + '-' + s._version">-->
-      <!--                        <img-->
-      <!--                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"-->
-      <!--                          alt="Câu hỏi hình ảnh"-->
-      <!--                          (load)="console.log('Ảnh loaded:', s.duong_dan_tep)"-->
-      <!--                        />-->
-      <!--                      </div>-->
-      <!--                    }-->
-      <!--                    @case ('AM_THANH') {-->
-      <!--                      <div class="media" [attr.data-unique]="s.current_question_id + '-' + s._version">-->
-      <!--                        <audio-->
-      <!--                          controls-->
-      <!--                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"-->
-      <!--                          (loadeddata)="console.log('Âm thanh loaded:', s.duong_dan_tep)"-->
-      <!--                        ></audio>-->
-      <!--                      </div>-->
-      <!--                    }-->
-      <!--                    @case ('VIDEO') {-->
-      <!--                      <div class="media" [attr.data-unique]="s.current_question_id + '-' + s._version">-->
-      <!--                        <video-->
-      <!--                          controls-->
-      <!--                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"-->
-      <!--                          (loadeddata)="console.log('Video loaded:', s.duong_dan_tep)"-->
-      <!--                        ></video>-->
-      <!--                      </div>-->
-      <!--                    }-->
-      <!--                  }-->
-      <!--                }-->
-
-      <!--                <div class="choices">-->
-      <!--                  @for (opt of ['A', 'B', 'C', 'D']; track $index) {-->
-      <!--                    <button-->
-      <!--                      class="choice"-->
-      <!--                      [class.active]="selectedAnswer() === opt"-->
-      <!--                      (click)="selectAnswer(opt)"-->
-      <!--                      [disabled]="saving()"-->
-      <!--                    >-->
-      <!--                      <strong>{{ opt }}.</strong>-->
-      <!--                      {{-->
-      <!--                        opt === 'A' ? s.a :-->
-      <!--                          opt === 'B' ? s.b :-->
-      <!--                            opt === 'C' ? s.c :-->
-      <!--                              opt === 'D' ? s.d : ''-->
-      <!--                      }}-->
-      <!--                    </button>-->
-      <!--                  }-->
-      <!--                </div>-->
-      <!--                <div class="submit-row">-->
-      <!--                  <button class="btn primary" (click)="submitSelectedAnswer()" [disabled]="saving()">Nộp đáp án</button>-->
-      <!--                </div>-->
-      <!--              </div>-->
-      <!--            } @else {-->
-      <!--              <div class="hint">Chưa có câu hỏi đang bật. Hãy chờ chủ phòng bắt đầu.</div>-->
-      <!--            }-->
-      <!--          </section>-->
-      <!--        }-->
-
-      <!--        &lt;!&ndash; ================== BẢNG XẾP HẠNG MINI ================== &ndash;&gt;-->
-      <!--        @if (leaderboard().length > 0) {-->
-      <!--          <section class="leaderboard">-->
-      <!--            <h3>Bảng xếp hạng</h3>-->
-      <!--            <table class="ranking">-->
-      <!--              <thead>-->
-      <!--              <tr>-->
-      <!--                <th>Hạng</th>-->
-      <!--                <th>Người chơi</th>-->
-      <!--                <th>Điểm</th>-->
-      <!--                <th>Đúng</th>-->
-      <!--              </tr>-->
-      <!--              </thead>-->
-      <!--              <tbody>-->
-      <!--                @for (p of leaderboard(); track p.user_id) {-->
-      <!--                  <tr>-->
-      <!--                    <td>{{ p.xep_hang }}</td>-->
-      <!--                    <td>{{ p.ho_ten }}</td>-->
-      <!--                    <td>{{ p.diem }}</td>-->
-      <!--                    <td>{{ p.so_cau_dung }}</td>-->
-      <!--                  </tr>-->
-      <!--                } @empty {-->
-      <!--                  <tr>-->
-      <!--                    <td colspan="4">Không có người chơi nào được tìm thấy.</td>-->
-      <!--                  </tr>-->
-      <!--                }-->
-      <!--              </tbody>-->
-      <!--            </table>-->
-      <!--          </section>-->
-      <!--        }-->
-
-      <!--      } &lt;!&ndash; end @else showSummary &ndash;&gt;-->
       @if (showSummary()) {
         <!-- ================== MÀN HÌNH KẾT QUẢ TRẬN ĐẤU ================== -->
         <section class="summary-wrapper">
@@ -364,138 +187,199 @@
           </div>
         </section>
       } @else {
-        <!-- ================== PHẦN THI ĐẤU ================== -->
-        @if (syncState(); as s) {
-          <section class="play">
-            <h3>Trạng thái hiện tại</h3>
-            <div class="grid">
-              <div class="cell">
-                <div class="label">Câu hiện tại</div>
-                <div class="value">{{ s.current_question_index >= 0 ? s.current_question_index + 1 : '—' }}</div>
-              </div>
-              <div class="cell">
-                <div class="label">Điểm của bạn</div>
-                <div class="value highlight">{{ s.my_total_points }}</div>
-              </div>
-              <div class="cell">
-                <div class="label">Đếm ngược</div>
-                <div class="value countdown">
-                  {{ remainingSeconds() > 0 ? remainingSeconds() + 's' : '0s' }}
+        <div class="game-layout">
+          <div class="game-main">
+            @if (syncState(); as s) {
+              <section class="play">
+                <h3>Trạng thái hiện tại</h3>
+                <div class="grid">
+                  <div class="cell">
+                    <div class="label">Câu hiện tại</div>
+                    <div class="value">{{ s.current_question_index >= 0 ? s.current_question_index + 1 : '—' }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">Điểm của bạn</div>
+                    <div class="value highlight">{{ s.my_total_points }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">Đếm ngược</div>
+                    <div class="value countdown">
+                      {{ remainingSeconds() > 0 ? remainingSeconds() + 's' : '0s' }}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            @if (s.current_question_index >= 0) {
-              <div class="question-block" [attr.data-question-id]="s.current_question_id"
-                   [attr.data-version]="s._version">
-                <div class="question">{{ s.noi_dung }}</div>
+                @if (s.current_question_index >= 0) {
+                  <div class="question-block" [attr.data-question-id]="s.current_question_id"
+                       [attr.data-version]="s._version">
+                    <div class="question">{{ s.noi_dung }}</div>
 
-                <!-- MEDIA -->
-                @if (s.duong_dan_tep && s.loai_noi_dung !== 'VAN_BAN') {
-                  @switch (s.loai_noi_dung) {
-                    @case ('HINH_ANH') {
-                      <div class="media" [attr.data-unique]="s.current_question_id + '-' + s._version">
-                        <img
-                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"
-                          alt="Câu hỏi hình ảnh"
-                          (load)="console.log('Ảnh loaded:', s.duong_dan_tep)"
-                        />
+                    @if (s.duong_dan_tep && s.loai_noi_dung !== 'VAN_BAN') {
+                      @switch (s.loai_noi_dung) {
+                        @case ('HINH_ANH') {
+                          <div class="media">
+                            <img
+                              [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"
+                              alt="img"/>
+                          </div>
+                        }
+                        @case ('AM_THANH') {
+                          <div class="media">
+                            <audio controls
+                                   [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"></audio>
+                          </div>
+                        }
+                        @case ('VIDEO') {
+                          <div class="media">
+                            <video controls
+                                   [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"></video>
+                          </div>
+                        }
+                      }
+                    }
+
+                    <div class="choices">
+                      @for (opt of ['A', 'B', 'C', 'D']; track $index) {
+                        <button
+                          class="choice"
+                          [class.active]="selectedAnswer() === opt"
+                          (click)="selectAnswer(opt)"
+                          [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0"
+                        >
+                          <strong>{{ opt }}.</strong>
+                          {{
+                            opt === 'A' ? s.a : opt === 'B' ? s.b : opt === 'C' ? s.c : opt === 'D' ? s.d : ''
+                          }}
+                        </button>
+                      }
+                    </div>
+
+                    @if (submittedCurrentAnswer()) {
+                      <div class="hint">
+                        <i class="fas fa-check-circle"></i> Bạn đã nộp đáp án. Hãy chờ kết quả!
                       </div>
                     }
-                    @case ('AM_THANH') {
-                      <div class="media" [attr.data-unique]="s.current_question_id + '-' + s._version">
-                        <audio
-                          controls
-                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"
-                          (loadeddata)="console.log('Âm thanh loaded:', s.duong_dan_tep)"
-                        ></audio>
-                      </div>
-                    }
-                    @case ('VIDEO') {
-                      <div class="media" [attr.data-unique]="s.current_question_id + '-' + s._version">
-                        <video
-                          controls
-                          [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"
-                          (loadeddata)="console.log('Video loaded:', s.duong_dan_tep)"
-                        ></video>
-                      </div>
-                    }
-                  }
+
+                    <div class="submit-row">
+                      <button
+                        class="btn primary"
+                        (click)="submitSelectedAnswer()"
+                        [disabled]="saving() || submittedCurrentAnswer()"
+                      >
+                        Nộp đáp án
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="waiting-state">
+                    <i class="fas fa-hourglass-half"></i>
+                    <p>Chờ chủ phòng bắt đầu câu hỏi...</p>
+                  </div>
                 }
+              </section>
+            }
+          </div>
 
-                <div class="choices">
-                  @for (opt of ['A', 'B', 'C', 'D']; track $index) {
-                    <button
-                      class="choice"
-                      [class.active]="selectedAnswer() === opt"
-                      (click)="selectAnswer(opt)"
-                      [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0"
-                    >
-                      <strong>{{ opt }}.</strong>
-                      {{
-                        opt === 'A' ? s.a :
-                          opt === 'B' ? s.b :
-                            opt === 'C' ? s.c :
-                              opt === 'D' ? s.d : ''
-                      }}
-                    </button>
-                  }
-                </div>
+          <div class="game-sidebar">
 
-                @if (submittedCurrentAnswer()) {
-                  <div class="hint">
-                    Bạn đã nộp đáp án. Hãy chờ câu hỏi tiếp theo nhé.
+            @if (leaderboard().length > 0) {
+              <section class="leaderboard">
+                <h3><i class="fas fa-trophy"></i> Top Xếp hạng</h3>
+                <table class="ranking">
+                  <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Tên</th>
+                    <th>Điểm</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                    @for (p of leaderboard(); track p.user_id) {
+                      <tr [class.is-me]="p.user_id === finalResult?.myId">
+                        <td>
+                          <span class="rank-chip" [class.top1]="p.xep_hang === 1">{{ p.xep_hang }}</span>
+                        </td>
+                        <td>{{ p.ho_ten }}</td>
+                        <td><strong>{{ p.diem }}</strong></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </section>
+            }
+
+            <section class="chat-panel">
+              <div class="chat-header">
+                <h3>Chat Room</h3>
+                <span class="online-badge">{{ onlineCount() }} online</span>
+              </div>
+
+              <div class="chat-messages" #scrollContainer>
+                @for (m of chatMessages(); track $index) {
+                  <div class="chat-row" [class.me]="m.is_me" [class.system]="m.is_system">
+
+                    @if (!m.is_me && !m.is_system) {
+                      <div class="avatar-container">
+                        @if (avatarUrl) {
+                          <img [src]="avatarUrl" alt="avt" class="avatar-img" (error)="m.avatar_url = ''">
+                        } @else {
+                          <div class="avatar-text" [style.background-color]="getAvatarColor(m.ho_ten)">
+                            {{ m.ho_ten.charAt(0).toUpperCase() }}
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <div class="msg-content">
+                      @if (!m.is_me && !m.is_system) {
+                        <div class="sender">{{ m.ho_ten }}</div>
+                      }
+
+                      <div class="bubble">
+                        <span class="text">{{ m.noi_dung }}</span>
+
+                        <span class="msg-time">
+            {{ m.timestamp | date:'HH:mm' }}
+          </span>
+                      </div>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="chat-empty">
+                    <div class="empty-icon">💬</div>
+                    <p>Sàn đấu đang im lặng...<br>Hãy khuấy động phong trào!</p>
+                  </div>
+                }
+              </div>
+
+              <div class="chat-input-area">
+                @if (showEmojiPicker()) {
+                  <div class="emoji-popup">
+                    <emoji-mart [showPreview]="false" [enableSearch]="false"
+                                (emojiClick)="addEmoji($event)"></emoji-mart>
                   </div>
                 }
 
-                <div class="submit-row">
-                  <button
-                    class="btn primary"
-                    (click)="submitSelectedAnswer()"
-                    [disabled]="saving() || submittedCurrentAnswer()"
+                <form class="input-box" (ngSubmit)="sendChat()">
+                  <button type="button" class="btn-icon" (click)="toggleEmojiPicker()">😃</button>
+                  <input
+                    type="text"
+                    [ngModel]="chatInput()"
+                    (ngModelChange)="chatInput.set($event)"
+                    name="chatMsg"
+                    placeholder="Nhắn tin..."
+                    autocomplete="off"
                   >
-                    Nộp đáp án
+                  <button type="submit" class="btn-send" [disabled]="!chatInput().trim()">
+                    <i class="fas fa-paper-plane"></i>
                   </button>
-                </div>
+                </form>
               </div>
-            } @else {
-              <div class="hint">Chưa có câu hỏi đang bật. Hãy chờ chủ phòng bắt đầu.</div>
-            }
-          </section>
-        }
+            </section>
 
-        <!-- ================== BẢNG XẾP HẠNG MINI ================== -->
-        @if (leaderboard().length > 0) {
-          <section class="leaderboard">
-            <h3>Bảng xếp hạng</h3>
-            <table class="ranking">
-              <thead>
-              <tr>
-                <th>Hạng</th>
-                <th>Người chơi</th>
-                <th>Điểm</th>
-                <th>Đúng</th>
-              </tr>
-              </thead>
-              <tbody>
-                @for (p of leaderboard(); track p.user_id) {
-                  <tr>
-                    <td>{{ p.xep_hang }}</td>
-                    <td>{{ p.ho_ten }}</td>
-                    <td>{{ p.diem }}</td>
-                    <td>{{ p.so_cau_dung }}</td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="4">Không có người chơi nào được tìm thấy.</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </section>
-        }
+          </div>
+        </div>
       }
-
     </div>
   </div>
 } @else {

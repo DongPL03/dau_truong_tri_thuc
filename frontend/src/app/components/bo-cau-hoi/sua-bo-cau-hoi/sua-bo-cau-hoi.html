@@ -1,0 +1,47 @@
+@if (!loading) {
+  <div class="page">
+    <div class="page-container">
+      <header class="page-header">
+        <h1>✏️ Chỉnh sửa Bộ Câu Hỏi</h1>
+        <button type="button" class="btn btn-gray" (click)="cancel()">
+          <i class="fas fa-arrow-left"></i> Quay Lại
+        </button>
+      </header>
+
+      <form #editForm="ngForm" (ngSubmit)="onSubmit(editForm)" class="form-layout">
+        <section>
+          <label>Tiêu đề <span class="required">*</span></label>
+          <input type="text" name="tieu_de" [(ngModel)]="dto.tieu_de" required maxlength="100"/>
+
+          <label>Mô tả</label>
+          <textarea name="mo_ta" [(ngModel)]="dto.mo_ta" maxlength="255"></textarea>
+
+          <label>Chủ đề</label>
+          <select name="chu_de_id" [(ngModel)]="dto.chu_de_id" required>
+
+            @for (c of chuDes; track c.id) {
+              <option [value]="c.id">{{ c.ten }}</option>
+            }
+
+          </select>
+
+          <label>Chế độ hiển thị</label>
+          <div class="radio-group">
+            <label><input type="radio" [(ngModel)]="dto.che_do_hien_thi" name="che_do_hien_thi" value="PUBLIC"/> Công
+              khai</label>
+            <label><input type="radio" [(ngModel)]="dto.che_do_hien_thi" name="che_do_hien_thi" value="PRIVATE"/> Riêng
+              tư</label>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button class="btn-green" type="submit" [disabled]="saving">{{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+          <button class="btn-secondary" type="button" (click)="cancel()">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+} @else {
+  <div class="loading">Đang tải dữ liệu...</div>
+}

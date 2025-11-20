@@ -3,10 +3,11 @@ package com.app.backend.responses.user;
 import com.app.backend.models.NguoiDung;
 import com.app.backend.models.VaiTro;
 import com.app.backend.responses.BaseResponse;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -42,7 +43,9 @@ public class UserResponse extends BaseResponse {
     private VaiTro vaiTro;
 
     @JsonProperty("tao_luc")
-    private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant createdAt;
+
     public static UserResponse fromUser(NguoiDung nguoiDung) {
         return UserResponse.builder()
                 .id(nguoiDung.getId())

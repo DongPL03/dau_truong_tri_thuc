@@ -19,7 +19,7 @@ public interface INguoiDungRepository extends JpaRepository<NguoiDung, Long> {
 
     Optional<NguoiDung> findByEmail(String email);
 
-    @Query("SELECT o FROM NguoiDung o WHERE o.active = true AND o.delete = false AND (:keyword IS NULL OR :keyword = '' OR " +
+    @Query("SELECT o FROM NguoiDung o WHERE o.active = true AND o.isXoa = false AND (:keyword IS NULL OR :keyword = '' OR " +
             "o.hoTen LIKE %:keyword% " +
             "OR o.diaChi LIKE %:keyword% " +
             "OR o.tenDangNhap LIKE %:keyword%) " +

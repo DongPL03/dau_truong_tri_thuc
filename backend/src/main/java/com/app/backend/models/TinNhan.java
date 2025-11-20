@@ -1,10 +1,11 @@
 package com.app.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "tin_nhan")
@@ -39,10 +40,11 @@ public class TinNhan {
     private String noiDung;
 
     @Column(name = "gui_luc", updatable = false)
-    private LocalDateTime guiLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant guiLuc;
 
     @PrePersist
     protected void onCreate() {
-        guiLuc = LocalDateTime.now();
+        guiLuc = Instant.now();
     }
 }

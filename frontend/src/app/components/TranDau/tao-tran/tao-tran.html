@@ -1,0 +1,195 @@
+<div class="page">
+  <div class="create-container">
+    <header class="create-header">
+      <h1>Tạo phòng đấu mới</h1>
+      <p>Chọn bộ câu hỏi và cấu hình trận đấu của bạn.</p>
+    </header>
+
+    <form
+      #createForm="ngForm"
+      (ngSubmit)="onSubmit()"
+      class="create-form"
+    >
+      <div class="form-grid">
+        <div class="form-group full z-index-fix-dropdown">
+          <label>Bộ câu hỏi <span class="required">*</span></label>
+          <select
+            [(ngModel)]="form.bo_cau_hoi_id"
+            name="bo_cau_hoi_id"
+            required
+            (ngModelChange)="onBoCauHoiChanged($event)"
+          >
+            <option [ngValue]="0" disabled>— Chọn bộ câu hỏi —</option>
+            @for (bo of boCauHoiOptions; track bo.id) {
+              <option [ngValue]="bo.id">{{ bo.tieu_de }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Tên phòng <span class="required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="form.ten_phong"
+            name="ten_phong"
+            placeholder="VD: Cùng băng qua đại dương"
+            required
+          />
+        </div>
+
+        <div class="form-group full">
+          <label>Chế độ phòng</label>
+          <div class="toggle-row">
+            <label class="toggle-option">
+              <input type="radio" name="cong_khai" [value]="true" [(ngModel)]="form.cong_khai"/>
+              <span>Công khai</span>
+            </label>
+            <label class="toggle-option">
+              <input type="radio" name="cong_khai" [value]="false" [(ngModel)]="form.cong_khai"/>
+              <span>Riêng tư (PIN)</span>
+            </label>
+          </div>
+        </div>
+
+        @if (!form.cong_khai) {
+          <div class="form-group">
+            <label>PIN <span class="required">*</span></label>
+            <input
+              type="text"
+              maxlength="10"
+              [(ngModel)]="form.ma_pin"
+              name="ma_pin"
+              placeholder="Nhập mã PIN cho phòng"
+            />
+            <!--            <small>Chỉ ai có PIN mới tham gia được phòng này.</small>-->
+          </div>
+        }
+
+        <div class="form-group">
+          <label>Giới hạn người chơi</label>
+          <input
+            type="number"
+            value="4"
+            min="2"
+            max="4"
+            [(ngModel)]="form.gioi_han_nguoi_choi"
+            name="gioi_han_nguoi_choi"
+          />
+          <small>Từ 2 đến 4 người chơi.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Thời gian mỗi câu (giây)</label>
+          <input
+            type="number"
+            value="15"
+            min="5"
+            max="120"
+            [(ngModel)]="form.gioi_han_thoi_gian_cau_giay"
+            name="gioi_han_thoi_gian_cau_giay"
+          />
+          <!--          <small>Tối thiểu 5 giây.</small>-->
+        </div>
+
+        <div class="form-group full z-index-fix-dropdown">
+          <label>Luật tính điểm</label>
+          <select
+            [(ngModel)]="form.luat_tinh_diem"
+            name="luat_tinh_diem"
+          >
+            <option value="BASIC">BASIC – đúng là có điểm</option>
+            <option value="SPEED_BONUS">SPEED_BONUS – nhanh được nhiều điểm</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions-row">
+        <button type="button" class="btn ghost" (click)="cancel()">Hủy</button>
+        <button type="submit" class="btn primary" [disabled]="saving">
+          Tạo phòng
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+@if (isModalOpen) {
+
+  <div class="modal-overlay" (click)="closeModal()"></div>
+
+  <div class="bo-preview-modal-wrapper">
+
+    <div class="bo-preview-card">
+      <div class="bo-preview-header">
+        <div class="title">
+          {{ getTieuDeBoCauHoi() }}
+        </div>
+        <div class="meta">
+          Tổng số câu: <strong>{{ preview_total || '—' }}</strong>
+        </div>
+
+        <button class="modal-close-btn" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      @if (!preview_loading) {
+        <div class="bo-preview-body">
+
+          <div class="preview-stats">
+
+            <div class="stat-group">
+              <h4>Phân loại độ khó</h4>
+              <ul class="stat-list">
+                @if (preview_difficulty_counts['DE']) {
+                  <li>
+                    <span class="stat-label de">Dễ</span>
+                    <span class="stat-value">{{ preview_difficulty_counts['DE'] }} câu</span>
+                  </li>
+                }
+                @if (preview_difficulty_counts['TRUNG_BINH']) {
+                  <li>
+                    <span class="stat-label trung_binh">Trung bình</span>
+                    <span class="stat-value">{{ preview_difficulty_counts['TRUNG_BINH'] }} câu</span>
+                  </li>
+                }
+                @if (preview_difficulty_counts['KHO']) {
+                  <li>
+                    <span class="stat-label kho">Khó</span>
+                    <span class="stat-value">{{ preview_difficulty_counts['KHO'] }} câu</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <div class="stat-group">
+              <h4>Phân loại câu hỏi</h4>
+              <ul class="stat-list">
+                @if (preview_type_counts['VAN_BAN']) {
+                  <li>
+                    <span class="stat-label">Văn bản</span>
+                    <span class="stat-value">{{ preview_type_counts['VAN_BAN'] }} câu</span>
+                  </li>
+                }
+                @if (preview_type_counts['HINH_ANH']) {
+                  <li>
+                    <span class="stat-label">Hình ảnh</span>
+                    <span class="stat-value">{{ preview_type_counts['HINH_ANH'] }} câu</span>
+                  </li>
+                }
+                @if (preview_type_counts['AM_THANH']) {
+                  <li>
+                    <span class="stat-label">Âm thanh</span>
+                    <span class="stat-value">{{ preview_type_counts['AM_THANH'] }} câu</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      } @else {
+        <div class="loading-inline">
+          <i class="fas fa-spinner fa-spin"></i> Đang tải câu hỏi...
+        </div>
+      }
+    </div>
+  </div>
+}

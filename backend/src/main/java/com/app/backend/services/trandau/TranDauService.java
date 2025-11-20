@@ -5,14 +5,13 @@ import com.app.backend.components.BattleStateManager;
 import com.app.backend.components.BattleWsPublisher;
 import com.app.backend.dtos.*;
 import com.app.backend.exceptions.DataNotFoundException;
+import com.app.backend.exceptions.PermissionDenyException;
 import com.app.backend.models.*;
 import com.app.backend.models.constant.LuatTinhDiem;
 import com.app.backend.models.constant.TrangThaiTranDau;
 import com.app.backend.repositories.*;
-import com.app.backend.responses.trandau.BattleFinishResponse;
-import com.app.backend.responses.trandau.BattleStartResponse;
-import com.app.backend.responses.trandau.SubmitAnswerResponse;
-import com.app.backend.responses.trandau.SyncStateResponse;
+import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
+import com.app.backend.responses.trandau.*;
 import com.app.backend.responses.websocket.FinishedEvent;
 import com.app.backend.responses.websocket.LeaderboardUpdateEvent;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -128,6 +126,9 @@ public class TranDauService implements ITranDauService {
 
         // Phát WS
         int soNguoi = (int) nguoiChoiTranDauRepository.countByTranDau_Id(tranDau.getId());
+        if (soNguoi > tranDau.getGioiHanNguoiChoi()) {
+            throw new IllegalStateException("Phòng đã đủ số lượng người chơi.");
+        }
         wsPublisher.publishPlayerJoined(tranDau.getId(), user.getId(), user.getHoTen(), soNguoi);
 
         // Phát bảng xếp hạng rỗng
@@ -142,11 +143,21 @@ public class TranDauService implements ITranDauService {
         TranDau tranDau = tranDauRepository.findById(dto.getTranDauId())
                 .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
 
+        NguoiDung user = nguoiDungRepository.findById(currentUserId)
+                .orElseThrow(() -> new DataNotFoundException("Người dùng không tồn tại"));
+
+        if (tranDau.getTrangThai() == TrangThaiTranDau.ONGOING
+                && tranDau.getChuPhong() != null
+                && tranDau.getChuPhong().getId().equals(user.getId())) {
+            throw new IllegalStateException("Chủ phòng không thể rời phòng khi trận đang diễn ra. Hãy kết thúc trận trước.");
+        }
+
         NguoiChoiTranDau nctd = nguoiChoiTranDauRepository
                 .findByTranDau_IdAndNguoiDung_Id(tranDau.getId(), currentUserId)
                 .orElseThrow(() -> new DataNotFoundException("Bạn chưa ở trong phòng"));
         // Nếu host rời phòng khi đang PENDING → có thể chuyển host cho người khác hoặc xoá phòng.
         // Bước 1: đơn giản là xoá người chơi ra khỏi phòng.
+
         nguoiChoiTranDauRepository.delete(nctd);
 
         int soNguoi = (int) nguoiChoiTranDauRepository.countByTranDau_Id(tranDau.getId());
@@ -161,6 +172,7 @@ public class TranDauService implements ITranDauService {
         }
 
         // Nếu phòng trống và chưa bắt đầu → xoá
+
         if (soNguoi == 0 && TrangThaiTranDau.PENDING.equals(tranDau.getTrangThai()))
             tranDauRepository.delete(tranDau);
 
@@ -170,9 +182,23 @@ public class TranDauService implements ITranDauService {
 
     @Transactional(readOnly = true)
     @Override
-    public TranDau chiTietPhong(Long tranDauId, Long currentUserId) throws Exception {
+    public TranDau chiTietPhong(Long tranDauId) throws Exception {
         return tranDauRepository.findById(tranDauId)
                 .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public TranDauResponse getBattleDetailResponse(Long tranDauId) throws Exception {
+        // 1. Lấy thông tin trận đấu
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        // 2. 🔥 Tính số lượng người chơi hiện tại trong phòng
+        int soLuong = (int) nguoiChoiTranDauRepository.countByTranDau_Id(tranDauId);
+
+        // 3. Map sang DTO và trả về (truyền số lượng vào)
+        return TranDauResponse.fromEntity(td, soLuong);
     }
 
     @Transactional(readOnly = true)
@@ -208,7 +234,7 @@ public class TranDauService implements ITranDauService {
 //
 //        // Cập nhật trạng thái trận
 //        td.setTrangThai(TrangThaiTranDau.ONGOING);
-//        td.setBatDauLuc(LocalDateTime.now());
+//        td.setBatDauLuc(Instant.now());
 //        tranDauRepository.save(td);
 //
 //        // Khởi tạo trạng thái tạm thời trong memory
@@ -216,7 +242,7 @@ public class TranDauService implements ITranDauService {
 //        state.setTranDauId(td.getId());
 //        state.setDanhSachCauHoi(danhSachCauHoi);
 //
-//        state.setStartTime(LocalDateTime.now());
+//        state.setStartTime(Instant.now());
 //        battleStateManager.save(state);
 //
 //        // Bắt đầu vòng lặp auto
@@ -257,14 +283,14 @@ public class TranDauService implements ITranDauService {
 
         // 🧭 Cập nhật DB
         td.setTrangThai(TrangThaiTranDau.ONGOING);
-        td.setBatDauLuc(LocalDateTime.now());
+        td.setBatDauLuc(Instant.now());
         tranDauRepository.save(td);
 
         // 🧠 Khởi tạo BattleState mới trong RAM
         BattleState state = new BattleState();
         state.setTranDauId(td.getId());
         state.setDanhSachCauHoi(danhSachCauHoi);
-        state.setStartTime(LocalDateTime.now());
+        state.setStartTime(Instant.now());
 
         // ⏱ Thiết lập thời gian mỗi câu
         int seconds = (td.getGioiHanThoiGianCauGiay() != null)
@@ -332,7 +358,7 @@ public class TranDauService implements ITranDauService {
 //        // kiểm tra timeout
 //        int seconds = td.getGioiHanThoiGianCauGiay() != null ? td.getGioiHanThoiGianCauGiay() : 15;
 //        long totalMillis = seconds * 1000L;
-//        long elapsedMillis = Duration.between(state.getCurrentQuestionStart(), LocalDateTime.now()).toMillis();
+//        long elapsedMillis = Duration.between(state.getCurrentQuestionStart(), Instant.now()).toMillis();
 //        if (elapsedMillis > totalMillis) {
 //            // hết giờ → coi như sai, 0 điểm (có thể cho phép late submit = 0 điểm)
 //            answered.put(currentUserId, dto.getAnswer().toUpperCase());
@@ -441,7 +467,7 @@ public class TranDauService implements ITranDauService {
         // 5️⃣ Kiểm tra timeout
         int seconds = state.getSecondsPerQuestion();
         long totalMs = seconds * 1000L;
-        long elapsedMs = Duration.between(state.getCurrentQuestionStart(), LocalDateTime.now()).toMillis();
+        long elapsedMs = Duration.between(state.getCurrentQuestionStart(), Instant.now()).toMillis();
         boolean withinTime = elapsedMs <= totalMs;
 
         // 6️⃣ Tính điểm
@@ -1350,7 +1376,7 @@ public class TranDauService implements ITranDauService {
             // Không có người chơi → chỉ đánh dấu FINISHED
             System.out.println("⚠️ [SERVICE] Không có người chơi nào, chỉ set FINISHED và return");
             td.setTrangThai(TrangThaiTranDau.FINISHED);
-            td.setKetThucLuc(LocalDateTime.now());
+            td.setKetThucLuc(Instant.now());
             tranDauRepository.save(td);
             battleStateManager.remove(tranDauId);
             return BattleFinishResponse.from(td, null, null);
@@ -1411,13 +1437,13 @@ public class TranDauService implements ITranDauService {
         NguoiChoiTranDau winnerPlayer = players.get(0);
         td.setWinner(winnerPlayer.getNguoiDung());        // => sẽ update winner_id
         td.setTrangThai(TrangThaiTranDau.FINISHED);
-        td.setKetThucLuc(LocalDateTime.now());
+        td.setKetThucLuc(Instant.now());
         tranDauRepository.save(td);
         System.out.println(">>> [SERVICE] Winner = " + winnerPlayer.getNguoiDung().getHoTen()
                 + ", diem = " + winnerPlayer.getDiem());
 
         // 8️⃣ Lưu lịch sử trận đấu
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         List<LichSuTranDau> lichSuList = players.stream()
                 .map(p -> {
                     Long uid = p.getNguoiDung().getId();
@@ -1531,6 +1557,87 @@ public class TranDauService implements ITranDauService {
                         ? state.getDiemNguoiChoi().getOrDefault(currentUserId, 0)
                         : 0)
                 .build();
+    }
+
+    @Override
+    public Page<LichSuTranDauResponse> getMyHistory(Long currentUserId, int page, int limit) {
+        PageRequest pageable = PageRequest.of(page, limit);
+        return lichSuTranDauRepository
+                .findByNguoiDung_IdOrderByHoanThanhLucDesc(currentUserId, pageable)
+                .map(LichSuTranDauResponse::fromEntity);
+    }
+
+
+    @Override
+    public LichSuTranDauDetailResponse getMyHistoryDetail(Long tranDauId, Long currentUserId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        LichSuTranDau myHistory = lichSuTranDauRepository
+                .findByTranDau_IdAndNguoiDung_Id(tranDauId, currentUserId)
+                .orElseThrow(() -> new DataNotFoundException("Bạn chưa tham gia trận đấu này"));
+
+        // base info
+        LichSuTranDauDetailResponse res = LichSuTranDauDetailResponse.baseFrom(td, myHistory);
+
+        // leaderboard
+        List<LichSuTranDau> all = lichSuTranDauRepository
+                .findByTranDau_IdOrderByXepHangAsc(tranDauId);
+
+        List<FinishedPlayer> leaderboard = all.stream()
+                .map(ls -> FinishedPlayer.builder()
+                        .userId(ls.getNguoiDung().getId())
+                        .hoTen(ls.getNguoiDung().getHoTen())
+                        .diem(ls.getTongDiem())
+                        .soCauDung(ls.getSoCauDung())
+                        .xepHang(ls.getXepHang())
+                        .build())
+                .toList();
+
+        res.setLeaderboard(leaderboard);
+
+        // câu hỏi / đáp án của riêng user
+        List<TraLoiTranDau> answers = traLoiTranDauRepository
+                .findByTranDau_IdAndNguoiDung_IdOrderByTraLoiLucAsc(tranDauId, currentUserId);
+
+        List<LichSuTranDauQuestionResponse> qList = answers.stream()
+                .map(tl -> LichSuTranDauQuestionResponse.fromEntities(
+                        tl,
+                        tl.getCauHoi()      // đã quan hệ @ManyToOne
+                ))
+                .toList();
+        res.setQuestions(qList);
+        return res;
+    }
+
+    @Override
+    public void guiChatTrongTran(GuiChatDTO dto, Long currentUserId) throws Exception {
+        NguoiDung nguoiDung = nguoiDungRepository.findById(currentUserId)
+                .orElseThrow(() -> new DataNotFoundException("Người dùng không tồn tại"));
+
+        TranDau tranDau = tranDauRepository.findById(dto.getTranDauId())
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        // Không cho chat ở trận đã kết thúc (tuỳ bạn)
+        if (tranDau.getTrangThai() == TrangThaiTranDau.FINISHED) {
+            throw new IllegalStateException("Trận đấu đã kết thúc, không thể chat");
+        }
+
+        // Bắt buộc phải là người trong phòng
+        boolean joined = nguoiChoiTranDauRepository
+                .existsByTranDauIdAndNguoiDungId(tranDau.getId(), nguoiDung.getId());
+        if (!joined) {
+            throw new PermissionDenyException("Bạn chưa tham gia trận đấu này");
+        }
+
+        // Không lưu DB, chỉ broadcast WS
+        wsPublisher.publishChatMessage(
+                tranDau.getId(),
+                nguoiDung.getId(),
+                nguoiDung.getHoTen(),
+                dto.getNoiDung(),
+                false // system = false
+        );
     }
 
     private void updateAndBroadcastLeaderboard(Long tranDauId, BattleState optionalState) {

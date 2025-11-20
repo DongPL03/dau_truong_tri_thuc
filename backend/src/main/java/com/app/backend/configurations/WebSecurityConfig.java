@@ -56,11 +56,15 @@ public class WebSecurityConfig {
                                     String.format("%s/users/change-password", apiPrefix)).hasAuthority("ROLE_USER")
                             .requestMatchers(GET,
                                     String.format("%s/users/profile-images/**", apiPrefix),
+                                    String.format("%s/tranDau/pending", apiPrefix),
+                                    String.format("%s/tranDau/sync/**", apiPrefix),
+                                    String.format("%s/tranDau/{id:\\d+}", apiPrefix),
                                     String.format("%s/cauHoi/media/**", apiPrefix),
                                     String.format("%s/users/idVaiTro/**", apiPrefix),
                                     String.format("%s/chuDe/**", apiPrefix),
                                     String.format("%s/boCauHoi/**", apiPrefix),
-                                    String.format("%s/tranDau/**", apiPrefix),
+//                                    String.format("%s/tranDau/**", apiPrefix),
+                                    String.format("%s/cauHoi/bo/**", apiPrefix),
                                     String.format("%s/provinces/**", apiPrefix)
                             ).permitAll()
 

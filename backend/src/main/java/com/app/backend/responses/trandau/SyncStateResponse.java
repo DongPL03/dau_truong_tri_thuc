@@ -1,12 +1,13 @@
 package com.app.backend.responses.trandau;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -15,16 +16,23 @@ import java.time.LocalDateTime;
 public class SyncStateResponse {
     @JsonProperty("tran_dau_id")
     private Long tranDauId;
+
     @JsonProperty("trang_thai")
     private String trangThai; // PENDING/ONGOING/FINISHED
+
     @JsonProperty("current_question_index")
     private int currentQuestionIndex;
+
     @JsonProperty("current_question_start")
-    private LocalDateTime currentQuestionStart;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant currentQuestionStart;
+
     @JsonProperty("seconds_per_question")
     private int secondsPerQuestion;
+
     @JsonProperty("current_question_id")
     private Long currentQuestionId;
+
     @JsonProperty("noi_dung")
     private String noiDung;
 

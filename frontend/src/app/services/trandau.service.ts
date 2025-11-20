@@ -12,6 +12,9 @@ import {TaoTranDauDTO} from '../dtos/tran-dau/taotran-dto';
 import {RoiTranDauDTO} from '../dtos/tran-dau/roitran-dto';
 import {SubmitAnswerDTO} from '../dtos/tran-dau/submitanswer-dto';
 import {SyncStateResponse} from '../responses/trandau/syncstate-response';
+import {LichSuTranDauResponse} from '../responses/trandau/lichsutrandau';
+import {LichSuTranDauDetailResponse} from '../responses/trandau/lich-su-tran-dau-detail-response';
+import {GuiChatDTO} from '../dtos/tran-dau/guichat-dto';
 
 
 @Injectable({providedIn: 'root'})
@@ -122,6 +125,38 @@ export class TrandauService {
       `${this.api}/finish/${id}`,
       {},
       {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
+   *  🔹 Lấy lịch sử trận đấu của tôi
+   */
+  getMyHistory(page = 0, limit = 10) {
+    const params = {page, limit};
+    return this.http.get<ResponseObject<PageResponse<LichSuTranDauResponse>>>(
+      `${environment.apiBaseUrl}/tranDau/history/my`,
+      {params, headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
+   *  🔹 Lấy chi tiết lịch sử trận đấu của tôi
+   */
+  getMyHistoryDetail(tran_dau_id: number) {
+    return this.http.get<ResponseObject<LichSuTranDauDetailResponse>>(
+      `${environment.apiBaseUrl}/tranDau/history/my/${tran_dau_id}`
+      , {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
+   * 🔹 Gửi chat trong trận đấu
+   * @param dto
+   */
+  sendChat(dto: GuiChatDTO) {
+    return this.http.post<ResponseObject<any>>(
+      `${environment.apiBaseUrl}/tranDau/chat`,
+      dto
     );
   }
 }

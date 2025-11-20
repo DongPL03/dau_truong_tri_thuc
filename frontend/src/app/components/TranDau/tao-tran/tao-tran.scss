@@ -1,0 +1,468 @@
+/*
+ * CSS NÀY KHÔNG DÙNG BIẾN GLOBAL
+ * VÀ SẼ SỬA LỖI NỀN TRẮNG TRÙNG NHAU
+ */
+
+/* 1. LỚP BỌC NGOÀI CÙNG (THE PAGE) */
+.page {
+  min-height: calc(100vh - 80px); /* 80px là chiều cao navbar của bạn */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+
+  /* === ĐÂY LÀ PHẦN SỬA LỖI QUAN TRỌNG NHẤT === */
+  /* Thêm nền xám nhạt cho toàn bộ trang của component này */
+  background: #f0f2f5;
+}
+
+/* 2. CÁI CARD TẠO PHÒNG */
+.create-container {
+  width: 100%;
+  max-width: 600px;
+  background: #ffffff; /* Card sẽ là màu trắng, nổi bật trên nền xám */
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 3. TIÊU ĐỀ */
+.create-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.create-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #6a5acd; /* Màu tím */
+  margin-bottom: 8px;
+}
+
+.create-header p {
+  color: #4a5568; /* Màu chữ phụ */
+  font-size: 15px;
+}
+
+/* 4. FORM (SỬ DỤNG GRID ĐỂ TÁCH 2 CỘT) */
+/* (Bạn cần bọc các form-group vào <div class="form-grid"> như hướng dẫn trước) */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 30px;
+}
+
+/* Class "full" để các trường như "Tên phòng" chiếm hết chiều rộng */
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+/* 5. CÁC TRƯỜNG INPUT, SELECT */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Class này sẽ được thêm thủ công vào các
+  ô .form-group nào có chứa dropdown.
+  Nó sẽ có z-index cao hơn, nổi lên trên
+*/
+.form-group.z-index-fix-dropdown {
+  z-index: 2; /* Sẽ nổi lên trên .actions-row */
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a202c; /* Màu chữ chính */
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0; /* Viền xám nhạt */
+  padding: 12px 14px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  background-color: #ffffff;
+  color: #1a202c;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus {
+  border-color: #6a5acd; /* Viền tím khi focus */
+  box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.2);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+  opacity: 0.7;
+}
+
+.form-group small {
+  font-size: 12px;
+  color: #4a5568;
+  line-height: 1.4;
+}
+
+/* 6. NÚT TOGGLE CÔNG KHAI / RIÊNG TƯ */
+.toggle-row {
+  display: flex;
+  gap: 40px;
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 30px;
+  border-radius: 999px;
+  background: #f0f2f5; /* Nền xám nhạt (giống nền page) */
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  transition: all 0.2s ease-in-out;
+}
+
+.toggle-option input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s ease-in-out;
+  margin: 0;
+}
+
+.toggle-option input[type="radio"]::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em #6a5acd; /* Dot màu tím */
+}
+
+.toggle-option input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+.toggle-option input[type=":checked"] {
+  border-color: #6a5acd;
+}
+
+/* Style cho label khi radio bên trong được chọn */
+.toggle-option:has(input[type="radio"]:checked) {
+  background: #6a5acd; /* Nền tím */
+  color: #ffffff; /* Chữ trắng */
+  border-color: #6a5acd;
+  box-shadow: 0 4px 10px rgba(106, 90, 205, 0.2);
+}
+
+/* 7. HÀNG NÚT BẤM (HỦY / TẠO PHÒNG) */
+.actions-row {
+  grid-column: 1 / -1; /* Luôn chiếm hết chiều rộng grid */
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.actions-row .btn {
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.actions-row .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actions-row .btn.primary {
+  background: linear-gradient(90deg, #6a5acd, #7c6bed);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(106, 90, 205, 0.3);
+}
+
+.actions-row .btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(106, 90, 205, 0.4);
+}
+
+.actions-row .btn.ghost {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e2e8f0;
+}
+
+.actions-row .btn.ghost:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #1a202c;
+}
+
+/* 8. DẤU * BẮT BUỘC */
+.required {
+  color: #ef4444; /* Màu đỏ */
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+/* 9. RESPONSIVE CHO DI ĐỘNG */
+@media (max-width: 768px) {
+  .create-container {
+    padding: 24px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr; /* 1 cột trên di động */
+    gap: 20px;
+  }
+
+  .create-header h1 {
+    font-size: 24px;
+  }
+
+  .actions-row {
+    flex-direction: column; /* Nút xếp chồng lên nhau */
+    gap: 10px;
+  }
+}
+
+/* SỬA LẠI CLASS NÀY */
+.bo-preview-card {
+  background: #ffffff;
+  border-radius: 16px; /* Giữ nguyên */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Tăng shadow */
+  padding: 16px 20px;
+
+  /* Sửa đổi các dòng dưới */
+  max-height: 70vh; /* Tăng chiều cao tối đa */
+  width: 600px; /* Đặt chiều rộng cố định */
+  max-width: 90vw; /* Đảm bảo không tràn viền trên di động */
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sửa .bo-preview-header để thêm nút đóng */
+.bo-preview-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative; /* Thêm để định vị nút đóng */
+  padding-right: 30px; /* Thêm khoảng trống cho nút đóng */
+}
+
+.title {
+  font-weight: 600;
+}
+
+.meta {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.bo-preview-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.question-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: 12px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    position: relative;
+    padding: 12px 40px 12px 0;
+    border-bottom: 1px dashed #e2e8f0;
+
+    .q-content {
+      font-size: 14px;
+      color: #0f172a;
+      flex: 1;
+
+
+      /* Thêm style cho nội dung media */
+      span {
+        display: block; /* Đảm bảo text nằm dưới media */
+        line-height: 1.5;
+      }
+
+      img {
+        width: 100%;
+        max-height: 200px; /* Giới hạn chiều cao ảnh */
+        object-fit: cover; /* Đảm bảo ảnh không bị méo */
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border: 1px solid #e2e8f0;
+      }
+
+      audio {
+        width: 100%;
+        height: 45px; /* Chiều cao chuẩn cho audio control */
+        margin-bottom: 8px;
+      }
+    }
+
+    .badge.difficulty {
+      position: absolute;
+      top: 12px; /* Căn lề trên */
+      right: 0; /* Căn lề phải */
+      //flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge.difficulty.DE {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .badge.difficulty.TRUNG_BINH {
+      background: #fef9c3;
+      color: #ca8a04;
+    }
+
+    .badge.difficulty.KHO {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+  }
+
+}
+.preview-stats {
+  padding: 8px 0;
+}
+
+.stat-group {
+  margin-bottom: 20px;
+}
+
+.stat-group h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6a5acd; /* Màu tím chủ đạo */
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 6px;
+}
+
+.stat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.stat-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  padding: 4px 0;
+}
+
+.stat-list .stat-label {
+  font-weight: 500;
+  color: #334155;
+}
+
+.stat-list .stat-value {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Thêm màu cho các nhãn độ khó */
+.stat-label.de {
+  color: #16a34a;
+}
+.stat-label.trung_binh {
+  color: #ca8a04;
+}
+.stat-label.kho {
+  color: #dc2626;
+}
+/* === CSS MỚI CHO MODAL === */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4); /* Lớp phủ mờ */
+  z-index: 1000; /* Nằm trên mọi thứ */
+  cursor: pointer;
+}
+
+.bo-preview-modal-wrapper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Căn giữa modal */
+  z-index: 1001; /* Nằm trên lớp phủ */
+}
+
+/* Nút đóng modal */
+.modal-close-btn {
+  position: absolute;
+  top: -5px; /* Điều chỉnh vị trí */
+  right: -5px; /* Điều chỉnh vị trí */
+  background: #f1f5f9;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #1a202c;
+}
+
+/* CSS cho spinner khi loading trong modal */
+.loading-inline {
+  padding: 40px;
+  text-align: center;
+  font-size: 18px;
+  color: #6a5acd;
+}
+
+.loading-inline i {
+  margin-right: 8px;
+}

@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -41,8 +42,8 @@ public class EmailVerificationService implements IEmailVerificationService {
         EmailVerificationToken evt = EmailVerificationToken.builder()
                 .token(token)
                 .nguoiDung(user)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusHours(ttlHours))
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plus(Duration.ofHours(ttlHours)))
                 .build();
         tokenRepo.save(evt);
 
@@ -72,7 +73,7 @@ public class EmailVerificationService implements IEmailVerificationService {
         userRepo.save(user);
 
         // Đánh dấu token đã dùng
-        evt.setUsedAt(LocalDateTime.now());
+        evt.setUsedAt(Instant.now());
         tokenRepo.save(evt);
 
         // Revoke mọi token cũ nếu có (đảm bảo đăng nhập lại)

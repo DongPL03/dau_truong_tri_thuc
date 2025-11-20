@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ITraLoiTranDauRepository extends JpaRepository<TraLoiTranDau, Long> {
     List<TraLoiTranDau> findAllByTranDau_Id(Long tranDauId);
+
+    List<TraLoiTranDau> findByTranDau_IdAndNguoiDung_IdOrderByTraLoiLucAsc(Long tranDauId, Long nguoiDungId);
 }

@@ -67,7 +67,7 @@ export class Profile extends Base {
           if (r.isConfirmed) {
             this.tokenService.clear();
             this.userService.removeUserFromLocalStorage();
-            location.href = '/login';
+            location.href = '/dang-nhap';
           }
         });
       },
@@ -145,7 +145,7 @@ export class Profile extends Base {
           if (r.isConfirmed) {
             this.tokenService.clear();
             this.userService.removeUserFromLocalStorage();
-            location.href = '/login';
+            location.href = '/dang-nhap';
           }
         });
       },
@@ -153,7 +153,7 @@ export class Profile extends Base {
         this.changingPass = false;
         this.tokenService.clear();
         this.userService.removeUserFromLocalStorage();
-        location.href = '/login';
+        location.href = '/dang-nhap';
       },
       error: (err: HttpErrorResponse) => {
         Swal.fire('Lỗi', err.error?.message || 'Không thể đổi mật khẩu', 'error').then(r => {

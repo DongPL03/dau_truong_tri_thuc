@@ -1,0 +1,79 @@
+<div class="page">
+  <div class="container">
+    <header class="header">
+      <h1>Lịch sử trận đấu của bạn</h1>
+      <p class="subtitle">
+        Xem lại các trận đã tham gia, điểm số và thứ hạng cuối cùng.
+      </p>
+    </header>
+
+    @if (loading) {
+      <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+      </div>
+    } @else {
+      @if (items.length === 0) {
+        <div class="empty">
+          Bạn chưa tham gia trận đấu nào.
+        </div>
+      } @else {
+        <section class="history-card">
+          <table class="history-table">
+            <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Phòng</th>
+              <th>Bộ câu hỏi</th>
+              <th>Điểm</th>
+              <th>Đúng</th>
+              <th>Hạng</th>
+              <th>Luật</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (h of items; track h.lich_su_id) {
+                <tr [class.top-rank]="h.xep_hang === 1">
+                  <td>{{ h.hoan_thanh_luc | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td>{{ h.ten_phong || ('#' + h.tran_dau_id) }}</td>
+                  <td>{{ h.bo_cau_hoi_tieu_de || '—' }}</td>
+                  <td>{{ h.tong_diem }}</td>
+                  <td>{{ h.so_cau_dung }}</td>
+                  <td>#{{ h.xep_hang }}</td>
+                  <td>{{ h.luat_tinh_diem }}</td>
+                  <td>
+                    <button class="link-btn" (click)="goToBattleDetail(h.tran_dau_id)">
+                      Xem chi tiết
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <!-- phân trang đơn giản -->
+          @if (total_pages > 1) {
+            <div class="pagination">
+              <!-- Nút Previous -->
+              <a (click)="changePage(page - 1)" [class.disabled]="page === 0">&laquo;</a>
+
+              <!-- Dải trang động -->
+              @for (p of getVisiblePages(); track $index) {
+                @if (p >= 0) {
+                  <a [class.active]="p === page" (click)="changePage(p)">
+                    {{ p + 1 }}
+                  </a>
+                } @else {
+                  <span class="ellipsis">...</span>
+                }
+              }
+
+              <!-- Nút Next -->
+              <a (click)="changePage(page + 1)" [class.disabled]="page === total_pages - 1">&raquo;</a>
+            </div>
+          }
+        </section>
+      }
+    }
+  </div>
+</div>

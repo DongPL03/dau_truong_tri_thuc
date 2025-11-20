@@ -2,11 +2,12 @@ package com.app.backend.responses.trandau;
 
 import com.app.backend.models.CauHoi;
 import com.app.backend.models.TranDau;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -14,14 +15,20 @@ import java.util.List;
 public class BattleStartResponse {
     @JsonProperty("tran_dau_id")
     private Long tranDauId;
+
     @JsonProperty("ten_phong")
     private String tenPhong;
+
     @JsonProperty("ma_phong")
     private String maPhong;
+
     @JsonProperty("bat_dau_luc")
-    private LocalDateTime batDauLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant batDauLuc;
+
     @JsonProperty("tong_cau_hoi")
     private int tongCauHoi;
+
     @JsonProperty("cau_hoi_list")
     private List<QuestionView> cauHoiList;
 

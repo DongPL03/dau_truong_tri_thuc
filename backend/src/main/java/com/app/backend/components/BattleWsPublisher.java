@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -65,7 +65,7 @@ public class BattleWsPublisher {
 
     public void publishBattleStarted(Long tranDauId,
                                      String tenPhong,
-                                     LocalDateTime batDau,
+                                     Instant batDau,
                                      int tongCauHoi,
                                      int secondsPerQuestion,
                                      int preCountdownSeconds) {
@@ -87,7 +87,7 @@ public class BattleWsPublisher {
                 .type("NEW_QUESTION")
                 .tranDauId(tranDauId)
                 .questionIndex(idx)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .thoiGianCauGiay(secondsPerQuestion)
                 .question(NewQuestionEvent.QuestionView.builder()
                         .id(q.getId())
@@ -104,7 +104,7 @@ public class BattleWsPublisher {
     }
 
     public void publishFinished(Long tranDauId, String tenPhong, String maPhong,
-                                LocalDateTime batDau, LocalDateTime ketThuc,
+                                Instant batDau, Instant ketThuc,
                                 FinishedEvent.Winner winner,
                                 List<FinishedEvent.Player> leaderboard) {
 
@@ -117,7 +117,7 @@ public class BattleWsPublisher {
                 .maPhong(maPhong)
                 .batDauLuc(batDau)
                 .ketThucLuc(ketThuc)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .winner(winner)
                 .leaderboard(leaderboard)
                 .build();
@@ -134,7 +134,7 @@ public class BattleWsPublisher {
                 .userId(userId)
                 .hoTen(hoTen)
                 .correct(correct)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .gainedPoints(gained)
                 .totalPoints(total)
                 .questionIndex(questionIndex)
@@ -150,6 +150,24 @@ public class BattleWsPublisher {
                 .build();
         safeSend(tranDauId, payload);
     }
+
+    public void publishChatMessage(Long tranDauId,
+                                   Long userId,
+                                   String hoTen,
+                                   String noiDung,
+                                   boolean system) {
+        var payload = ChatMessageEvent.builder()
+                .type("CHAT_MESSAGE")
+                .tranDauId(tranDauId)
+                .userId(userId)
+                .hoTen(hoTen)
+                .noiDung(noiDung)
+                .system(system)
+                .timestamp(Instant.now())
+                .build();
+        safeSend(tranDauId, payload);
+    }
+
 
     private void safeSendToUser(Long userId, Object payload) {
         try {

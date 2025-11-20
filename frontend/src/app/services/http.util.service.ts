@@ -9,7 +9,7 @@ export class HttpUtilService {
   constructor(private tokenService: TokenService) {
   }
 
-  /** 🔹 Header mặc định (cho các request public như login/register) */
+  /** 🔹 Header mặc định (cho các request public như dang-nhap/dang-ky) */
   createHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ export class HttpUtilService {
     });
   }
 
-  /** 🔹 Header có Authorization (cho các request yêu cầu login) */
+  /** 🔹 Header có Authorization (cho các request yêu cầu dang-nhap) */
   createAuthHeaders(): HttpHeaders {
     const token = this.tokenService.getAccessToken();
     return new HttpHeaders({

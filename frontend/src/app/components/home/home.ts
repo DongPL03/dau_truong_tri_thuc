@@ -29,7 +29,6 @@ export class Home extends Base implements OnInit {
   loadPendingBattles() {
     this.tranDauService.getPendingBattles(0, 5).subscribe({
       next: (res: ResponseObject<PageResponse<TranDauResponse>>) => {
-        // ✅ Backend trả về "items", không phải "content"
         this.pendingBattles = res.data?.items ?? [];
       },
       error: (err) => console.error('❌ Lỗi khi tải danh sách bộ câu hỏi:', err)
@@ -39,7 +38,6 @@ export class Home extends Base implements OnInit {
   loadFeaturedQuizzes() {
     this.bocauHoiService.getFeatured(3).subscribe({
       next: (res: ResponseObject<PageResponse<BoCauHoiResponse>>) => {
-        // ✅ Backend trả về "items", không phải "content"
         this.featuredQuizzes = res.data?.items ?? [];
       },
       error: (err) => console.error('❌ Lỗi khi tải danh sách bộ câu hỏi:', err)
@@ -47,10 +45,14 @@ export class Home extends Base implements OnInit {
   }
 
   navigateQuiz() {
-    this.router.navigate(['/bo-cau-hoi/list']).then(r => {});
+    this.router.navigate(['/bo-cau-hoi/danh-sach-bo-cau-hoi']).then(r => {});
   }
 
   navigateBattle() {
-    this.router.navigate(['/battle/pending']).then(r => {});
+    this.router.navigate(['/tran-dau/pending']).then(r => {});
+  }
+
+  navigateHistory() {
+    this.router.navigate(['/tran-dau/lich-su-tran-dau']).then(r => {});
   }
 }

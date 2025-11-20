@@ -1,10 +1,11 @@
 package com.app.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,15 +43,19 @@ public class BattleState {
      * Mốc giờ bắt đầu câu hiện tại (server time)
      */
     @JsonProperty("cau_hien_tai_bat_dau")
-    private LocalDateTime currentQuestionStart;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant currentQuestionStart;
 
     /**
      * Thời điểm bắt đầu & kết thúc trận (tham chiếu)
      */
     @JsonProperty("bat_dau_luc")
-    private LocalDateTime startTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant startTime;
+
     @JsonProperty("ket_thuc_luc")
-    private LocalDateTime endTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant endTime;
 
     /**
      * Số giây cho mỗi câu – dùng cho sync & tính hết giờ
@@ -174,7 +179,7 @@ public class BattleState {
         boolean atLast = currentQuestionIndex >= (danhSachCauHoi.size() - 1);
         if (!atLast || currentQuestionStart == null) return false;
 
-        long elapsedMs = Duration.between(currentQuestionStart, LocalDateTime.now()).toMillis();
+        long elapsedMs = Duration.between(currentQuestionStart, Instant.now()).toMillis();
         return elapsedMs >= (long) secondsPerQuestion * 1000L;
     }
 
@@ -182,7 +187,7 @@ public class BattleState {
     public synchronized boolean markFinishedOnce() {
         if (markedFinished) return false;
         markedFinished = true;
-        endTime = LocalDateTime.now();
+        endTime = Instant.now();
         return true;
     }
 

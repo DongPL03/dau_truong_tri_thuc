@@ -1,1 +1,8 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@ctrl/ngx-emoji-mart/picker';
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color); /* <-- Đặt màu nền cho toàn trang tại đây */
+  color: var(--secondary-color);
+  margin: 0;
+}

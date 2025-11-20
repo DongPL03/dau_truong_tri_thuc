@@ -2,10 +2,11 @@ package com.app.backend.responses.bocauhoi;
 
 import com.app.backend.models.BoCauHoi;
 import com.app.backend.models.NguoiDung;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -44,10 +45,12 @@ public class BoCauHoiResponse {
     private Long nguoiTaoId;
 
     @JsonProperty("tao_luc")
-    private LocalDateTime taoLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant taoLuc;
 
     @JsonProperty("cap_nhat_luc")
-    private LocalDateTime capNhatLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant capNhatLuc;
 
     // ✅ static mapper
     public static BoCauHoiResponse from(BoCauHoi entity) {

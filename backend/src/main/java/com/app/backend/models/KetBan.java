@@ -2,10 +2,11 @@ package com.app.backend.models;
 
 import com.app.backend.models.constant.TrangThaiKetBan;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "ket_ban", uniqueConstraints = {
@@ -37,10 +38,11 @@ public class KetBan {
     private String trangThai = TrangThaiKetBan.PENDING;
 
     @Column(name = "tao_luc", updatable = false)
-    private LocalDateTime taoLuc;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    private Instant taoLuc;
 
     @PrePersist
     protected void onCreate() {
-        taoLuc = LocalDateTime.now();
+        taoLuc = Instant.now();
     }
 }

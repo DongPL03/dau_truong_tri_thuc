@@ -33,7 +33,13 @@ export type BattleEvent =
   timestamp: string;
   question: QuestionPayload;
 }
-
+  | {
+  type: 'ANSWER_REVEAL';
+  tran_dau_id: number;
+  dap_an_dung: string; // "A" | "B" | "C" | "D"
+  giai_thich?: string; // Có thể null hoặc string
+  timestamp?: string;
+}
   | {
   type: 'SCORE_UPDATE';
   tran_dau_id: number; // Sửa từ tranDauId

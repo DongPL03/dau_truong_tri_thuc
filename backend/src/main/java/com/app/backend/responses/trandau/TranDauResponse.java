@@ -62,6 +62,9 @@ public class TranDauResponse {
     @JsonProperty("so_luong_nguoi_tham_gia")
     private int soLuongNguoiThamGia;
 
+    @JsonProperty("da_tham_gia")
+    private boolean daThamGia;   // 👈 NEW
+
     public static TranDauResponse fromEntity(TranDau td) {
         return TranDauResponse.builder()
                 .id(td.getId())
@@ -99,7 +102,6 @@ public class TranDauResponse {
                 .taoLuc(td.getTaoLuc())
                 .batDauLuc(td.getBatDauLuc())
                 .ketThucLuc(td.getKetThucLuc())
-                // 🔥 GÁN GIÁ TRỊ VÀO ĐÂY
                 .soLuongNguoiThamGia(soLuongNguoiThamGia)
                 .build();
     }

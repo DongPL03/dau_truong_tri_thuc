@@ -87,9 +87,9 @@ public class TranDauController {
 //        );
 //    }
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject> getBattleDetail(@PathVariable Long id) throws Exception {
-        // Gọi hàm service mới trả về DTO
-        TranDauResponse response = tranDauService.getBattleDetailResponse(id);
+    public ResponseEntity<ResponseObject> chiTietPhong(@PathVariable Long id) throws Exception {
+        Long uid = securityUtils.getLoggedInUserId(); // 👈 lấy user hiện tại
+        TranDauResponse response = tranDauService.getBattleDetailResponse(id, uid);
 
         return ResponseEntity.ok(ResponseObject.<TranDauResponse>builder()
                 .message("Lấy thông tin phòng thành công")

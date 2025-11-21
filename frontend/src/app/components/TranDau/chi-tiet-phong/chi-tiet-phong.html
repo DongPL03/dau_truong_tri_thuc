@@ -238,38 +238,113 @@
                       }
                     }
 
-                    <div class="choices">
+                    <!--                    <div class="choices" [class.long-layout]="hasLongAnswer()">-->
+                    <!--                      @for (opt of ['A', 'B', 'C', 'D']; track $index) {-->
+                    <!--                        <button-->
+                    <!--                          class="choice"-->
+                    <!--                          [class.active]="selectedAnswer() === opt"-->
+                    <!--                          [class.correct]="revealedCorrectAnswer() === opt"-->
+                    <!--                          [class.incorrect]="-->
+                    <!--                            submittedCurrentAnswer() &&-->
+                    <!--                            selectedAnswer() === opt &&-->
+                    <!--                            revealedCorrectAnswer() &&-->
+                    <!--                            revealedCorrectAnswer() !== opt"-->
+                    <!--                          (click)="selectAnswer(opt)"-->
+
+                    <!--                          [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0 || !!revealedCorrectAnswer()"-->
+                    <!--                        >-->
+                    <!--                          <strong>{{ opt }}.</strong>-->
+                    <!--                          {{-->
+                    <!--                            opt === 'A' ? s.a : opt === 'B' ? s.b : opt === 'C' ? s.c : opt === 'D' ? s.d : ''-->
+                    <!--                          }}-->
+                    <!--                        </button>-->
+                    <!--                      }-->
+                    <!--                    </div>-->
+
+                    <!--                    @if (submittedCurrentAnswer() && !revealedCorrectAnswer()) {-->
+                    <!--                      <div class="hint animate-pulse">-->
+                    <!--                        <i class="fas fa-check-circle"></i>-->
+                    <!--                        Bạn đã chọn: <strong class="badge-choice">{{ selectedAnswer() }}</strong>. Đang chờ kết quả...-->
+                    <!--                      </div>-->
+                    <!--                    }-->
+
+                    <!--                    @if (revealedCorrectAnswer()) {-->
+                    <!--                      <div class="answer-reveal animate-fade-in"-->
+                    <!--                           [class.is-correct-bg]="selectedAnswer() === revealedCorrectAnswer()"-->
+                    <!--                           [class.is-wrong-bg]="selectedAnswer() !== revealedCorrectAnswer()">-->
+                    <!--                        <div class="answer-row">-->
+                    <!--                          <span class="label">Đáp án đúng:</span>-->
+                    <!--                          <span class="badge-correct">{{ revealedCorrectAnswer() }}</span>-->
+                    <!--                        </div>-->
+                    <!--                        <div class="answer-row user-selection">-->
+                    <!--                          <span class="label">Bạn đã chọn:</span>-->
+
+                    <!--                          @if (selectedAnswer() === revealedCorrectAnswer()) {-->
+                    <!--                            <span class="badge-user correct">{{ selectedAnswer() }} <i class="fas fa-check"></i></span>-->
+                    <!--                          } @else {-->
+                    <!--                            <span class="badge-user wrong">{{ selectedAnswer() }} <i class="fas fa-times"></i></span>-->
+                    <!--                          }-->
+                    <!--                        </div>-->
+
+                    <!--                        @if (revealedExplanation()) {-->
+                    <!--                          <hr class="divider">-->
+                    <!--                          <div class="answer-explain">-->
+                    <!--                            <strong><i class="fas fa-info-circle"></i> Giải thích:</strong>-->
+                    <!--                            {{ revealedExplanation() }}-->
+                    <!--                          </div>-->
+                    <!--                        }-->
+                    <!--                      </div>-->
+                    <!--                    }-->
+                    <div class="choices" [class.long-layout]="hasLongAnswer()">
                       @for (opt of ['A', 'B', 'C', 'D']; track $index) {
                         <button
                           class="choice"
                           [class.active]="selectedAnswer() === opt"
+                          [class.correct]="revealedCorrectAnswer() === opt"
+                          [class.incorrect]="revealedCorrectAnswer() && selectedAnswer() === opt && revealedCorrectAnswer() !== opt"
                           (click)="selectAnswer(opt)"
-                          [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0"
+                          [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0 || !!revealedCorrectAnswer()"
                         >
-                          <strong>{{ opt }}.</strong>
-                          {{
-                            opt === 'A' ? s.a : opt === 'B' ? s.b : opt === 'C' ? s.c : opt === 'D' ? s.d : ''
-                          }}
+                          <div class="choice-content">
+                            <strong>{{ opt }}.</strong>
+                            <span>{{ opt === 'A' ? s.a : opt === 'B' ? s.b : opt === 'C' ? s.c : opt === 'D' ? s.d : '' }}</span>
+                          </div>
+
+                          @if (revealedCorrectAnswer()) {
+                            @if (revealedCorrectAnswer() === opt) {
+                              <i class="fas fa-check-circle status-icon"></i>
+                            } @else if (selectedAnswer() === opt) {
+                              <i class="fas fa-times-circle status-icon"></i>
+                            }
+                          }
                         </button>
                       }
                     </div>
 
-                    @if (submittedCurrentAnswer()) {
-                      <div class="hint">
-                        <i class="fas fa-check-circle"></i> Bạn đã nộp đáp án. Hãy chờ kết quả!
+                    @if (submittedCurrentAnswer() && !revealedCorrectAnswer()) {
+                      <div class="hint animate-pulse">
+                        <i class="fas fa-check-circle"></i>
+                        Đã gửi đáp án. Vui lòng đợi câu hỏi kế tiếp...
                       </div>
                     }
 
-                    <div class="submit-row">
-                      <button
-                        class="btn primary"
-                        (click)="submitSelectedAnswer()"
-                        [disabled]="saving() || submittedCurrentAnswer()"
-                      >
-                        Nộp đáp án
-                      </button>
-                    </div>
+                    @if (revealedCorrectAnswer() && revealedExplanation()) {
+                      <div class="answer-reveal animate-fade-in">
+                        <strong><i class="fas fa-lightbulb"></i> Giải thích:</strong>
+                        {{ revealedExplanation() }}
+                      </div>
+                    }
+
+                    @if (!submittedCurrentAnswer() && !revealedCorrectAnswer()) {
+                      <div class="submit-row">
+                        <button class="btn primary" (click)="submitSelectedAnswer()"
+                                [disabled]="saving() || !selectedAnswer()">
+                          Nộp đáp án
+                        </button>
+                      </div>
+                    }
                   </div>
+
                 } @else {
                   <div class="waiting-state">
                     <i class="fas fa-hourglass-half"></i>
@@ -281,7 +356,6 @@
           </div>
 
           <div class="game-sidebar">
-
             @if (leaderboard().length > 0) {
               <section class="leaderboard">
                 <h3><i class="fas fa-trophy"></i> Top Xếp hạng</h3>
@@ -291,16 +365,27 @@
                     <th>#</th>
                     <th>Tên</th>
                     <th>Điểm</th>
+                    <th>Đúng</th>
                   </tr>
                   </thead>
                   <tbody>
                     @for (p of leaderboard(); track p.user_id) {
-                      <tr [class.is-me]="p.user_id === finalResult?.myId">
+                      <tr [class.left-player]="p.da_roi" [class.is-me]="p.user_id === finalResult?.myId">
                         <td>
                           <span class="rank-chip" [class.top1]="p.xep_hang === 1">{{ p.xep_hang }}</span>
                         </td>
-                        <td>{{ p.ho_ten }}</td>
+                        <td>
+                          {{ p.ho_ten }}
+                          @if (p.da_roi) {
+                            <span class="tag-left" style="font-size: 0.8em; color: #999;">(đã rời)</span>
+                          }
+                        </td>
                         <td><strong>{{ p.diem }}</strong></td>
+                        <td>{{ p.so_cau_dung }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="4">Chưa có dữ liệu xếp hạng.</td>
                       </tr>
                     }
                   </tbody>
@@ -337,10 +422,7 @@
 
                       <div class="bubble">
                         <span class="text">{{ m.noi_dung }}</span>
-
-                        <span class="msg-time">
-            {{ m.timestamp | date:'HH:mm' }}
-          </span>
+                        <span class="msg-time">{{ m.timestamp | date:'HH:mm' }}</span>
                       </div>
                     </div>
                   </div>

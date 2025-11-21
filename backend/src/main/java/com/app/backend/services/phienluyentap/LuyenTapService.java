@@ -114,7 +114,6 @@ public class LuyenTapService implements ILuyenTapService {
         phien.setDiemSo(correctCount);
         phien.setDoChinhXac(doChinhXac);
         phien.setThoiGianTbMs(total == 0 ? 0 : totalTime / total);
-        phienLuyenTapRepository.save(phien);
         return phienLuyenTapRepository.save(phien);
     }
 

@@ -34,4 +34,6 @@ public interface ITranDauService {
 
     TranDauResponse getBattleDetailResponse(Long tranDauId) throws Exception;
 
+    TranDauResponse getBattleDetailResponse(Long tranDauId, Long currentUserId) throws Exception;
+
 }

@@ -91,6 +91,25 @@ public class BattleLoopTask {
                     Thread.currentThread().interrupt();
                     break;
                 }
+
+                BattleState afterSleep = battleStateManager.get(tranDauId);
+                if (afterSleep == null || !afterSleep.isAutoLoopRunning()) break;
+
+                // 1. Gửi đáp án (REVEAL)
+                String dapAnDung = String.valueOf(q.getDapAnDung());
+                String giaiThich = q.getGiaiThich();
+                wsPublisher.publishAnswerReveal(tranDauId, q.getId(), dapAnDung, giaiThich);
+
+                // 🔥 FIX: THÊM THỜI GIAN CHỜ ĐỂ NGƯỜI DÙNG ĐỌC ĐÁP ÁN (ví dụ 5 giây)
+                try {
+                    // Thời gian nghỉ giữa các hiệp
+                    int timeBreak = 5000; // 5 giây
+                    System.out.println("--- Nghỉ " + timeBreak + "ms để xem đáp án ---");
+                    Thread.sleep(timeBreak);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
 
             // ❗❗ HẾT CÂU HỎI → CHỈ GỌI SERVICE, KHÔNG TỰ SET FINISHED

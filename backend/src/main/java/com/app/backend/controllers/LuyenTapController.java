@@ -118,12 +118,6 @@ public class LuyenTapController {
                         ))
                         .build()
         );
-//        return ResponseEntity.ok(Map.of(
-//                "message", "Đã lưu câu hỏi vào thẻ ghi nhớ",
-//                "memoId", memo.getId(),
-//                "phienId", phienId,
-//                "cauHoiId", cauHoiId
-//        ));
     }
 
     @GetMapping("/memo/list")

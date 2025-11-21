@@ -203,59 +203,28 @@ public class TranDauService implements ITranDauService {
 
     @Transactional(readOnly = true)
     @Override
+    public TranDauResponse getBattleDetailResponse(Long tranDauId, Long currentUserId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        int soLuong = (int) nguoiChoiTranDauRepository.countByTranDau_Id(tranDauId);
+
+        // 👇 kiểm tra user hiện tại có đang ở bảng nguoi_choi_tran_dau không
+        boolean daThamGia = nguoiChoiTranDauRepository
+                .existsByTranDauIdAndNguoiDungId(tranDauId, currentUserId);
+
+        TranDauResponse res = TranDauResponse.fromEntity(td, soLuong);
+        res.setDaThamGia(daThamGia);
+        return res;
+    }
+
+
+    @Transactional(readOnly = true)
+    @Override
     public Page<TranDau> danhSachPhongCho(PageRequest pageRequest) {
         return tranDauRepository.findByTrangThai(TrangThaiTranDau.PENDING, pageRequest);
     }
 
-    //    @Transactional
-//    @Override
-//    public BattleStartResponse startBattle(Long tranDauId, Long currentUserId) throws Exception {
-//        TranDau td = tranDauRepository.findById(tranDauId)
-//                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
-//
-//        // Kiểm tra quyền host
-//        if (!td.getChuPhong().getId().equals(currentUserId)) {
-//            throw new SecurityException("Chỉ chủ phòng mới có quyền bắt đầu trận");
-//        }
-//
-//        // Kiểm tra trạng thái
-//        if (!TrangThaiTranDau.PENDING.equals(td.getTrangThai())) {
-//            throw new IllegalStateException("Phòng không ở trạng thái chờ");
-//        }
-//
-//        // Lấy câu hỏi từ bộ câu hỏi
-//        List<CauHoi> danhSachCauHoi = cauHoiRepository.findByBoCauHoiId(td.getBoCauHoi().getId());
-//        if (danhSachCauHoi.isEmpty()) {
-//            throw new IllegalStateException("Bộ câu hỏi này không có câu hỏi nào");
-//        }
-//
-//        // Trộn ngẫu nhiên danh sách câu hỏi
-//        Collections.shuffle(danhSachCauHoi);
-//
-//        // Cập nhật trạng thái trận
-//        td.setTrangThai(TrangThaiTranDau.ONGOING);
-//        td.setBatDauLuc(Instant.now());
-//        tranDauRepository.save(td);
-//
-//        // Khởi tạo trạng thái tạm thời trong memory
-//        BattleState state = new BattleState();
-//        state.setTranDauId(td.getId());
-//        state.setDanhSachCauHoi(danhSachCauHoi);
-//
-//        state.setStartTime(Instant.now());
-//        battleStateManager.save(state);
-//
-//        // Bắt đầu vòng lặp auto
-//        int seconds = td.getGioiHanThoiGianCauGiay() != null ? td.getGioiHanThoiGianCauGiay() : 15;
-//
-//        wsPublisher.publishBattleStarted(td.getId(), td.getTenPhong(), td.getBatDauLuc(), danhSachCauHoi.size(),
-//                seconds /* đã tính phía dưới */);
-//        battleLoopTask.runAutoLoop(td.getId(), seconds);
-//
-//
-//        // Trả response
-//        return BattleStartResponse.from(td, danhSachCauHoi);
-//    }
     @Override
     @Transactional
     public BattleStartResponse startBattle(Long tranDauId, Long currentUserId) throws Exception {
@@ -318,113 +287,6 @@ public class TranDauService implements ITranDauService {
         return BattleStartResponse.from(td, danhSachCauHoi);
     }
 
-
-    // ----------- BỔ SUNG 2: SUBMIT ANSWER -----------
-//    @Transactional
-//    @Override
-//    public SubmitAnswerResponse submitAnswer(SubmitAnswerDTO dto, Long currentUserId) throws Exception {
-//        TranDau td = tranDauRepository.findById(dto.getTranDauId())
-//                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
-//
-//        if (!Objects.equals(td.getTrangThai(), TrangThaiTranDau.ONGOING)) {
-//            throw new IllegalStateException("Phòng không ở trạng thái đang diễn ra");
-//        }
-//
-//        // kiểm tra user đang trong phòng
-//        boolean inRoom = nguoiChoiTranDauRepository
-//                .findByTranDau_IdAndNguoiDung_Id(td.getId(), currentUserId)
-//                .isPresent();
-//        if (!inRoom && !Objects.equals(td.getChuPhong().getId(), currentUserId)) {
-//            throw new SecurityException("Bạn không ở trong phòng này");
-//        }
-//
-//        BattleState state = battleStateManager.get(td.getId());
-//        if (state == null || state.getCurrentQuestionIndex() < 0) {
-//            throw new IllegalStateException("Chưa có câu hỏi nào đang bật");
-//        }
-//
-//        int idx = state.getCurrentQuestionIndex();
-//        CauHoi currentQ = state.getDanhSachCauHoi().get(idx);
-//        if (!Objects.equals(currentQ.getId(), dto.getCauHoiId())) {
-//            throw new IllegalArgumentException("Câu hỏi không khớp với câu hiện tại");
-//        }
-//
-//        // chống nộp nhiều lần
-//        Map<Long, String> answered = state.getAnswers().getOrDefault(idx, new HashMap<>());
-//        if (answered.containsKey(currentUserId)) {
-//            throw new IllegalStateException("Bạn đã nộp đáp án cho câu này");
-//        }
-//
-//        // kiểm tra timeout
-//        int seconds = td.getGioiHanThoiGianCauGiay() != null ? td.getGioiHanThoiGianCauGiay() : 15;
-//        long totalMillis = seconds * 1000L;
-//        long elapsedMillis = Duration.between(state.getCurrentQuestionStart(), Instant.now()).toMillis();
-//        if (elapsedMillis > totalMillis) {
-//            // hết giờ → coi như sai, 0 điểm (có thể cho phép late submit = 0 điểm)
-//            answered.put(currentUserId, dto.getAnswer().toUpperCase());
-//            state.getAnswers().put(idx, answered);
-//            battleStateManager.save(state);
-//
-//            int totalPoints = state.getDiemNguoiChoi().getOrDefault(currentUserId, 0);
-//            return SubmitAnswerResponse.builder()
-//                    .correct(false)
-//                    .gainedPoints(0)
-//                    .totalPoints(totalPoints)
-//                    .questionIndex(idx)
-//                    .build();
-//        }
-//
-//        // chấm điểm
-//        String ans = dto.getAnswer().trim().toUpperCase();
-//        boolean correct = ans.equalsIgnoreCase(String.valueOf(currentQ.getDapAnDung()));
-//
-//        int gained = 0;
-//        if (correct) {
-//            if (LuatTinhDiem.SPEED_BONUS.equalsIgnoreCase(td.getLuatTinhDiem())) {
-//                // linear speed bonus: 100..1000 điểm theo thời gian còn lại
-//                long remain = Math.max(0, totalMillis - elapsedMillis);
-//                double ratio = (double) remain / (double) totalMillis; // 0..1
-//                gained = (int) Math.max(100, Math.round(1000 * ratio));
-//            } else { // BASIC
-//                gained = 100; // cố định
-//            }
-//        }
-//
-//        // cập nhật điểm
-//        int total = state.getDiemNguoiChoi().getOrDefault(currentUserId, 0) + gained;
-//        state.getDiemNguoiChoi().put(currentUserId, total);
-//
-//        // ✅ Lưu câu trả lời
-//        answered.put(currentUserId, ans);
-//        state.getAnswers().put(idx, answered);
-//        battleStateManager.save(state);
-//
-//        battleStateManager.save(state);
-//
-//        // ✅ Phát cập nhật điểm riêng
-//        NguoiDung user = nguoiDungRepository.findById(currentUserId)
-//                .orElseThrow(() -> new DataNotFoundException("Người dùng không tồn tại"));
-//        wsPublisher.publishScoreUpdate(td.getId(), currentUserId, user.getHoTen(), correct, gained, total, idx);
-//
-//        // ✅ Lưu log câu trả lời
-//        TraLoiTranDau traLoi = TraLoiTranDau.builder()
-//                .tranDau(td)
-//                .nguoiDung(user)
-//                .cauHoi(currentQ)
-//                .luaChon(ans.charAt(0))
-//                .dungHaySai(correct)
-//                .thoiGianMs((int) elapsedMillis)
-//                .build();
-//        traLoiTranDauRepository.save(traLoi);
-//
-//
-//        return SubmitAnswerResponse.builder()
-//                .correct(correct)
-//                .gainedPoints(gained)
-//                .totalPoints(total)
-//                .questionIndex(idx)
-//                .build();
-//    }
     @Override
     @Transactional
     public SubmitAnswerResponse submitAnswer(SubmitAnswerDTO dto, Long currentUserId) throws Exception {

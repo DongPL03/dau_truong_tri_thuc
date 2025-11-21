@@ -2,6 +2,7 @@ package com.app.backend.responses.practice;
 
 import com.app.backend.models.PhienLuyenTap;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -13,24 +14,32 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class LichSuLuyenTapItem {
-
+    @JsonProperty("phien_id")
     private Long phienId;
 
+    @JsonProperty("bo_cau_hoi")
     private String boCauHoi;
 
+    @JsonProperty("tong_cau_hoi")
     private Integer tongCauHoi;
 
+    @JsonProperty("so_cau_dung")
     private Integer soCauDung;
 
+    @JsonProperty("diem_so")
     private Integer diemSo;
 
+    @JsonProperty("do_chinh_xac")
     private BigDecimal doChinhXac;
 
+    @JsonProperty("thoi_gian_tb_ms")
     private Integer thoiGianTbMs;
 
+    @JsonProperty("ngay_tao")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     private Instant ngayTao;
 
+    @JsonProperty("nguoi_dung")
     private UserInfo nguoiDung;
 
     @Getter
@@ -39,8 +48,10 @@ public class LichSuLuyenTapItem {
     @NoArgsConstructor
     @Builder
     public static class UserInfo {
+        @JsonProperty("id")
         private Long id;
-        private String ten;
+        @JsonProperty("ho_ten")
+        private String hoTen;
     }
 
     public static LichSuLuyenTapItem from(PhienLuyenTap p) {
@@ -55,7 +66,7 @@ public class LichSuLuyenTapItem {
                 .ngayTao(p.getTaoLuc())
                 .nguoiDung(UserInfo.builder()
                         .id(p.getNguoiDung().getId())
-                        .ten(p.getNguoiDung().getHoTen())
+                        .hoTen(p.getNguoiDung().getHoTen())
                         .build())
                 .build();
     }

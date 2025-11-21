@@ -7,7 +7,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Component phụ trách broadcast toàn bộ sự kiện trận đấu qua WebSocket.
@@ -168,16 +170,17 @@ public class BattleWsPublisher {
         safeSend(tranDauId, payload);
     }
 
+    public void publishAnswerReveal(Long tranDauId,
+                                    Long cauHoiId,
+                                    String dapAnDung,
+                                    String giaiThich) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "ANSWER_REVEAL");
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("cau_hoi_id", cauHoiId);
+        payload.put("dap_an_dung", dapAnDung);   // "A" | "B" | "C" | "D"
+        payload.put("giai_thich", giaiThich);    // có thể null
 
-    private void safeSendToUser(Long userId, Object payload) {
-        try {
-            messagingTemplate.convertAndSendToUser(
-                    String.valueOf(userId), // username của user session
-                    "/queue/battle",        // đích riêng user sẽ subscribe
-                    payload
-            );
-        } catch (Exception e) {
-            System.err.println("⚠️ [WS ERROR] Không thể gửi WS cá nhân: " + e.getMessage());
-        }
+        messagingTemplate.convertAndSend("/topic/battle." + tranDauId, payload);
     }
 }

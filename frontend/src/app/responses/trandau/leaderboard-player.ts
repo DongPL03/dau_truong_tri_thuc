@@ -4,4 +4,5 @@ interface LeaderboardPlayer {
   diem: number;
   so_cau_dung: number;
   xep_hang: number;
+  da_roi?: boolean; // 👈 NEW
 }

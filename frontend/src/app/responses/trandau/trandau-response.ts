@@ -14,4 +14,5 @@ export interface TranDauResponse {
   tao_luc: string;
   bat_dau_luc?: string | null;
   ket_thuc_luc?: string | null;
+  da_tham_gia: boolean;
 }

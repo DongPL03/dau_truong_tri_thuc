@@ -86,6 +86,12 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   localJoinedState = signal<boolean>(false);
 
+  revealedCorrectAnswer = signal<string>('');  // "A" | "B" | "C" | "D" | ''
+  revealedExplanation = signal<string>('');    // text giải thích
+
+  // đã nằm trong class ChiTietPhong
+  joinedBattle = signal<boolean>(false);
+
 
   constructor() {
     super();
@@ -118,12 +124,12 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     });
 
 
-    effect(() => {
-      const s = this.syncState();
-      if (s && s.current_question_index >= 0) {
-        this.selectedAnswer.set('');
-      }
-    });
+    // effect(() => {
+    //   const s = this.syncState();
+    //   if (s && s.current_question_index >= 0) {
+    //     this.selectedAnswer.set('');
+    //   }
+    // });
   }
 
   // ngOnInit(): void {
@@ -254,6 +260,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         this.loading.set(false);
         next?.();
 
+        this.joinedBattle.set(!!data.da_tham_gia);
+
         // Cập nhật số lượng người online
         if ((data as any).so_luong_nguoi_tham_gia) {
           this.onlineCount.set((data as any).so_luong_nguoi_tham_gia);
@@ -310,25 +318,11 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     const dto: ThamGiaTranDauDTO = {tran_dau_id: b.id};
     if (!b.cong_khai) dto.ma_pin = this.pinCode();
     this.saving.set(true);
-
-    //   this.tranDauService.joinBattle(dto as any).subscribe({
-    //     next: () => {
-    //       this.saving.set(false);
-    //       Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(r => {
-    //       });
-    //       this.doSync();
-    //     },
-    //     error: (e) => {
-    //       this.saving.set(false);
-    //       Swal.fire('Không thể tham gia', e?.error?.message || 'Vui lòng kiểm tra lại', 'error').then(r => {
-    //       });
-    //     },
-    //   });
-    // }
     this.tranDauService.joinBattle(dto as any)
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
+          this.joinedBattle.set(true);
           Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(() => {
           });
 
@@ -420,26 +414,23 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     console.log('📡 WS Event:', evt);
     switch (evt.type) {
       case 'PLAYER_JOINED': {
-        // const soNguoi = (evt as any).so_nguoi_hien_tai;
-        // if (typeof soNguoi === 'number') {
-        //   // 🟢 Server là nguồn sự thật
-        //   this.onlineCount.set(soNguoi);
-        // } else {
-        //   // fallback trong trường hợp cũ không có field này
-        //   this.onlineCount.update(n => n + 1);
-        // }
+        this.leaderboard.update(list =>
+          list.map(p =>
+            p.user_id === evt.user_id ? {...p, da_roi: false} : p
+          )
+        );
         Swal.fire('👋 Người chơi mới', `${evt.ho_ten} vừa tham gia phòng`, 'info').then(r => {
         });
         this.refreshRoomInfo();
         break;
       }
       case 'PLAYER_LEFT': {
-        // const soNguoi = (evt as any).so_nguoi_hien_tai;
-        // if (typeof soNguoi === 'number') {
-        //   this.onlineCount.set(soNguoi);
-        // } else {
-        //   this.onlineCount.update(n => Math.max(0, n - 1));
-        // }
+        // Đánh dấu "đã rời trận" trên leaderboard
+        this.leaderboard.update(list =>
+          list.map(p =>
+            p.user_id === evt.user_id ? {...p, da_roi: true} : p
+          )
+        );
         Swal.fire('🚪 Người chơi rời đi', `${evt.ho_ten} đã rời phòng`, 'warning').then(r => {
         });
         this.refreshRoomInfo();
@@ -483,6 +474,9 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         const q = evt.question;
         if (!q) return;
 
+        this.revealedCorrectAnswer.set('');
+        this.revealedExplanation.set('');
+
         const newState = {
           tran_dau_id: evt.tran_dau_id,
           current_question_index: evt.question_index,
@@ -506,6 +500,10 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         this.submittedCurrentAnswer.set(false);
         this.selectedAnswer.set('');
 
+        this.submittedCurrentAnswer.set(false);
+        this.selectedAnswer.set('');
+
+
         const startMs = Date.parse(newState.current_question_start);
         if (isNaN(startMs)) {
           console.warn('⚠️ current_question_start không hợp lệ:', newState.current_question_start);
@@ -515,7 +513,12 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         this.tick(startMs + newState.seconds_per_question * 1000);
         break;
       }
-
+      case 'ANSWER_REVEAL': {
+        // Lưu đáp án đúng & giải thích
+        this.revealedCorrectAnswer.set(evt.dap_an_dung);      // "A" | "B" | "C" | "D"
+        this.revealedExplanation.set(evt.giai_thich || '');
+        break;
+      }
       case 'SCORE_UPDATE':
         const myId = this.userService.getUserId();
         if (evt.user_id !== myId) {
@@ -725,6 +728,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
             position: 'top-end',
             showConfirmButton: false,
             timer: 3000
+          }).then(r => {
           });
         }
       });
@@ -919,4 +923,20 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     const u = this.userService.currentUser();
     return u ? u.ho_ten : 'Người chơi';
   }
+
+  // Trong class ChiTietPhong
+
+// 1. Thêm computed này vào
+  hasLongAnswer = computed(() => {
+    const s = this.syncState();
+    if (!s) return false;
+
+    const threshold = 25; // ⚡ Ngưỡng ký tự. Nếu dài hơn số này -> chuyển thành 1 cột
+
+    // Kiểm tra độ dài của cả 4 đáp án
+    return (s.a || '').length > threshold ||
+      (s.b || '').length > threshold ||
+      (s.c || '').length > threshold ||
+      (s.d || '').length > threshold;
+  });
 }

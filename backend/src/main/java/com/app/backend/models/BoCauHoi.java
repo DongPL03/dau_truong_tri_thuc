@@ -42,6 +42,9 @@ public class BoCauHoi extends BaseEntity {
     @Column(name = "trang_thai")
     private String trangThai;
 
+    @Column(name = "is_official")
+    private Boolean isOfficial = false;
+
     @Column(name = "ly_do_tu_choi")
     private String lyDoTuChoi;
 

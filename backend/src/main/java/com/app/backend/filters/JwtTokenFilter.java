@@ -30,57 +30,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtils jwtTokenUtil;
 
-//    @Override
-//    protected void doFilterInternal(@NonNull HttpServletRequest request,
-//                                    @NonNull HttpServletResponse response,
-//                                    @NonNull FilterChain filterChain) throws IOException {
-//        try {
-////            String path = request.getRequestURI();
-////            if (path.startsWith("/ws") || path.startsWith("/topic") || path.startsWith("/app")) {
-////                filterChain.doFilter(request, response);
-////                return;
-////            }
-//
-//            if (isBypassToken(request)) {
-//                filterChain.doFilter(request, response); //enable bypass
-//                return;
-//            }
-//            final String authHeader = request.getHeader("Authorization");
-//            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//                response.sendError(
-//                        HttpServletResponse.SC_UNAUTHORIZED,
-//                        "authHeader null or not started with Bearer");
-//                return;
-//            }
-//            final String token = authHeader.substring(7);
-//            final String tenDangNhap = jwtTokenUtil.getSubject(token);
-//            if (tenDangNhap != null
-//                    && SecurityContextHolder.getContext().getAuthentication() == null) {
-//                NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(tenDangNhap);
-//                if (jwtTokenUtil.validateToken(token, userDetails)) {
-////                    UsernamePasswordAuthenticationToken authenticationToken =
-////                            new UsernamePasswordAuthenticationToken(
-////                                    userDetails,
-////                                    null,
-////                                    userDetails.getAuthorities()
-////                            );
-//                    List<String> roles = jwtTokenUtil.extractRoles(token);
-//                    List<SimpleGrantedAuthority> authorities = roles.stream()
-//                            .map(SimpleGrantedAuthority::new)
-//                            .toList();
-//                    UsernamePasswordAuthenticationToken authenticationToken =
-//                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-//                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-//                }
-//            }
-//            filterChain.doFilter(request, response); //enable bypass
-//        } catch (Exception e) {
-//            //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.getWriter().write(e.getMessage());
-//        }
-//    }
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -190,9 +139,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"error\": \"Unauthorized: " + e.getMessage() + "\"}");
             }
-
-            // 🔒 Không gọi flushBuffer hoặc filterChain nữa
-            return;
         }
     }
 
@@ -205,6 +151,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/tranDau/pending", apiPrefix), "GET"),
                 Pair.of(String.format("%s/tranDau/sync/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/tranDau/\\d+", apiPrefix), "GET"),
+
+                Pair.of(String.format("%s/luyenTap/history/**", apiPrefix), "GET"),
 
                 Pair.of(String.format("%s/chuDe**", apiPrefix), "GET"),
 
@@ -220,7 +168,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                 Pair.of(String.format("%s/cauHoi/media**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/cauHoi/bo/**", apiPrefix), "GET"),
-                Pair.of(String.format("%s/provinces**", apiPrefix), "GET")
+                Pair.of(String.format("%s/provinces**", apiPrefix), "GET"),
+
+                Pair.of(String.format("%s/leaderboard/**", apiPrefix), "GET")
         );
 
         String requestPath = request.getServletPath();

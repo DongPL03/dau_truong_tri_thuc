@@ -20,10 +20,8 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PUT;
 
 @Configuration
-//@EnableMethodSecurity
 @EnableWebSecurity(debug = true)
 @EnableMethodSecurity(prePostEnabled = true)
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebMvc
 @RequiredArgsConstructor
 public class WebSecurityConfig {
@@ -35,7 +33,6 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                //.cors(Customizer.withDefaults())
                 .exceptionHandling(customizer -> customizer.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> {
@@ -56,21 +53,29 @@ public class WebSecurityConfig {
                                     String.format("%s/users/change-password", apiPrefix)).hasAuthority("ROLE_USER")
                             .requestMatchers(GET,
                                     String.format("%s/users/profile-images/**", apiPrefix),
+                                    String.format("%s/users/idVaiTro/**", apiPrefix),
+
                                     String.format("%s/tranDau/pending", apiPrefix),
                                     String.format("%s/tranDau/sync/**", apiPrefix),
                                     String.format("%s/tranDau/{id:\\d+}", apiPrefix),
+
+                                    String.format("%s/luyenTap/history/**", apiPrefix),
+
                                     String.format("%s/cauHoi/media/**", apiPrefix),
-                                    String.format("%s/users/idVaiTro/**", apiPrefix),
+
                                     String.format("%s/chuDe/**", apiPrefix),
+
                                     String.format("%s/boCauHoi/**", apiPrefix),
-//                                    String.format("%s/tranDau/**", apiPrefix),
+
                                     String.format("%s/cauHoi/bo/**", apiPrefix),
+
+                                    String.format("%s/leaderboard/**", apiPrefix),
+
                                     String.format("%s/provinces/**", apiPrefix)
                             ).permitAll()
 
                             .anyRequest()
                             .authenticated();
-                    //.anyRequest().permitAll();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
         ;

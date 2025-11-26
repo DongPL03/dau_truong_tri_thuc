@@ -1,0 +1,404 @@
+.page {
+  padding: 16px;
+}
+
+.page-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .page-subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #666;
+  }
+}
+
+.loading,
+.empty {
+  padding: 16px;
+  text-align: center;
+  color: #555;
+}
+
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 12px;
+
+  .filter-left {
+    flex: 1;
+
+    input {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+  }
+
+  .filter-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    select {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+      background: #fff;
+    }
+  }
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+
+  th, td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  thead {
+    background: #f5f7fb;
+
+    th {
+      font-weight: 600;
+      color: #333;
+    }
+  }
+
+  tbody tr:hover {
+    background: #f9fafc;
+  }
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: #1d4ed8;
+  font-weight: 600;
+
+  &.top {
+    background: #fde68a;
+    color: #92400e;
+  }
+}
+
+.player-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+
+    &.placeholder {
+      font-weight: 600;
+      color: #374151;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .info {
+    .name {
+      font-weight: 500;
+    }
+
+    .user-id {
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+}
+
+.score {
+  font-weight: 600;
+}
+
+.win {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.lose {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+
+  .btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  .page-info {
+    font-size: 13px;
+    color: #374151;
+  }
+}
+
+.user-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.user-modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 720px;
+  width: 100%;
+  padding: 16px 20px 20px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+}
+
+.user-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .close-btn {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+  }
+}
+
+.user-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  .user-summary-left {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .avatar-placeholder {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .user-summary-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    .stat-item {
+      min-width: 120px;
+
+      .label {
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .value {
+        font-size: 14px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .btn,
+  .btn-outline {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn {
+    border: none;
+    background: #4f46e5;
+    color: #fff;
+  }
+
+  .btn-outline {
+    border: 1px solid #d1d5db;
+    background: #fff;
+  }
+}
+
+.user-history {
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+  }
+
+  .user-history-pagination {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+
+    button {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+
+    span {
+      font-size: 12px;
+    }
+  }
+}
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  margin-top: 2px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* màu cho từng tier (cứ nhẹ nhàng thôi) */
+.tier-badge.bronze {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tier-badge.silver {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.tier-badge.gold {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.tier-badge.platinum {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.tier-badge.diamond {
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+.tier-badge.master {
+  background: #f5f3ff;
+  color: #5b21b6;
+}

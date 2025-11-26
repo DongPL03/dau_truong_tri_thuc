@@ -63,7 +63,23 @@ export const routes: Routes = [
         path: 'tran-dau/lich-su-tran-dau/:id',
         loadComponent: () => import('./components/TranDau/lich-su-tran-dau-detail/lich-su-tran-dau-detail').then(m => m.LichSuTranDauDetail),
         title: 'Chi tiết lịch sử trận đấu'
-      }
+      },
+      {
+        path: 'luyen-tap',
+        loadComponent: () => import('./components/luyen-tap/luyen-tap-home/luyen-tap-home').then(m => m.LuyenTapHomeComponent),
+        title: 'Luyện tập cá nhân'
+      },
+      {
+        path: 'bang-xep-hang',
+        loadComponent: () => import('./components/bang-xep-hang/bang-xep-hang').then(m => m.BangXepHang),
+        title: 'Bảng xếp hạng'
+      },
+      {
+        path: 'nguoi-choi/:id',
+        loadComponent: () => import('./components/nguoi-choi/ho-so-nguoi-choi/ho-so-nguoi-choi').then(m => m.HoSoNguoiChoi),
+        title: 'Hồ sơ người chơi'
+      },
+
     ]
   },
   {path: 'login', component: DangNhap, canActivate: [GuestGuardFn], title: 'Đăng nhập'},

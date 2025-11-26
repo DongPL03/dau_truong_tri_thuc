@@ -150,6 +150,17 @@ export class TrandauService {
   }
 
   /**
+   *  🔹 Lấy lịch sử trận đấu của 1 user bất kỳ (dùng cho bảng xếp hạng)
+   */
+  getUserHistory(user_id: number, page = 0, limit = 10) {
+    const params = {page, limit};
+    return this.http.get<ResponseObject<PageResponse<LichSuTranDauResponse>>>(
+      `${environment.apiBaseUrl}/tranDau/history/user/${user_id}`,
+      {params, headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
    * 🔹 Gửi chat trong trận đấu
    * @param dto
    */

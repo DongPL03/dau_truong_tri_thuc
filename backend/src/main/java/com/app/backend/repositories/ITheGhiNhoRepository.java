@@ -15,10 +15,20 @@ public interface ITheGhiNhoRepository extends JpaRepository<TheGhiNho, Long> {
     boolean existsByPhienIdAndCauHoiId(Long phienId, Long cauHoiId);
 
     Page<TheGhiNho> findByPhien_NguoiDung_Id(Long nguoiDungId, Pageable pageable);
+
     @Query("""
-           SELECT m FROM TheGhiNho m
-           WHERE m.phien.nguoiDung.id = :userId
-           ORDER BY m.taoLuc DESC
-           """)
+            SELECT m FROM TheGhiNho m
+            WHERE m.phien.nguoiDung.id = :userId
+            ORDER BY m.taoLuc DESC
+            """)
     List<TheGhiNho> findAllByUserId(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT m FROM TheGhiNho m
+            WHERE m.phien.nguoiDung.id = :userId
+            AND m.phien.boCauHoi.id = :boCauHoiId
+            ORDER BY m.taoLuc DESC
+            """)
+    List<TheGhiNho> findAllByUserIdAndBoCauHoiId(@Param("userId") Long userId,
+                                                 @Param("boCauHoiId") Long boCauHoiId);
 }

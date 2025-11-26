@@ -13,6 +13,9 @@ export interface BoCauHoiResponse {
   /** ⚙️ Trạng thái duyệt (PENDING / APPROVED / REJECTED) */
   trang_thai: string;
 
+  /** ✅ Bộ này có được đánh dấu dùng cho thi đấu (Official) hay không */
+  is_official?: boolean;
+
   /** ❌ Lý do bị từ chối (nếu có) */
   ly_do_tu_choi?: string;
 

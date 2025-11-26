@@ -22,12 +22,12 @@ public interface IBoCauHoiService {
     BoCauHoi getById(Long id, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException;
 
     Page<BoCauHoi> findAllBoCauHoi(PageRequest pageRequest,
-                           String keyword,
-                           Long chuDeId,
-                           String cheDoHienThi,
-                           String trangThai,
-                           Long creatorId,
-                           boolean isAdmin);
+                                   String keyword,
+                                   Long chuDeId,
+                                   String cheDoHienThi,
+                                   String trangThai,
+                                   Long creatorId,
+                                   boolean isAdmin);
 
     BoCauHoi approve(Long id, Long adminId);
 
@@ -37,5 +37,12 @@ public interface IBoCauHoiService {
 
     Map<String, Object> thongKeBoCauHoi(Long id) throws DataNotFoundException;
 
-//    BoCauHoi markOfficial(Long id, Long adminId);
+    BoCauHoi markOfficial(Long id, Long adminId) throws DataNotFoundException, PermissionDenyException;
+
+    Page<BoCauHoi> findPracticeSets(PageRequest pageRequest,
+                                    Long creatorId,
+                                    boolean isAdmin);
+
+    Page<BoCauHoi> findBattleSets(PageRequest pageRequest);
+
 }

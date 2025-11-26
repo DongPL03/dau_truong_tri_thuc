@@ -5,7 +5,6 @@ import com.app.backend.dtos.BatDauLuyenTapRequestDTO;
 import com.app.backend.dtos.TraLoiCauHoiRequestDTO;
 import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.exceptions.PermissionDenyException;
-import com.app.backend.models.CauHoi;
 import com.app.backend.models.PhienLuyenTap;
 import com.app.backend.models.TheGhiNho;
 import com.app.backend.models.TraLoiLuyenTap;
@@ -14,7 +13,7 @@ import com.app.backend.repositories.IPhienLuyenTapRepository;
 import com.app.backend.repositories.ITraLoiLuyenTapRepository;
 import com.app.backend.responses.PageResponse;
 import com.app.backend.responses.ResponseObject;
-import com.app.backend.responses.practice.*;
+import com.app.backend.responses.luyentap.*;
 import com.app.backend.services.phienluyentap.ILuyenTapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,33 +38,39 @@ public class LuyenTapController {
 
     @PostMapping("/start")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
-    public ResponseEntity<ResponseObject> batDauLuyenTap(@RequestBody BatDauLuyenTapRequestDTO request) throws DataNotFoundException {
+    public ResponseEntity<ResponseObject> batDauLuyenTap(@RequestBody BatDauLuyenTapRequestDTO request)
+            throws DataNotFoundException, PermissionDenyException {
+
         Long userId = securityUtils.getLoggedInUserId();
-        PhienLuyenTap phien = luyenTapService.batDau(request, userId);
-        List<CauHoi> selected = cauHoiRepository.findByBoCauHoiId(phien.getBoCauHoi().getId());
-//        return ResponseEntity.ok(PracticeStartResponse.from(phien, selected));
+        BatDauLuyenTapResponse res = luyenTapService.batDau(request, userId);
+
         return ResponseEntity.ok(
                 ResponseObject.builder()
+                        .status(HttpStatus.OK)
                         .message("Bắt đầu phiên luyện tập thành công")
-                        .data(BatDauLuyenTapResponse.from(phien, selected))
+                        .data(res)
                         .build()
         );
     }
 
+
     @PostMapping("/submit")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
-    public ResponseEntity<ResponseObject> submitPractice(@RequestBody TraLoiCauHoiRequestDTO request) throws DataNotFoundException, PermissionDenyException {
+    public ResponseEntity<ResponseObject> submitPractice(@RequestBody TraLoiCauHoiRequestDTO request)
+            throws DataNotFoundException, PermissionDenyException {
+
         Long userId = securityUtils.getLoggedInUserId();
-        PhienLuyenTap phien = luyenTapService.guiDapAn(request, userId);
-        List<TraLoiLuyenTap> traLois = traLoiLuyenTapRepository.findByPhienLuyenTapId(phien.getId());
+        SubmitLuyenTapResponse res = luyenTapService.guiDapAn(request, userId);
+
         return ResponseEntity.ok(
                 ResponseObject.builder()
+                        .status(HttpStatus.OK)
                         .message("Nộp bài luyện tập thành công")
-                        .data(SubmitLuyenTapResponse.from(phien, traLois))
+                        .data(res)
                         .build()
         );
-//        return ResponseEntity.ok(PracticeSubmitResponse.from(phien, traLois));
     }
+
 
     @GetMapping("/{phienId}")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
@@ -83,7 +88,6 @@ public class LuyenTapController {
     }
 
     @GetMapping("/history")
-    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getHistory(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -91,16 +95,17 @@ public class LuyenTapController {
         Long userId = securityUtils.getLoggedInUserId();
         boolean isAdmin = securityUtils.isAdmin();
         PageRequest pageRequest = PageRequest.of(page, size);
+
         Page<PhienLuyenTap> phienPage = luyenTapService.getPracticeHistory(userId, isAdmin, pageRequest);
         Page<LichSuLuyenTapItem> dtoPage = phienPage.map(LichSuLuyenTapItem::from);
 
         return ResponseEntity.ok(
                 ResponseObject.builder()
+                        .status(HttpStatus.OK)
                         .message("Lấy lịch sử luyện tập thành công")
-                        .data(dtoPage)
+                        .data(PageResponse.fromPage(dtoPage))
                         .build()
         );
-//        return ResponseEntity.ok(phienPage.map(LichSuLuyenTapItem::from));
     }
 
     @PostMapping("/memo/{phienId}/{cauHoiId}")
@@ -112,9 +117,9 @@ public class LuyenTapController {
                 ResponseObject.builder()
                         .message("Đã lưu câu hỏi vào thẻ ghi nhớ")
                         .data(Map.of(
-                                "memoId", memo.getId(),
-                                "phienId", phienId,
-                                "cauHoiId", cauHoiId
+                                "memo_id", memo.getId(),
+                                "phien_id", phienId,
+                                "cau_hoi_id", cauHoiId
                         ))
                         .build()
         );
@@ -137,6 +142,23 @@ public class LuyenTapController {
                         .message("Lấy danh sách thẻ ghi nhớ thành công")
                         .status(HttpStatus.OK)
                         .data(PageResponse.fromPage(dtoPage))
+                        .build()
+        );
+    }
+
+    @PostMapping("/memo/start/{boCauHoiId}")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> startPracticeFromMemo(@PathVariable Long boCauHoiId)
+            throws DataNotFoundException {
+        Long userId = securityUtils.getLoggedInUserId();
+
+        BatDauLuyenTapResponse data = luyenTapService.batDauTuTheGhiNho(boCauHoiId, userId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Bắt đầu luyện tập từ thẻ ghi nhớ thành công")
+                        .status(HttpStatus.OK)
+                        .data(data)
                         .build()
         );
     }

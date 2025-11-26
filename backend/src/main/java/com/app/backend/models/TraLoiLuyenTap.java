@@ -31,7 +31,7 @@ public class TraLoiLuyenTap {
     @JoinColumn(name = "cau_hoi_id", nullable = false)
     private CauHoi cauHoi;
 
-    @Column(name = "lua_chon", length = 1, nullable = false)
+    @Column(name = "lua_chon", length = 1)
     private Character luaChon;
 
     @Column(name = "dung_hay_sai", nullable = false)

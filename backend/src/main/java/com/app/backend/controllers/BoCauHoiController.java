@@ -70,6 +70,58 @@ public class BoCauHoiController {
         );
     }
 
+    @GetMapping("/practice-sets")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getPracticeSets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int limit
+    ) {
+        Long currentUserId = securityUtils.getLoggedInUserId();
+        boolean isAdmin = securityUtils.isAdmin();
+
+        // sort mới nhất trước
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "taoLuc"));
+
+        Page<BoCauHoi> result = boCauHoiService.findPracticeSets(
+                pageRequest,
+                currentUserId,
+                isAdmin
+        );
+
+        Page<BoCauHoiResponse> dtoPage = result.map(BoCauHoiResponse::from);
+        PageResponse<BoCauHoiResponse> data = PageResponse.fromPage(dtoPage);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Lấy danh sách bộ câu hỏi luyện tập thành công")
+                        .status(HttpStatus.OK)
+                        .data(data)
+                        .build()
+        );
+    }
+
+    @GetMapping("/battle-sets")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getBattleSets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int limit
+    ) {
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "taoLuc"));
+
+        Page<BoCauHoi> result = boCauHoiService.findBattleSets(pageRequest);
+        Page<BoCauHoiResponse> dtoPage = result.map(BoCauHoiResponse::from);
+        PageResponse<BoCauHoiResponse> data = PageResponse.fromPage(dtoPage);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Lấy danh sách bộ câu hỏi thi đấu thành công")
+                        .status(HttpStatus.OK)
+                        .data(data)
+                        .build()
+        );
+    }
+
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getById(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
@@ -166,6 +218,22 @@ public class BoCauHoiController {
                         .build()
         );
     }
+
+    @PutMapping("/{id}/mark-official")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> markOfficial(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
+        Long adminId = securityUtils.getLoggedInUserId(); // hoặc method tương đương của bạn
+        BoCauHoi updated = boCauHoiService.markOfficial(id, adminId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Đánh dấu bộ câu hỏi chính thức thành công")
+                        .status(HttpStatus.OK)
+                        .data(BoCauHoiResponse.from(updated))
+                        .build()
+        );
+    }
+
 
     @GetMapping("/{id}/thong-ke")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")

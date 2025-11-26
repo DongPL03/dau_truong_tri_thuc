@@ -7,6 +7,8 @@ import Swal from 'sweetalert2';
 import {ResponseObject} from '../../../responses/response-object';
 import {TranDauResponse} from '../../../responses/trandau/trandau-response';
 import {environment} from '../../../environments/environment';
+import {PageResponse} from '../../../responses/page-response';
+import {BoCauHoiResponse} from '../../../responses/bocauhoi/bocauhoi-response';
 
 @Component({
   selector: 'app-tao-tran',
@@ -26,6 +28,8 @@ export class TaoTran extends Base implements OnInit {
   isModalOpen = false;
 
   boCauHoiOptions: { id: number; tieu_de: string }[] = [];
+
+  keywordBoCauHoi = '';
 
   // === THÊM BIẾN LƯU TRỮ METADATA ===
   preview_difficulty_counts: any = {};
@@ -105,17 +109,18 @@ export class TaoTran extends Base implements OnInit {
   }
 
   loadBoCauHoi() {
-    // tuỳ API hiện tại của bạn. Ví dụ:
-    this.bocauHoiService.getAll().subscribe({
-      next: (res: ResponseObject<any>) => {
-        this.boCauHoiOptions = res.data?.items ?? [];
+    this.bocauHoiService.getBattleSets().subscribe({
+      next: (res: ResponseObject<PageResponse<BoCauHoiResponse>>) => {
+        const page = res.data;
+        this.boCauHoiOptions = page?.items ?? [];
       },
       error: () => {
-        Swal.fire('Lỗi', 'Không tải được danh sách bộ câu hỏi', 'error').then(r => {
+        Swal.fire('Lỗi', 'Không tải được danh sách bộ câu hỏi', 'error').then(() => {
         });
       }
     });
   }
+
 
   onSubmit() {
     if (this.createForm.invalid) {

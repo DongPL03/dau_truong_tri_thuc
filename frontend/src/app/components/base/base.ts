@@ -9,6 +9,8 @@ import {HttpUtilService} from '../../services/http.util.service';
 import {ChudeService} from '../../services/chude.service';
 import {CauHoiService} from '../../services/cauhoi.service';
 import {WsTrandauService} from '../../services/ws-trandau.service';
+import {LuyenTapService} from '../../services/luyentap.service';
+import {LeaderboardService} from '../../services/leaderboard.service';
 
 export class Base {
   router: Router = inject(Router);
@@ -21,6 +23,8 @@ export class Base {
   chuDeService: ChudeService = inject(ChudeService);
   cauHoiService: CauHoiService = inject(CauHoiService);
   wsTrandauService: WsTrandauService = inject(WsTrandauService);
+  luyenTapService: LuyenTapService = inject(LuyenTapService);
+  leaderboardService: LeaderboardService = inject(LeaderboardService);
   document: Document = inject(DOCUMENT);
   location: Location = inject(Location);
 }

@@ -23,8 +23,11 @@ public class TraLoiCauHoiRequestDTO {
 
     @Data
     public static class CauTraLoiRequest {
+        @JsonProperty("cau_hoi_id")
         private Long cauHoiId;
+        @JsonProperty("lua_chon")
         private Character luaChon; // A, B, C, D
+        @JsonProperty("thoi_gian_ms")
         private Integer thoiGianMs; // thời gian trả lời từng câu (ms)
     }
 }

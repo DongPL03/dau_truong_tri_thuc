@@ -30,6 +30,12 @@ public class BangXepHang {
     @Column(name = "tong_tran", columnDefinition = "INT DEFAULT 0")
     private Integer tongTran = 0;
 
+    @Column(name = "so_tran_thang")
+    private Integer soTranThang = 0;
+
+    @Column(name = "so_tran_thua")
+    private Integer soTranThua = 0;
+
     @Column(name = "xep_hang")
     private Integer xepHang;
 

@@ -29,6 +29,9 @@ public class BoCauHoiResponse {
     @JsonProperty("trang_thai")
     private String trangThai;
 
+    @JsonProperty("is_official")
+    private Boolean isOfficial;
+
     @JsonProperty("ly_do_tu_choi")
     private String lyDoTuChoi;
 
@@ -61,6 +64,7 @@ public class BoCauHoiResponse {
                 .moTa(entity.getMoTa())
                 .cheDoHienThi(entity.getCheDoHienThi() != null ? entity.getCheDoHienThi() : null)
                 .trangThai(entity.getTrangThai())
+                .isOfficial(entity.getIsOfficial())
                 .lyDoTuChoi(entity.getLyDoTuChoi())
                 .chuDe(entity.getChuDe() != null ? entity.getChuDe().getTen() : null)
                 .chuDeId(entity.getChuDe() != null ? entity.getChuDe().getId() : null)

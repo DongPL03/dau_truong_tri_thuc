@@ -103,4 +103,52 @@ export class BocauhoiService {
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }
+
+  /** Danh sách bộ câu hỏi dùng cho luyện tập:
+   *  chỉ lấy các bộ mà backend cho phép (public + của chính user)
+   */
+  getPracticeSets() {
+    const params: any = {
+      keyword: '',
+      chu_de_id: 0,
+      che_do_hien_thi: '',
+      trang_thai: '',
+      sort_order: 'NEWEST',
+      page: 0,
+      limit: 100
+    };
+
+    // 🔁 GỌI SANG /practice-sets
+    return this.http.get<ResponseObject<PageResponse<BoCauHoiResponse>>>(
+      `${this.api}/practice-sets`,
+      {params}
+    );
+  }
+
+  /** Danh sách bộ câu hỏi dùng cho thi đấu:
+   *  chỉ lấy các bộ mà backend cho phép (official)
+   */
+  getBattleSets() {
+    const params: any = {
+      page: 0,
+      limit: 100
+    };
+
+    return this.http.get<ResponseObject<PageResponse<BoCauHoiResponse>>>(
+      `${this.api}/battle-sets`,
+      {params}
+    );
+  }
+
+  /** Gắn cờ Official cho 1 bộ câu hỏi (chỉ admin)
+   * @param id
+   */
+  markOfficial(id: number) {
+    return this.http.put<ResponseObject<BoCauHoiResponse>>(
+      `${this.api}/${id}/mark-official`,
+      {},
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
 }

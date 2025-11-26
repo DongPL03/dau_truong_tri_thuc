@@ -22,10 +22,35 @@ public interface IBoCauHoiRepository extends JpaRepository<BoCauHoi, Long> {
             )
             """)
     Page<BoCauHoi> searchBoCauHoi(Pageable pageable,
-                           @Param("keyword") String keyword,
-                           @Param("chuDeId") Long chuDeId,
-                           @Param("cheDoHienThi") String cheDoHienThi,
-                           @Param("trangThai") String trangThai,
-                           @Param("creatorId") Long creatorId,
-                           @Param("isAdmin") boolean isAdmin);
+                                  @Param("keyword") String keyword,
+                                  @Param("chuDeId") Long chuDeId,
+                                  @Param("cheDoHienThi") String cheDoHienThi,
+                                  @Param("trangThai") String trangThai,
+                                  @Param("creatorId") Long creatorId,
+                                  @Param("isAdmin") boolean isAdmin);
+
+    @Query("""
+            SELECT b FROM BoCauHoi b
+            WHERE b.isXoa = false
+              AND (b.isOfficial = false OR b.isOfficial IS NULL)
+              AND b.trangThai = 'DA_DUYET'
+              AND (
+                    :isAdmin = true
+                    OR b.taoBoi.id = :creatorId
+                    OR b.cheDoHienThi = 'PUBLIC'
+              )
+            """)
+    Page<BoCauHoi> findPracticeSets(Pageable pageable,
+                                    @Param("creatorId") Long creatorId,
+                                    @Param("isAdmin") boolean isAdmin);
+
+    @Query("""
+            SELECT b FROM BoCauHoi b
+            WHERE b.isXoa = false
+              AND b.isOfficial = true
+              AND b.trangThai = 'DA_DUYET'
+              AND b.cheDoHienThi = 'PRIVATE'
+            """)
+    Page<BoCauHoi> findBattleSets(Pageable pageable);
+
 }

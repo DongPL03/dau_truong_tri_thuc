@@ -122,48 +122,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       console.log('💡 Effect tick() được kích hoạt cho câu', s.current_question_index + 1);
       this.tick(endAt);
     });
-
-
-    // effect(() => {
-    //   const s = this.syncState();
-    //   if (s && s.current_question_index >= 0) {
-    //     this.selectedAnswer.set('');
-    //   }
-    // });
   }
 
-  // ngOnInit(): void {
-  //   const id = Number(this.route.snapshot.paramMap.get('id'));
-  //   if (!id) return;
-  //
-  //   // ✅ Lấy token + user
-  //   const token = this.tokenService.getAccessToken();
-  //   const user = this.userService.currentUser();
-  //
-  //   // ✅ Kết nối WS
-  //   // @ts-ignore
-  //   this.wsTrandauService.connect(() => token, user.id, id)
-  //     .then(() => {
-  //       console.log('✅ WebSocket connected!');
-  //       this.wsTrandauService.subscribeBattle(id, (ev) => this.handleBattleEvent(ev));
-  //     })
-  //     .catch(err => console.error('❌ WebSocket connect failed:', err));
-  //
-  //   // ✅ Lần 1: Lấy thông tin ngay lập tức (để hiện giao diện nhanh)
-  //   this.fetchDetail(id, () => this.doSync());
-  //
-  //   // 🔥 Lần 2: FIX BUG NGƯỜI MỚI VÀO
-  //   // Tự động cập nhật lại sau 1.5 giây để lấy số lượng người chuẩn xác từ DB
-  //   // (Khắc phục tình trạng DB chưa lưu kịp khi vừa load trang)
-  //   setTimeout(() => {
-  //     console.log('🔄 Auto refreshing room info to sync online count...');
-  //     this.refreshRoomInfo();
-  //   }, 1500);
-  //
-  //   this.currentUserName();
-  //   setTimeout(() => this.syncState.update(s => s ? {...s} : s), 200);
-  //   this.loadUserInfo();
-  // }
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) return;
@@ -213,28 +173,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 // REST API
 // =====================================================
 
-
-  // fetchDetail(id: number, next ?: () => void) {
-  //   this.loading.set(true);
-  //   this.tranDauService.getBattleDetail(id).subscribe({
-  //     next: (res: ResponseObject<TranDauResponse>) => {
-  //       this.battle.set(res.data!);
-  //       this.loading.set(false);
-  //       next?.();
-  //       if (res.data && (res.data as any).so_luong_nguoi_tham_gia) {
-  //         this.onlineCount.set((res.data as any).so_luong_nguoi_tham_gia);
-  //         console.log('Số người online từ API:', this.onlineCount());
-  //       } else {
-  //         // Fallback: Set tạm là 1 (mình) hoặc độ dài leaderboard nếu có
-  //         this.onlineCount.set(this.leaderboard().length || 1);
-  //       }
-  //     },
-  //     error: () => {
-  //       this.loading.set(false);
-  //       Swal.fire('Lỗi', 'Không thể tải thông tin phòng', 'error').then(() => this.router.navigateByUrl('/home'));
-  //     },
-  //   });
-  // }
   fetchDetail(id: number, next ?: () => void) {
     this.loading.set(true);
     this.tranDauService.getBattleDetail(id).subscribe({
@@ -893,9 +831,18 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   practiceThisSet() {
     const b = this.battle();
-    if (!b) return;
-    // ví dụ: mở trang chi tiết bộ câu hỏi để luyện tập lại
-    this.router.navigate(['/bo-cau-hoi/chi-tiet-bo-cau-hoi', b.bo_cau_hoi_id]).then(r => {
+    if (!b || !b.bo_cau_hoi_id) {
+      // phòng không có bộ câu hỏi thì thôi
+      return;
+    }
+
+    const boId = b.bo_cau_hoi_id;
+
+    this.router.navigate(['/luyen-tap'], {
+      queryParams: {
+        bo_cau_hoi_id: boId
+      }
+    }).then(r => {
     });
   }
 

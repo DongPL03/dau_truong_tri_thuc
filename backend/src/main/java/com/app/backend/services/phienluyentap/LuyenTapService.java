@@ -5,7 +5,11 @@ import com.app.backend.dtos.TraLoiCauHoiRequestDTO;
 import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.exceptions.PermissionDenyException;
 import com.app.backend.models.*;
+import com.app.backend.models.constant.CheDoHienThi;
+import com.app.backend.models.constant.TrangThaiBoCauHoi;
 import com.app.backend.repositories.*;
+import com.app.backend.responses.luyentap.BatDauLuyenTapResponse;
+import com.app.backend.responses.luyentap.SubmitLuyenTapResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,10 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -32,38 +34,58 @@ public class LuyenTapService implements ILuyenTapService {
 
     @Override
     @Transactional
-    public PhienLuyenTap batDau(BatDauLuyenTapRequestDTO request, Long userId) throws DataNotFoundException {
+    public BatDauLuyenTapResponse batDau(BatDauLuyenTapRequestDTO request, Long userId)
+            throws DataNotFoundException, PermissionDenyException {
+
         BoCauHoi boCauHoi = boCauHoiRepository.findById(request.getBoCauHoiId())
                 .orElseThrow(() -> new DataNotFoundException("Bộ câu hỏi không tồn tại"));
 
         NguoiDung user = nguoiDungRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Người dùng không tồn tại"));
 
-        // Lấy danh sách câu hỏi của bộ
+        // Không cho luyện tập trên bộ official (dùng cho thi đấu)
+        if (Boolean.TRUE.equals(boCauHoi.getIsOfficial())) {
+            throw new PermissionDenyException("Không thể luyện tập với bộ câu hỏi Official dùng cho thi đấu");
+        }
+
+        // Bắt buộc bộ đã được duyệt
+        if (!TrangThaiBoCauHoi.DA_DUYET.equals(boCauHoi.getTrangThai())) {
+            throw new PermissionDenyException("Bộ câu hỏi chưa được duyệt");
+        }
+
+        // Nếu bộ PRIVATE thì chỉ cho chủ bộ luyện tập
+        if (CheDoHienThi.PRIVATE.equals(boCauHoi.getCheDoHienThi())
+                && !boCauHoi.getTaoBoi().getId().equals(user.getId())) {
+            throw new PermissionDenyException("Bạn không có quyền luyện tập với bộ câu hỏi riêng tư này");
+        }
+
+
         List<CauHoi> allQuestions = cauHoiRepository.findByBoCauHoiId(boCauHoi.getId());
         if (allQuestions.isEmpty())
             throw new DataNotFoundException("Bộ câu hỏi chưa có câu hỏi nào");
 
-        // Random n câu
         Collections.shuffle(allQuestions);
-        int soLuong = Math.min(request.getSoLuong(), allQuestions.size());
-        List<CauHoi> selected = allQuestions.subList(0, soLuong);
+        int soLuong = allQuestions.size();
         PhienLuyenTap phien = PhienLuyenTap.builder()
                 .boCauHoi(boCauHoi)
                 .nguoiDung(user)
-                .tongCauHoi(selected.size())
+                .tongCauHoi(soLuong)
                 .soCauDung(0)
                 .doChinhXac(BigDecimal.ZERO)
                 .diemSo(0)
                 .thoiGianTbMs(0)
                 .build();
-        phien.setBoCauHoi(null); // tránh vòng lặp JSON
-        return phienLuyenTapRepository.save(phien);
+
+        phien = phienLuyenTapRepository.save(phien);
+        return BatDauLuyenTapResponse.from(phien, allQuestions);
     }
+
 
     @Override
     @Transactional
-    public PhienLuyenTap guiDapAn(TraLoiCauHoiRequestDTO request, Long userId) throws DataNotFoundException, PermissionDenyException {
+    public SubmitLuyenTapResponse guiDapAn(TraLoiCauHoiRequestDTO request, Long userId)
+            throws DataNotFoundException, PermissionDenyException {
+
         PhienLuyenTap phien = phienLuyenTapRepository.findById(request.getPhienId())
                 .orElseThrow(() -> new DataNotFoundException("Phiên luyện tập không tồn tại"));
 
@@ -74,29 +96,29 @@ public class LuyenTapService implements ILuyenTapService {
         int correctCount = 0;
         int totalTime = 0;
         int total = request.getCauTraLoiList().size();
+
         for (TraLoiCauHoiRequestDTO.CauTraLoiRequest ans : request.getCauTraLoiList()) {
             CauHoi cauHoi = cauHoiRepository.findById(ans.getCauHoiId())
                     .orElseThrow(() -> new IllegalArgumentException("Câu hỏi không tồn tại"));
 
-            boolean correct = Character.toUpperCase(cauHoi.getDapAnDung()) ==
-                    Character.toUpperCase(ans.getLuaChon());
+            boolean correct = ans.getLuaChon() != null &&
+                    Character.toUpperCase(cauHoi.getDapAnDung()) ==
+                            Character.toUpperCase(ans.getLuaChon());
 
             if (correct) correctCount++;
-            if (ans.getThoiGianMs() != null) totalTime += ans.getThoiGianMs();
+            if (ans.getThoiGianMs() != null) {
+                totalTime += ans.getThoiGianMs();
+            }
 
-            TraLoiLuyenTap traLoi = new TraLoiLuyenTap();
-            traLoi.setPhienLuyenTap(phien);
-            traLoi.setCauHoi(cauHoi);
-            traLoi.setLuaChon(ans.getLuaChon());
-            traLoi.setDungHaySai(correct);
-            traLoi.setThoiGianMs(ans.getThoiGianMs());
+            TraLoiLuyenTap traLoi = TraLoiLuyenTap.builder()
+                    .phienLuyenTap(phien)
+                    .cauHoi(cauHoi)
+                    .luaChon(ans.getLuaChon())
+                    .dungHaySai(correct)
+                    .thoiGianMs(ans.getThoiGianMs())
+                    .build();
             traLoiLuyenTapRepository.save(traLoi);
 
-//            chiTiet.add(Map.of(
-//                    "cauHoiId", cauHoi.getId(),
-//                    "dapAnChon", ans.getLuaChon(),
-//                    "dungHaySai", correct
-//            ));
             if (!correct && !theGhiNhoRepository.existsByPhienIdAndCauHoiId(phien.getId(), cauHoi.getId())) {
                 TheGhiNho memo = TheGhiNho.builder()
                         .phien(phien)
@@ -105,6 +127,7 @@ public class LuyenTapService implements ILuyenTapService {
                 theGhiNhoRepository.save(memo);
             }
         }
+
         BigDecimal doChinhXac = (total == 0)
                 ? BigDecimal.ZERO
                 : BigDecimal.valueOf(correctCount * 100.0 / total)
@@ -114,45 +137,11 @@ public class LuyenTapService implements ILuyenTapService {
         phien.setDiemSo(correctCount);
         phien.setDoChinhXac(doChinhXac);
         phien.setThoiGianTbMs(total == 0 ? 0 : totalTime / total);
-        return phienLuyenTapRepository.save(phien);
+        phienLuyenTapRepository.save(phien);
+
+        List<TraLoiLuyenTap> traLois = traLoiLuyenTapRepository.findByPhienLuyenTapId(phien.getId());
+        return SubmitLuyenTapResponse.from(phien, traLois);
     }
-
-
-//    @Override
-//    public Map<String, Object> layKetQua(Long phienId, Long userId) throws DataNotFoundException, PermissionDenyException {
-//        PhienLuyenTap phien = phienLuyenTapRepository.findById(phienId)
-//                .orElseThrow(() -> new DataNotFoundException("Phiên luyện tập không tồn tại"));
-//
-//        if (!phien.getNguoiDung().getId().equals(userId)) {
-//            throw new PermissionDenyException("Bạn không có quyền xem kết quả này");
-//        }
-//
-//        List<TraLoiLuyenTap> traLois = traLoiLuyenTapRepository.findByPhienLuyenTapId(phienId);
-//
-//        List<Map<String, Object>> chiTiet = traLois.stream()
-//                .map(t -> {
-//                    Map<String, Object> m = new LinkedHashMap<>();
-//                    m.put("cauHoiId", t.getCauHoi().getId());
-//                    m.put("noiDung", t.getCauHoi().getNoiDung());
-//                    m.put("dapAnDung", t.getCauHoi().getDapAnDung()); // Character
-//                    m.put("luaChon", t.getLuaChon());               // Character
-//                    m.put("dungHaySai", t.getDungHaySai());            // Boolean
-//                    m.put("thoiGianMs", t.getThoiGianMs());            // Integer (có thể null)
-//                    return m;
-//                })
-//                .collect(Collectors.toList());
-//
-//        Map<String, Object> res = new LinkedHashMap<>();
-//        res.put("boCauHoi", phien.getBoCauHoi().getTieuDe());
-//        res.put("tongCauHoi", phien.getTongCauHoi());
-//        res.put("soCauDung", phien.getSoCauDung());
-//        res.put("doChinhXac", phien.getDoChinhXac());
-//        res.put("diemSo", phien.getDiemSo());
-//        res.put("thoiGianTbMs", phien.getThoiGianTbMs());
-//        res.put("chiTiet", chiTiet);
-//        res.put("taoLuc", phien.getTaoLuc());
-//        return res;
-//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -207,6 +196,47 @@ public class LuyenTapService implements ILuyenTapService {
         }
 
         theGhiNhoRepository.delete(memo);
+    }
+
+    @Override
+    @Transactional
+    public BatDauLuyenTapResponse batDauTuTheGhiNho(Long boCauHoiId, Long userId) throws DataNotFoundException {
+        NguoiDung user = nguoiDungRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Người dùng không tồn tại"));
+
+        BoCauHoi boCauHoi = boCauHoiRepository.findById(boCauHoiId)
+                .orElseThrow(() -> new DataNotFoundException("Bộ câu hỏi không tồn tại"));
+
+        // Lấy tất cả thẻ ghi nhớ của user cho bộ này
+        List<TheGhiNho> memos = theGhiNhoRepository.findAllByUserIdAndBoCauHoiId(userId, boCauHoiId);
+        if (memos.isEmpty()) {
+            throw new DataNotFoundException("Bạn chưa có thẻ ghi nhớ nào cho bộ câu hỏi này");
+        }
+
+        // Lấy danh sách câu hỏi distinct từ memos
+        List<CauHoi> selected = memos.stream()
+                .map(TheGhiNho::getCauHoi)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        // Xáo trộn cho đỡ nhàm chán
+        java.util.Collections.shuffle(selected);
+
+        // Tạo phiên luyện tập mới
+        PhienLuyenTap phien = PhienLuyenTap.builder()
+                .boCauHoi(boCauHoi)
+                .nguoiDung(user)
+                .tongCauHoi(selected.size())
+                .soCauDung(0)
+                .doChinhXac(java.math.BigDecimal.ZERO)
+                .diemSo(0)
+                .thoiGianTbMs(0)
+                .build();
+
+        phien = phienLuyenTapRepository.save(phien);
+
+        // Trả về response giống /start bình thường
+        return BatDauLuyenTapResponse.from(phien, selected);
     }
 
 }

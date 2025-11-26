@@ -18,6 +18,12 @@
         </button>
       </div>
     </header>
+    @if (bo?.che_do_hien_thi === 'PUBLIC' && bo?.trang_thai === 'CHO_DUYET') {
+      <div class="alert alert-info mt-3">
+        Bộ câu hỏi này đang <b>chờ admin duyệt</b> để hiển thị công khai.
+        Bạn vẫn có thể <b>thêm / chỉnh sửa câu hỏi</b> trước khi được duyệt.
+      </div>
+    }
 
     <section class="quiz-description">
       <p><b>Mô tả:</b> {{ bo?.mo_ta || 'Không có mô tả' }}</p>

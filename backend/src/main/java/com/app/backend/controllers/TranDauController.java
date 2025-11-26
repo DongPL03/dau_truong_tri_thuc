@@ -189,6 +189,27 @@ public class TranDauController {
         );
     }
 
+    @GetMapping("/history/user/{userId}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> getUserHistory(
+            @PathVariable("userId") Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Page<LichSuTranDauResponse> result = tranDauService.getUserHistory(userId, page, limit);
+
+        PageResponse<LichSuTranDauResponse> pageRes = PageResponse.fromPage(result);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy lịch sử trận đấu của người dùng thành công")
+                        .data(pageRes)
+                        .build()
+        );
+    }
+
+
     @GetMapping("/history/my/{tranDauId}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> getMyHistoryDetail(

@@ -55,4 +55,8 @@ export class Home extends Base implements OnInit {
   navigateHistory() {
     this.router.navigate(['/tran-dau/lich-su-tran-dau']).then(r => {});
   }
+
+  navigatePractice() {
+    this.router.navigate(['/luyen-tap']).then(r => {});
+  }
 }

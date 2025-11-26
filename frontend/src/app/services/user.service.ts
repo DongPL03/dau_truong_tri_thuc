@@ -9,6 +9,7 @@ import {ResponseObject} from '../responses/response-object';
 import {LoginDTO} from '../dtos/nguoi-dung/login-dto';
 import {UserResponse} from '../responses/nguoidung/user-response';
 import {UpdateUserDTO} from '../dtos/nguoi-dung/update-user-dto';
+import {UserSummaryResponse} from '../responses/nguoidung/user-summary-response';
 
 @Injectable({providedIn: 'root'})
 export class UserService {
@@ -144,6 +145,22 @@ export class UserService {
       }
     );
   }
+
+  /**
+   * 🔹 Lấy thông tin tổng quan của 1 user bất kỳ (dùng cho bảng xếp hạng)
+   */
+  getUserSummary(user_id: number) {
+    return this.http.get<ResponseObject<UserSummaryResponse>>(
+      `${this.baseUrl}/${user_id}/summary`,
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.tokenService.getAccessToken()}`,
+        }),
+      }
+    );
+  }
+
 
   getUsers(params: { page: number; limit: number; keyword: string }): Observable<ResponseObject> {
     return this.http.get<ResponseObject>(this.baseUrl, {params});

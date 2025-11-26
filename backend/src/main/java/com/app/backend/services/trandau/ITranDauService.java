@@ -36,4 +36,6 @@ public interface ITranDauService {
 
     TranDauResponse getBattleDetailResponse(Long tranDauId, Long currentUserId) throws Exception;
 
+    Page<LichSuTranDauResponse> getUserHistory(Long userId, int page, int limit);
+
 }

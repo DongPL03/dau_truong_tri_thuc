@@ -48,7 +48,7 @@ export class BoCauHoiCreate extends Base implements OnInit {
   /** Submit form tạo bộ câu hỏi */
   onSubmit(form: NgForm) {
     if (form.invalid || this.model.chu_de_id === 0) {
-      Swal.fire('Cảnh báo', 'Vui lòng điền đủ thông tin bắt buộc', 'warning').then(r => {
+      Swal.fire('Cảnh báo', 'Vui lòng điền đủ thông tin bắt buộc', 'warning').then(() => {
       });
       return;
     }
@@ -57,18 +57,24 @@ export class BoCauHoiCreate extends Base implements OnInit {
 
     this.bocauHoiService.create(this.model).subscribe({
       next: (res: ResponseObject<BoCauHoiResponse>) => {
+        const bo = res.data!;
+        console.log('Created BoCauHoi:', bo);
         Swal.fire('Thành công', 'Tạo bộ câu hỏi thành công!', 'success').then(() => {
-          this.router.navigateByUrl('/bo-cau-hoi/danh-sach-bo-cau-hoi').then(r => {
+          // ✅ ĐI TỚI CHI TIẾT BỘ VỪA TẠO
+          this.router.navigate(
+            ['/bo-cau-hoi/chi-tiet-bo-cau-hoi', bo.id]
+          ).then(() => {
           });
         });
       },
       error: (err) => {
-        Swal.fire('Lỗi', err.error?.message || 'Không thể tạo bộ câu hỏi', 'error').then(r => {
+        Swal.fire('Lỗi', err.error?.message || 'Không thể tạo bộ câu hỏi', 'error').then(() => {
         });
       },
       complete: () => (this.creating = false)
     });
   }
+
 
   cancel() {
     this.router.navigateByUrl('/bo-cau-hoi/danh-sach-bo-cau-hoi').then(r => {

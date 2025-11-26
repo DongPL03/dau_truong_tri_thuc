@@ -29,37 +29,8 @@ public class BoCauHoiService implements IBoCauHoiService {
     private final INguoiDungRepository nguoiDungRepository;
     private final IPhienLuyenTapRepository phienLuyenTapRepository;
     private final IVaiTroRepository vaiTroRepository;
+    private static final long MIN_QUESTIONS_FOR_APPROVE = 5L;
 
-
-//    @Override
-//    public BoCauHoi create(BoCauHoiDTO boCauHoiDTO, Long currentUserId) throws DataNotFoundException, PermissionDenyException {
-//        ChuDe chuDe = chuDeRepository.findById(boCauHoiDTO.getChuDeId())
-//                .orElseThrow(() -> new DataNotFoundException("Chủ đề không tồn tại"));
-//
-//        NguoiDung taoBoi = nguoiDungRepository.findById(currentUserId)
-//                .orElseThrow(() -> new DataNotFoundException("Người dùng không tồn tại"));
-//        String RoleUser = vaiTroRepository.findById(taoBoi.getVaiTro().getId())
-//                .orElseThrow(() -> new DataNotFoundException("Vai trò không tồn tại")).getTenVaiTro();
-//
-//        String role = taoBoi.getVaiTro().getTenVaiTro();
-//        if (!List.of("user", "admin").contains(role.toLowerCase())) {
-//            throw new PermissionDenyException("Bạn không có quyền tạo bộ câu hỏi");
-//        }
-//
-//
-//        String AdminRoleName = "admin";
-//        String UserRoleName = "user";
-//        String newTrangThai;
-//        BoCauHoi boCauHoi = BoCauHoi.builder()
-//                .tieuDe(boCauHoiDTO.getTieuDe())
-//                .moTa(boCauHoiDTO.getMoTa())
-//                .chuDe(chuDe)
-//                .cheDoHienThi(boCauHoiDTO.getCheDoHienThi())
-//                .taoBoi(taoBoi)
-//                .trangThai(RoleUser.equals(AdminRoleName) ? TrangThaiBoCauHoi.DA_DUYET : TrangThaiBoCauHoi.CHO_DUYET)
-//                .build();
-//        return boCauHoiRepository.save(boCauHoi);
-//    }
 
     @Override
     public BoCauHoi create(BoCauHoiDTO boCauHoiDTO, Long currentUserId) throws DataNotFoundException, PermissionDenyException {
@@ -98,6 +69,7 @@ public class BoCauHoiService implements IBoCauHoiService {
                 .moTa(boCauHoiDTO.getMoTa())
                 .chuDe(chuDe)
                 .cheDoHienThi(boCauHoiDTO.getCheDoHienThi())
+                .isOfficial(false)
                 .isXoa(false)
                 .taoBoi(taoBoi)
                 .trangThai(trangThaiMoi) // Sử dụng trạng thái đã được xác định ở trên
@@ -190,10 +162,19 @@ public class BoCauHoiService implements IBoCauHoiService {
     public BoCauHoi approve(Long id, Long adminId) {
         BoCauHoi boCauHoi = boCauHoiRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Bộ câu hỏi không tồn tại"));
+
+        // ✅ Chỉ cho duyệt khi có đủ câu hỏi
+        if (boCauHoi.getSoCauHoi() == 0 || boCauHoi.getSoCauHoi() < MIN_QUESTIONS_FOR_APPROVE) {
+            throw new IllegalArgumentException(
+                    "Bộ câu hỏi phải có ít nhất " + MIN_QUESTIONS_FOR_APPROVE + " câu hỏi mới được duyệt"
+            );
+        }
+
         boCauHoi.setTrangThai(TrangThaiBoCauHoi.DA_DUYET);
         boCauHoi.setLyDoTuChoi(null);
         return boCauHoiRepository.save(boCauHoi);
     }
+
 
     @Override
     @Transactional
@@ -205,14 +186,50 @@ public class BoCauHoiService implements IBoCauHoiService {
         return boCauHoiRepository.save(boCauHoi);
     }
 
-//    @Override
-//    @Transactional
-//    public BoCauHoi markOfficial(Long id, Long adminId) {
-//        BoCauHoi boCauHoi = boCauHoiRepo.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("Bộ câu hỏi không tồn tại"));
-//        boCauHoi.setIsOfficial(true); // cần có field is_official trong BoCauHoi
-//        return boCauHoi.save(boCauHoi);
-//    }
+    @Override
+    @Transactional
+    public BoCauHoi markOfficial(Long id, Long adminId) throws DataNotFoundException, PermissionDenyException {
+        // 1. Lấy bộ câu hỏi
+        BoCauHoi bo = boCauHoiRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Bộ câu hỏi không tồn tại"));
+
+        // 2. Kiểm tra admin
+        NguoiDung admin = nguoiDungRepository.findById(adminId)
+                .orElseThrow(() -> new DataNotFoundException("Admin không tồn tại"));
+
+        String role = admin.getVaiTro().getTenVaiTro().toLowerCase();
+        if (!role.equals("admin")) {
+            throw new PermissionDenyException("Chỉ admin mới có quyền gắn Official");
+        }
+
+        // 3. Kiểm tra trạng thái & số câu hỏi
+        if (!TrangThaiBoCauHoi.DA_DUYET.equals(bo.getTrangThai())) {
+            throw new IllegalArgumentException("Chỉ gắn Official cho bộ đã được duyệt");
+        }
+
+//        if (bo.getSoCauHoi() < 5) {
+//            throw new IllegalArgumentException("Cần ít nhất 5 câu hỏi để gắn Official");
+//        }
+
+        // 4. Gắn cờ official + luôn PRIVATE
+        bo.setIsOfficial(true);
+        bo.setCheDoHienThi(CheDoHienThi.PRIVATE);
+
+        return boCauHoiRepository.save(bo);
+    }
+
+    @Override
+    public Page<BoCauHoi> findPracticeSets(PageRequest pageRequest,
+                                           Long creatorId,
+                                           boolean isAdmin) {
+        return boCauHoiRepository.findPracticeSets(pageRequest, creatorId, isAdmin);
+    }
+
+    @Override
+    public Page<BoCauHoi> findBattleSets(PageRequest pageRequest) {
+        return boCauHoiRepository.findBattleSets(pageRequest);
+    }
+
 
     @Override
     @Transactional

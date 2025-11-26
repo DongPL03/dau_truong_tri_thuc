@@ -1,0 +1,276 @@
+<div class="page">
+  <div class="page-container">
+    <header class="page-header">
+      <div>
+        <h1>Bảng xếp hạng</h1>
+        <p class="page-subtitle">
+          Xếp hạng toàn hệ thống theo tổng điểm tích lũy (chống farm điểm cùng bộ).
+        </p>
+      </div>
+    </header>
+
+    @if (loading) {
+      <div class="loading">
+        Đang tải bảng xếp hạng...
+      </div>
+    } @else {
+      @if (items.length > 0) {
+        <div class="filters-advanced">
+          <div class="filter-block">
+            <label>Khoảng thời gian</label>
+            <select [(ngModel)]="time_range" (ngModelChange)="loadPage(0)">
+              <option value="ALL">Tất cả</option>
+              <option value="WEEK">7 ngày gần nhất</option>
+              <option value="MONTH">30 ngày gần nhất</option>
+            </select>
+          </div>
+
+          <div class="filter-block">
+            <label>Chủ đề</label>
+            <select [(ngModel)]="selected_chu_de_id" (ngModelChange)="loadPage(0)">
+              <option [ngValue]="undefined">Tất cả</option>
+
+              @for (c of chu_de_options; track c.id) {
+                <option [ngValue]="c.id">
+                  {{ c.ten }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="filter-block">
+            <label>
+              <input type="checkbox" [(ngModel)]="friend_only" disabled>
+              Chỉ hiển thị bạn bè (coming soon)
+            </label>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="ranking-table">
+            <thead>
+            <tr>
+              <th>Hạng</th>
+              <th>Người chơi</th>
+              <th>Điểm</th>
+              <th>Trận</th>
+              <th>Thắng / Thua</th>
+              <th>Tỉ lệ thắng</th>
+            </tr>
+            </thead>
+
+            <tbody>
+              @for (item of filteredItems(); track item.user_id) {
+                <tr (click)="openUserModal(item)"
+                    class="row-clickable">
+                  <td>
+                  <span class="rank-badge" [ngClass]="{'top': isTop(item.xep_hang)}">
+                    {{ item.xep_hang }}
+                  </span>
+                  </td>
+                  <td>
+                    <div class="player-cell">
+
+                      @if (item.anh_dai_dien) {
+                        <div class="avatar">
+                          <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + item.anh_dai_dien"
+                               alt="avatar">
+                        </div>
+                      } @else {
+                        <div class="avatar placeholder">
+                          {{ item.ho_ten ? item.ho_ten.charAt(0) : 'U' }}
+                        </div>
+                      }
+
+                      <div class="info">
+                        <div class="name">{{ item.ho_ten }}</div>
+                        <div class="user-id">ID: {{ item.user_id }}</div>
+                        <div class="tier-badge" [ngClass]="item.rank_tier.toLowerCase()">
+                          {{ mapTierLabel(item.rank_tier) }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="score">
+                      {{ item.tong_diem | number:'1.0-0' }}
+                    </div>
+                  </td>
+                  <td>
+                    {{ item.tong_tran }}
+                  </td>
+                  <td>
+                    <span class="win">{{ item.so_tran_thang }}</span>
+                    <span>/</span>
+                    <span class="lose">{{ item.so_tran_thua }}</span>
+                  </td>
+                  <td>
+                    {{ item.ti_le_thang | number:'1.0-1' }}%
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <button class="btn" (click)="goToPage(page - 1)" [disabled]="page <= 0">
+              ‹ Trước
+            </button>
+            <span class="page-info">
+              Trang {{ page + 1 }} / {{ totalPages }}
+            </span>
+            <button class="btn" (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">
+              Sau ›
+            </button>
+          </div>
+        }
+
+      } @else {
+        <div class="empty">
+          Chưa có dữ liệu bảng xếp hạng.
+        </div>
+      }
+    }
+
+    @if (show_user_modal) {
+      <div class="user-modal-backdrop">
+        <div class="user-modal">
+          <header class="user-modal-header">
+            <h2>Thông tin người chơi</h2>
+            <button class="close-btn" (click)="closeUserModal()">×</button>
+          </header>
+
+          @if (user_summary) {
+            <section class="user-summary">
+              <div class="user-summary-left">
+                <div class="avatar">
+                  @if (user_summary.avatar_url) {
+                    <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + user_summary.avatar_url"
+                         alt="avatar">
+                  } @else {
+                    <div class="avatar-placeholder">
+                      {{ user_summary.ho_ten || 'U' }}
+                    </div>
+                  }
+                </div>
+                <div class="info">
+                  <div class="name">{{ user_summary.ho_ten }}</div>
+                  <div class="id">ID: {{ user_summary.user_id }}</div>
+                </div>
+              </div>
+
+              <div class="user-summary-right">
+                <div class="stat-item">
+                  <div class="label">Tổng điểm</div>
+                  <div class="value">{{ user_summary.tong_diem }}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="label">Trận</div>
+                  <div class="value">{{ user_summary.tong_tran }}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="label">Thắng / Thua</div>
+                  <div class="value">
+                    {{ user_summary.so_tran_thang }} / {{ user_summary.so_tran_thua }}
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <div class="label">Tỉ lệ thắng</div>
+                  <div class="value">
+                    {{ user_summary.ti_le_thang | number:'1.0-1' }}%
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <div class="label">Hạng</div>
+                  <div class="value"><span class="tier-badge"
+                                           [ngClass]="user_summary?.rank_tier">{{ mapTierLabel(user_summary?.rank_tier || '') }}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          } @else {
+            <div class="user-summary-loading">
+              Đang tải thông tin người chơi...
+            </div>
+          }
+
+          <section class="user-actions">
+            <button class="btn" disabled>
+              + Kết bạn (sẽ làm sau)
+            </button>
+
+            @if (user_summary?.user_id === me?.id) {
+              <button class="btn-outline"
+                      [routerLink]="['/profile']">
+                Xem profile của tôi
+              </button>
+            } @else {
+              <button class="btn-outline"
+                      [routerLink]="['/nguoi-choi', user_summary?.user_id]">
+                Xem profile chi tiết
+              </button>
+            }
+          </section>
+
+          <section class="user-history">
+            <h3>Lịch sử trận đấu gần đây</h3>
+
+            @if (user_history_loading) {
+              <div class="user-history-loading">
+                Đang tải lịch sử...
+              </div>
+            } @else {
+              @if (user_history_items.length > 0) {
+                <table class="history-table">
+                  <thead>
+                  <tr>
+                    <th>Phòng</th>
+                    <th>Bộ câu hỏi</th>
+                    <th>Điểm</th>
+                    <th>Đúng</th>
+                    <th>Hạng</th>
+                    <th>Thời gian</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+
+                    @for (h of user_history_items; track $index) {
+                      <tr>
+                        <td>{{ h.ten_phong }}</td>
+                        <td>{{ h.bo_cau_hoi_tieu_de }}</td>
+                        <td>{{ h.tong_diem }}</td>
+                        <td>{{ h.so_cau_dung }}</td>
+                        <td>{{ h.xep_hang }}</td>
+                        <td>{{ h.hoan_thanh_luc | date:'dd/MM HH:mm' }}</td>
+                      </tr>
+                    }
+
+                  </tbody>
+                </table>
+
+                @if (user_history_total_pages > 1) {
+                  <div class="user-history-pagination">
+                    <button (click)="changeUserHistoryPage(user_history_page - 1)"
+                            [disabled]="user_history_page <= 0">
+                      ‹
+                    </button>
+                    <span>Trang {{ user_history_page + 1 }}/{{ user_history_total_pages }}</span>
+                    <button (click)="changeUserHistoryPage(user_history_page + 1)"
+                            [disabled]="user_history_page + 1 >= user_history_total_pages">
+                      ›
+                    </button>
+                  </div>
+                }
+
+              } @else {
+                <div class="user-history-empty">
+                  Người chơi này chưa có trận đấu nào.
+                </div>
+              }
+            }
+          </section>
+        </div>
+      </div>
+    }
+  </div>
+</div>

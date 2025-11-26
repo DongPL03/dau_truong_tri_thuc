@@ -22,7 +22,7 @@ export class BoCauHoiList extends Base implements OnInit {
   trangThai = '';
   chuDeId = 0;
   page = 0;
-  limit = 1;
+  limit = 3;
   sortOrder = 'NEWEST';
   totalPages = 0;
   currentUserId: number = 0;
@@ -120,11 +120,6 @@ export class BoCauHoiList extends Base implements OnInit {
     this.loadData();
   }
 
-  changePage(p: number) {
-    if (p < 0 || p >= this.totalPages) return;
-    this.page = p;
-    this.loadData();
-  }
 
   goToCreateQuiz() {
     // sau này sẽ điều hướng đến trang tạo bộ câu hỏi
@@ -161,6 +156,12 @@ export class BoCauHoiList extends Base implements OnInit {
     return visible;
   }
 
+  changePage(p: number) {
+    if (p < 0 || p >= this.totalPages) return;
+    this.page = p;
+    this.loadData();
+  }
+
   navigateDetail(id: number) {
     this.router.navigate(['/bo-cau-hoi/chi-tiet-bo-cau-hoi', id]).then(r => {
     });
@@ -195,6 +196,35 @@ export class BoCauHoiList extends Base implements OnInit {
       }
     });
   }
+
+  markOfficial(quiz: BoCauHoiResponse) {
+    Swal.fire({
+      title: 'Xác nhận',
+      text: 'Gắn Official cho bộ câu hỏi này? (Cần ít nhất 5 câu hỏi và đã được duyệt)',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Huỷ'
+    }).then(result => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.bocauHoiService.markOfficial(quiz.id).subscribe({
+        next: (res: ResponseObject<BoCauHoiResponse>) => {
+          Swal.fire('Thành công', res.message || 'Đã gắn Official', 'success').then(r => {
+          });
+          this.loadData(); // hàm bạn đang dùng để reload danh sách
+        },
+        error: err => {
+          const msg = err?.error?.message || 'Không thể gắn Official';
+          Swal.fire('Lỗi', msg, 'error').then(r => {
+          });
+        }
+      });
+    });
+  }
+
 
   navigateEdit(id: number) {
     this.router.navigate(['/bo-cau-hoi/sua-bo-cau-hoi', id]).then(r => {

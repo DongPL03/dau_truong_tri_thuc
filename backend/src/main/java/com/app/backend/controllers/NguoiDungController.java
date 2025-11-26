@@ -11,6 +11,8 @@ import com.app.backend.responses.ResponseObject;
 import com.app.backend.responses.user.LoginResponse;
 import com.app.backend.responses.user.UserListResponse;
 import com.app.backend.responses.user.UserResponse;
+import com.app.backend.responses.user.UserSummaryResponse;
+import com.app.backend.services.bangxephang.IBangXepHangService;
 import com.app.backend.services.nguoidung.INguoiDungService;
 import com.app.backend.services.token.ITokenService;
 import com.app.backend.services.verifyemail.IEmailVerificationService;
@@ -53,6 +55,8 @@ public class NguoiDungController {
     private final ITokenService tokenService;
     private final SecurityUtils securityUtils;
     private final IEmailVerificationService emailVerificationService;
+    private final IBangXepHangService bangXepHangService;
+
 
     @GetMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -415,6 +419,21 @@ public class NguoiDungController {
                         .status(HttpStatus.OK)
                         .build());
     }
+
+    @GetMapping("/{id}/summary")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> getUserSummary(@PathVariable("id") Long userId) throws DataNotFoundException {
+        UserSummaryResponse data = bangXepHangService.getUserSummary(userId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy thông tin tổng quan người dùng thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
 
     // 2) USER TỰ ĐỔI MẬT KHẨU (check oldPassword)
     @PutMapping("/change-password")

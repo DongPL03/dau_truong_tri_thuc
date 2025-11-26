@@ -1,0 +1,112 @@
+<div class="page">
+  <div class="page-container">
+    <header class="page-header">
+      <h1>Hồ sơ người chơi</h1>
+      @if (isMe()) {
+        <p class="note">(Đây là hồ sơ của bạn)</p>
+      }
+    </header>
+
+    @if (summary) {
+      <section class="card">
+        <div class="avatar-block">
+          <div class="avatar">
+            @if (summary.avatar_url) {
+              <img [src]="'http://localhost:8088/api/v1/users/profile-images/'+ summary.avatar_url" alt="avatar">
+            } @else {
+              <div class="avatar-placeholder">
+                {{ summary.ho_ten || 'U' }}
+              </div>
+            }
+          </div>
+          <div class="user-info">
+            <div class="name">{{ summary.ho_ten }}</div>
+            <div class="id">ID: {{ summary.user_id }}</div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Tổng điểm</div>
+            <div class="value">{{ summary.tong_diem }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Trận</div>
+            <div class="value">{{ summary.tong_tran }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Thắng / Thua</div>
+            <div class="value">
+              {{ summary.so_tran_thang }} / {{ summary.so_tran_thua }}
+            </div>
+          </div>
+          <div class="stat">
+            <div class="label">Tỉ lệ thắng</div>
+            <div class="value">
+              {{ summary.ti_le_thang | number:'1.0-1' }}%
+            </div>
+          </div>
+        </div>
+      </section>
+    } @else {
+      <div class="card loading">Đang tải thông tin người chơi...</div>
+    }
+
+    <section class="card">
+      <h2>Lịch sử trận đấu gần đây</h2>
+
+      @if (loading_history) {
+        <div class="loading">
+          Đang tải lịch sử...
+        </div>
+      } @else {
+        @if (history_items.length > 0) {
+          <div class="history-wrapper">
+            <table class="history-table">
+              <thead>
+              <tr>
+                <th>Phòng</th>
+                <th>Bộ câu hỏi</th>
+                <th>Điểm</th>
+                <th>Đúng</th>
+                <th>Hạng</th>
+                <th>Thời gian</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (h of history_items; track $index) {
+                  <tr>
+                    <td>{{ h.ten_phong }}</td>
+                    <td>{{ h.bo_cau_hoi_tieu_de }}</td>
+                    <td>{{ h.tong_diem }}</td>
+                    <td>{{ h.so_cau_dung }}</td>
+                    <td>{{ h.xep_hang }}</td>
+                    <td>{{ h.hoan_thanh_luc | date:'dd/MM/yyyy HH:mm' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            @if (history_total_pages > 1) {
+              <div class="pagination">
+                <button (click)="changeHistoryPage(history_page - 1)"
+                        [disabled]="history_page <= 0">
+                  ‹
+                </button>
+                <span>Trang {{ history_page + 1 }}/{{ history_total_pages }}</span>
+                <button (click)="changeHistoryPage(history_page + 1)"
+                        [disabled]="history_page + 1 >= history_total_pages">
+                  ›
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div>
+            Người chơi này chưa có trận đấu nào.
+          </div>
+        }
+      }
+    </section>
+  </div>
+</div>

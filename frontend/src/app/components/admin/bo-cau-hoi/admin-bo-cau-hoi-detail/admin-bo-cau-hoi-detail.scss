@@ -1,0 +1,187 @@
+.admin-bch-detail {
+  max-width: 1000px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.detail-header {
+  margin-bottom: 15px;
+}
+
+.detail-card {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.detail-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-title-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #2196f3;
+}
+
+.detail-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.detail-description {
+  margin-top: 10px;
+}
+
+.detail-reject-reason {
+  margin-top: 10px;
+  background: #ffebee;
+  border-left: 4px solid #d32f2f;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.badge-official {
+  background: #fff3cd;
+  color: #f9a825;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.detail-actions-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 15px;
+}
+
+.btn-outline,
+.btn,
+.btn-danger,
+.btn-secondary,
+.btn-secondary-outline,
+.btn-outline-danger {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.table-questions {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 0.95rem;
+}
+
+.table-questions thead tr {
+  background: #f5f5f5;
+}
+
+.table-questions th,
+.table-questions td {
+  border: 1px solid #eee;
+  padding: 10px;
+  vertical-align: top;
+}
+
+.col-noi-dung {
+  max-width: 380px;
+}
+
+.question-media img,
+.question-media video {
+  max-width: 350px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.question-media audio {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.badge-difficulty {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-difficulty.DE {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.badge-difficulty.TRUNG_BINH {
+  background: #fff8e1;
+  color: #f9a825;
+}
+
+.badge-difficulty.KHO {
+  background: #ffebee;
+  color: #d32f2f;
+}
+.question-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.btn-edit,
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background-color: #e3f2fd;
+  color: #2196f3;
+  border-color: #2196f3;
+}
+
+.btn-edit:hover {
+  background-color: #2196f3;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-delete {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background-color: #d32f2f;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}

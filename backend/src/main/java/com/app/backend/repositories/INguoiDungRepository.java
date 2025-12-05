@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ public interface INguoiDungRepository extends JpaRepository<NguoiDung, Long> {
 
     Optional<NguoiDung> findByEmail(String email);
 
-    @Query("SELECT o FROM NguoiDung o WHERE o.active = true AND o.isXoa = false AND (:keyword IS NULL OR :keyword = '' OR " +
+    @Query("SELECT o FROM NguoiDung o WHERE o.isXoa = false AND (:keyword IS NULL OR :keyword = '' OR " +
             "o.hoTen LIKE %:keyword% " +
             "OR o.diaChi LIKE %:keyword% " +
             "OR o.tenDangNhap LIKE %:keyword%) " +
@@ -30,5 +31,18 @@ public interface INguoiDungRepository extends JpaRepository<NguoiDung, Long> {
 
     @Query("SELECT o.vaiTro.id FROM NguoiDung o WHERE o.tenDangNhap = :tenDangNhap")
     Long findIdVaiTroByTenDangNhap(String tenDangNhap);
+
+    long countByIsXoaFalse();
+
+    @Query(value = """
+            SELECT DATE(tao_luc) AS ngay, COUNT(*) AS so_luong
+            FROM nguoi_dung
+            WHERE tao_luc >= :from_time
+            GROUP BY DATE(tao_luc)
+            ORDER BY DATE(tao_luc)
+            """, nativeQuery = true)
+    List<Object[]> countNewUsersPerDayNative(@Param("from_time") Instant fromTime);
+
+
 
 }

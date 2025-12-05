@@ -1,0 +1,272 @@
+<div class="admin-trandau-detail">
+
+  <button class="btn-back" (click)="goBack()">
+    ← Quay lại danh sách
+  </button>
+
+  <h2>Chi tiết lịch sử trận đấu (Admin)</h2>
+
+  @if (loading) {
+    <div class="loading">Đang tải dữ liệu...</div>
+  } @else {
+
+    @if (detail) {
+      <section class="card">
+        <h3>Thông tin trận & người chơi</h3>
+        <div class="info-grid">
+          <div>
+            <span class="label">ID trận:</span>
+            <span>{{ detail.tran_dau_id }}</span>
+          </div>
+          <div>
+            <span class="label">Phòng:</span>
+            <span>{{ detail.ten_phong }} ({{ detail.ma_phong }})</span>
+          </div>
+          <div>
+            <span class="label">Bộ câu hỏi:</span>
+            <span>{{ detail.bo_cau_hoi_tieu_de }}</span>
+          </div>
+          <div>
+            <span class="label">Người chơi:</span>
+            <span>{{ detail.ho_ten || detail.username }}</span>
+          </div>
+          <div>
+            <span class="label">Luật tính điểm:</span>
+            <span>{{ detail.luat_tinh_diem }}</span>
+          </div>
+          <div>
+            <span class="label">Thời gian:</span>
+            <span>
+              {{ detail.bat_dau_luc | date:'dd/MM/yyyy HH:mm' }} -
+              {{ detail.ket_thuc_luc | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div>
+            <span class="label">Điểm / câu đúng:</span>
+            <span>{{ detail.tong_diem }} điểm, {{ detail.so_cau_dung }} câu đúng</span>
+          </div>
+          <div>
+            <span class="label">Thời gian trả lời:</span>
+            <span>{{ (detail.tong_thoi_gian_ms / 1000) | number:'1.0-1' }} giây</span>
+          </div>
+          <div>
+            <span class="label">Xếp hạng:</span>
+            <span>{{ detail.xep_hang }}</span>
+          </div>
+        </div>
+      </section>
+    }
+
+    @if (leaderboard.length > 0) {
+      <section class="card">
+        <h3>Bảng xếp hạng trận đấu</h3>
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Hạng</th>
+            <th>Người chơi</th>
+            <th>Điểm</th>
+            <th>Câu đúng</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (p of leaderboard; track $index) {
+              <tr (click)="openPlayerModal(p)" class="click-row">
+                <td>{{ p.xepHang || p.xep_hang }}</td>
+                <td>{{ p.hoTen || p.ho_ten }}</td>
+                <td>{{ p.diem }}</td>
+                <td>{{ p.soCauDung || p.so_cau_dung }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
+    @if (questions.length > 0) {
+      <section class="card">
+        <h3>Chi tiết câu hỏi & đáp án</h3>
+
+        <table class="table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Nội dung</th>
+            <th>Đáp án đúng</th>
+            <th>Đáp án người chơi</th>
+            <th>Kết quả</th>
+            <th>Thời gian (ms)</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (q of questions; track $index; let i = $index) {
+              <tr (click)="openQuestionModal(q)" class="click-row">
+                <td>{{ i + 1 }}</td>
+                <td>{{ q.noi_dung }}</td>
+                <td>{{ q.dap_an_dung }}</td>
+                <td>{{ q.nguoi_dung_chon }}</td>
+                <td>
+                  <span [ngClass]="q.dung_hay_sai ? 'badge-win' : 'badge-lose'">
+                    {{ q.dung_hay_sai ? 'Đúng' : 'Sai' }}
+                  </span>
+                </td>
+                <td>{{ q.thoi_gian_ms }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
+    @if (detail) {
+      <section class="card">
+        <h3>Dữ liệu đầy đủ (debug)</h3>
+        <pre>{{ detail | json }}</pre>
+      </section>
+    }
+
+  }
+
+  @if (show_player_modal) {
+    <div class="modal-backdrop" (click)="closePlayerModal()">
+      <div class="admin-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Chi tiết câu hỏi của người chơi</h3>
+          <button (click)="closePlayerModal()">✕</button>
+        </div>
+
+        <div class="modal-subtitle">
+          {{ player_modal_title }}
+        </div>
+
+        @if (player_modal_loading) {
+          <div class="loading">Đang tải...</div>
+        } @else {
+          @if (player_answers.length > 0) {
+            <table class="table">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Nội dung</th>
+                <th>Đáp án đúng</th>
+                <th>Đáp án người chơi</th>
+                <th>Kết quả</th>
+                <th>Thời gian (ms)</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (q of player_answers; track $index; let i = $index) {
+                  <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ q.noi_dung }}</td>
+                    <td>{{ q.dap_an_dung }}</td>
+                    <td>{{ q.nguoi_dung_chon }}</td>
+                    <td>
+                      <span [ngClass]="q.dung_hay_sai ? 'badge-win' : 'badge-lose'">
+                        {{ q.dung_hay_sai ? 'Đúng' : 'Sai' }}
+                      </span>
+                    </td>
+                    <td>{{ q.thoi_gian_ms }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <div>Không có dữ liệu.</div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  @if (show_question_modal) {
+    <div class="modal-backdrop" (click)="closeQuestionModal()">
+      <div class="admin-modal admin-modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Chi tiết câu hỏi</h3>
+          <button (click)="closeQuestionModal()">✕</button>
+        </div>
+
+        @if (question_modal_loading) {
+          <div class="loading">Đang tải...</div>
+        } @else {
+          @if (question_modal) {
+            <div class="question-info">
+
+              @if (question_modal.loai_noi_dung === 'HINH_ANH' && question_modal.duong_dan_tep) {
+                <div class="media-cinematic"
+                     [style.backgroundImage]="'url(http://localhost:8088/api/v1/cauHoi/media/' + question_modal.duong_dan_tep + ')'">
+                  <div class="overlay"></div>
+                  <img [src]="'http://localhost:8088/api/v1/cauHoi/media/' + question_modal.duong_dan_tep"
+                       alt="Question Image">
+                </div>
+              }
+
+              @if (question_modal.loai_noi_dung === 'AM_THANH' && question_modal.duong_dan_tep) {
+                <div class="media-audio-box">
+                  <div class="icon-disk">💿</div>
+                  <audio controls>
+                    <source [src]="'http://localhost:8088/api/v1/cauHoi/media/' + question_modal.duong_dan_tep"
+                            type="audio/mpeg">
+                  </audio>
+                </div>
+              }
+
+              <div class="info-content">
+                <div class="question-text">
+                  <span class="badge-type">{{ question_modal.loai_noi_dung }}</span>
+                  <strong>{{ question_modal.noi_dung }}</strong>
+                </div>
+
+                <ul class="choices">
+                  <li [class.is-correct]="question_modal.dap_an_dung === 'A'">
+                    <strong>A.</strong> {{ question_modal.lua_chon_a }}
+                  </li>
+                  <li [class.is-correct]="question_modal.dap_an_dung === 'B'">
+                    <strong>B.</strong> {{ question_modal.lua_chon_b }}
+                  </li>
+                  <li [class.is-correct]="question_modal.dap_an_dung === 'C'">
+                    <strong>C.</strong> {{ question_modal.lua_chon_c }}
+                  </li>
+                  <li [class.is-correct]="question_modal.dap_an_dung === 'D'">
+                    <strong>D.</strong> {{ question_modal.lua_chon_d }}
+                  </li>
+                </ul>
+
+                <div class="correct-text">
+                  Đáp án đúng: <strong>{{ question_modal.dap_an_dung }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <table class="table">
+              <thead>
+              <tr>
+                <th>Người chơi</th>
+                <th>Lựa chọn</th>
+                <th>Kết quả</th>
+                <th>Thời gian (ms)</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (row of question_modal.nguoi_choi; track $index) {
+                  <tr>
+                    <td>{{ row.ho_ten }}</td>
+                    <td>{{ row.lua_chon }}</td>
+                    <td>
+                      <span [ngClass]="row.dung_hay_sai ? 'badge-win' : 'badge-lose'">
+                        {{ row.dung_hay_sai ? 'Đúng' : 'Sai' }}
+                      </span>
+                    </td>
+                    <td>{{ row.thoi_gian_ms }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,8 +1,11 @@
 package com.app.backend.responses.user;
 
 
+import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -36,4 +39,10 @@ public class UserSummaryResponse {
 
     @JsonProperty("rank_tier")
     private String rankTier;
+
+    @JsonProperty("xep_hang")
+    private Integer xepHang;
+
+    @JsonProperty("lich_su_tran_dau")
+    private List<LichSuTranDauResponse> lichSuTranDau;
 }

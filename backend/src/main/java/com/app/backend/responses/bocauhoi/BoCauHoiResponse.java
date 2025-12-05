@@ -47,6 +47,10 @@ public class BoCauHoiResponse {
     @JsonProperty("nguoi_tao_id")
     private Long nguoiTaoId;
 
+    @JsonProperty("co_quyen_sua")
+    private Boolean coQuyenSua;
+
+
     @JsonProperty("tao_luc")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     private Instant taoLuc;
@@ -58,6 +62,7 @@ public class BoCauHoiResponse {
     // ✅ static mapper
     public static BoCauHoiResponse from(BoCauHoi entity) {
         NguoiDung taoBoi = entity.getTaoBoi();
+        boolean la_admin_tao = taoBoi != null && taoBoi.getVaiTro() != null && "admin".equals(taoBoi.getVaiTro().getTenVaiTro());
         return BoCauHoiResponse.builder()
                 .id(entity.getId())
                 .tieuDe(entity.getTieuDe())
@@ -70,6 +75,7 @@ public class BoCauHoiResponse {
                 .chuDeId(entity.getChuDe() != null ? entity.getChuDe().getId() : null)
                 .nguoiTao(taoBoi != null ? taoBoi.getHoTen() : null)
                 .nguoiTaoId(taoBoi != null ? taoBoi.getId() : null)
+                .coQuyenSua(la_admin_tao)
                 .taoLuc(entity.getTaoLuc())
                 .capNhatLuc(entity.getCapNhatLuc())
                 .build();

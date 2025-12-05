@@ -151,4 +151,39 @@ export class BocauhoiService {
     );
   }
 
+  /** Gắn cờ Official cho 1 bộ câu hỏi (chỉ admin)
+   * @param id
+   */
+  disMarkOfficial(id: number) {
+    return this.http.put<ResponseObject<BoCauHoiResponse>>(
+      `${this.api}/${id}/dis-mark-official`,
+      {},
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
+   * ✅ Admin duyệt bộ câu hỏi
+   * */
+  approveBoCauHoi(id: number): Observable<ResponseObject<BoCauHoiResponse>> {
+    return this.http.put<ResponseObject<BoCauHoiResponse>>(
+      `${this.api}/${id}/approve`,
+      {},
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
+   * ❌ Admin từ chối bộ câu hỏi với lý do
+   * */
+  rejectBoCauHoi(id: number, lyDoTuChoi: string): Observable<ResponseObject<BoCauHoiResponse>> {
+    const body = {ly_do_tu_choi: lyDoTuChoi};
+    return this.http.put<ResponseObject<BoCauHoiResponse>>(
+      `${this.api}/${id}/reject`,
+      body,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+
 }

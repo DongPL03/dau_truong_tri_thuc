@@ -19,6 +19,9 @@ export interface BoCauHoiResponse {
   /** ❌ Lý do bị từ chối (nếu có) */
   ly_do_tu_choi?: string;
 
+  /** ❌ Bộ câu hỏi này đã bị xóa hay chưa */
+  co_quyen_sua?: boolean;
+
   /** 🧩 Chủ đề (chỉ là tên, không phải object) */
   chu_de?: string;
 

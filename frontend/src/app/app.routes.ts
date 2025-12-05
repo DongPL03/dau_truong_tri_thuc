@@ -8,6 +8,9 @@ import {GuestGuardFn} from './guards/guest.guard';
 import {MainLayout} from './layout/main-layout/main-layout';
 import {BoCauHoiList} from './components/bo-cau-hoi/danh-sach-bo-cau-hoi/danh-sach-bo-cau-hoi';
 import {PhongCho} from './components/TranDau/phong-cho/phong-cho';
+import {AdminGuardFn} from './guards/admin.guard';
+import {Admin} from './components/admin/admin';
+
 
 export const routes: Routes = [
   {
@@ -79,9 +82,20 @@ export const routes: Routes = [
         loadComponent: () => import('./components/nguoi-choi/ho-so-nguoi-choi/ho-so-nguoi-choi').then(m => m.HoSoNguoiChoi),
         title: 'Hồ sơ người chơi'
       },
+      {
+        path: 'ban-be',
+        loadComponent: () => import('./components/ban-be/user-friend/user-friend').then(m => m.UserFriend),
+        title: 'Bạn bè'
+      },
 
     ]
   },
+  {
+    path: 'admin',
+    component: Admin,
+    canActivate: [AdminGuardFn]
+  },
+
   {path: 'login', component: DangNhap, canActivate: [GuestGuardFn], title: 'Đăng nhập'},
   {path: 'register', component: DangKy, canActivate: [GuestGuardFn], title: 'Đăng ký'},
   {path: '**', redirectTo: 'home'},

@@ -63,13 +63,18 @@ public class BoCauHoiService implements IBoCauHoiService {
             }
         }
 
+        boolean isOfficial = false; // Mặc định không phải official khi tạo mới
+        if (role.equals("admin")) {
+            isOfficial = true; // Admin tạo thì có thể đánh dấu official
+        }
+
         // 4. Xây dựng đối tượng
         BoCauHoi boCauHoi = BoCauHoi.builder()
                 .tieuDe(boCauHoiDTO.getTieuDe())
                 .moTa(boCauHoiDTO.getMoTa())
                 .chuDe(chuDe)
                 .cheDoHienThi(boCauHoiDTO.getCheDoHienThi())
-                .isOfficial(false)
+                .isOfficial(isOfficial)
                 .isXoa(false)
                 .taoBoi(taoBoi)
                 .trangThai(trangThaiMoi) // Sử dụng trạng thái đã được xác định ở trên
@@ -207,14 +212,35 @@ public class BoCauHoiService implements IBoCauHoiService {
             throw new IllegalArgumentException("Chỉ gắn Official cho bộ đã được duyệt");
         }
 
-//        if (bo.getSoCauHoi() < 5) {
-//            throw new IllegalArgumentException("Cần ít nhất 5 câu hỏi để gắn Official");
-//        }
+        if (bo.getSoCauHoi() < 5) {
+            throw new IllegalArgumentException("Cần ít nhất 5 câu hỏi để gắn Official");
+        }
 
         // 4. Gắn cờ official + luôn PRIVATE
         bo.setIsOfficial(true);
         bo.setCheDoHienThi(CheDoHienThi.PRIVATE);
 
+        return boCauHoiRepository.save(bo);
+    }
+
+    @Override
+    @Transactional
+    public BoCauHoi disMarkOfficial(Long id, Long adminId) throws DataNotFoundException, PermissionDenyException {
+        // 1. Lấy bộ câu hỏi
+        BoCauHoi bo = boCauHoiRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Bộ câu hỏi không tồn tại"));
+
+        // 2. Kiểm tra admin
+        NguoiDung admin = nguoiDungRepository.findById(adminId)
+                .orElseThrow(() -> new DataNotFoundException("Admin không tồn tại"));
+
+        String role = admin.getVaiTro().getTenVaiTro().toLowerCase();
+        if (!role.equals("admin")) {
+            throw new PermissionDenyException("Chỉ admin mới có quyền gắn Official");
+        }
+
+        // 4. Gắn cờ official + luôn PRIVATE
+        bo.setIsOfficial(false);
         return boCauHoiRepository.save(bo);
     }
 

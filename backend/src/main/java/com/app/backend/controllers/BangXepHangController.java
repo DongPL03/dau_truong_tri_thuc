@@ -4,16 +4,15 @@ import com.app.backend.components.SecurityUtils;
 import com.app.backend.responses.PageResponse;
 import com.app.backend.responses.ResponseObject;
 import com.app.backend.responses.bangxephang.LeaderboardEntryResponse;
+import com.app.backend.responses.user.UserSummaryResponse;
 import com.app.backend.services.bangxephang.IBangXepHangService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${api.prefix}/leaderboard")
@@ -48,6 +47,44 @@ public class BangXepHangController {
                         .message("Lấy bảng xếp hạng toàn cầu thành công")
                         .status(HttpStatus.OK)
                         .data(data)
+                        .build()
+        );
+    }
+
+    /**
+     * 🔹 Lấy thông tin tổng quan của 1 user trên BXH
+     * Dùng cho:
+     * - Trang BXH (click vào 1 dòng -> show modal)
+     * - Trang chi tiết user (Admin) muốn xem nhanh thành tích
+     */
+    @GetMapping("/user/{userId}/summary")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getUserSummary(@PathVariable Long userId) throws Exception {
+        UserSummaryResponse data = bangXepHangService.getUserSummary(userId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Lấy thông tin tổng quan người dùng trên bảng xếp hạng thành công")
+                        .status(HttpStatus.OK)
+                        .data(data)
+                        .build()
+        );
+    }
+
+    /**
+     * 🔹 ADMIN: Force tính lại thứ hạng (xếp_hạng) cho toàn bộ bảng xếp hạng.
+     * Không đụng vào tổng điểm, chỉ update trường xep_hang theo tổng điểm hiện tại.
+     */
+    @PostMapping("/admin/recalc-rank")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> recalcRankings() {
+        bangXepHangService.recalcAllRankings();
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Đã tính lại thứ hạng bảng xếp hạng thành công")
+                        .status(HttpStatus.OK)
+                        .data(null)
                         .build()
         );
     }

@@ -16,36 +16,24 @@
     <a routerLink="/bang-xep-hang" routerLinkActive="active" class="nav-item">
       <i class="fas fa-trophy"></i> BXH
     </a>
+    @if (user?.vai_tro?.ten_vai_tro === 'admin') {
+      <a routerLink="/admin" routerLinkActive="active" class="nav-item">
+        <i class="fas fa-user-shield"></i> Trang Quản Trị
+      </a>
+    }
+
   </nav>
 
   <!-- 👤 Thông tin người dùng -->
   <div class="user-profile-actions">
 
     <!-- 🔔 Thông báo -->
-    <div class="notification-wrapper" (click)="$event.stopPropagation()">
-      <button class="nav-btn notification-btn" (click)="toggleNotif()">
-        <i class="fas fa-bell"></i>
-        @if (unreadCount > 0) {
-          <span class="badge">{{ unreadCount }}</span>
-        }
-      </button>
+    <!-- 🔔 Thông báo -->
+
 
       <!-- Dropdown thông báo -->
-      <div class="notif-dropdown" [class.show]="notifOpen">
-        <div class="notif-header">Thông báo mới</div>
-        <ul class="notif-list">
-          @for (n of notifications; track n.id) {
-            <li>
-              <i [class]="n.icon"></i>
-              <span>{{ n.text }}</span>
-            </li>
-          }
-        </ul>
-        <div class="notif-footer">
-          <button>Xem tất cả</button>
-        </div>
-      </div>
-    </div>
+      <!-- 🔔 Thông báo -->
+      <app-notification-bell></app-notification-bell>
 
     <!-- 👤 Avatar + menu người dùng -->
     <div class="user-dropdown" (click)="$event.stopPropagation()">

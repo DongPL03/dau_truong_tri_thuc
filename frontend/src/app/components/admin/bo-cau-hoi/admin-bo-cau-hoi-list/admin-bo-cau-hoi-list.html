@@ -1,0 +1,102 @@
+<div class="admin-bch-container">
+  <div class="list-header">
+    <div>
+      <h2>Quản lý bộ câu hỏi</h2>
+      <p>Danh sách tất cả bộ câu hỏi trong hệ thống.</p>
+    </div>
+
+    <div class="list-header-actions">
+      <button
+        class="btn"
+        (click)="goToCreateAdminBo()">
+        <i class="fas fa-plus"></i> Thêm bộ câu hỏi (admin)
+      </button>
+    </div>
+  </div>
+
+
+  <div class="filter-row">
+    <input
+      type="text"
+      [(ngModel)]="keyword"
+      placeholder="Tìm theo tiêu đề..."
+    />
+
+    <select [(ngModel)]="chuDeId">
+      <option [value]="0">Tất cả chủ đề</option>
+      @for (cd of chuDes; track cd.id) {
+        <option [value]="cd.id">{{ cd.ten }}</option>
+      }
+    </select>
+
+    <select [(ngModel)]="trangThai">
+      @for (opt of trangThaiOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+
+    <button (click)="page = 0; loadData()">Lọc</button>
+  </div>
+
+  @if (!loading) {
+
+    <table class="admin-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tiêu đề</th>
+        <th>Chủ đề</th>
+        <th>Người tạo</th>
+        <th>Chế độ</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
+      </tr>
+      </thead>
+      <tbody>
+        @if (items.length === 0) {
+          <tr>
+            <td colspan="7" class="empty">Không có bộ câu hỏi nào</td>
+          </tr>
+        } @else {
+          @for (quiz of items; track quiz.id) {
+            <tr>
+              <td>{{ quiz.id }}</td>
+              <td>{{ quiz.tieu_de }}</td>
+              <td>{{ quiz.chu_de || '-' }}</td>
+              <td>{{ quiz.nguoi_tao || '-' }}</td>
+              <td>{{ quiz.che_do_hien_thi }}</td>
+              <td>{{ quiz.trang_thai }}</td>
+              <td class="actions">
+                <button
+                  (click)="approve(quiz)"
+                  [disabled]="quiz.trang_thai !== 'CHO_DUYET'">
+                  Duyệt
+                </button>
+
+                <button
+                  class="danger"
+                  (click)="reject(quiz)"
+                  [disabled]="quiz.trang_thai !== 'CHO_DUYET'">
+                  Từ chối
+                </button>
+                <button (click)="navigateDetail(quiz.id)">Sửa</button>
+
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button (click)="changePage(page - 1)" [disabled]="page === 0">&laquo;</button>
+        <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
+        <button (click)="changePage(page + 1)" [disabled]="page >= totalPages - 1">&raquo;</button>
+      </div>
+    }
+
+  } @else {
+    <div class="loading-row">Đang tải...</div>
+  }
+</div>

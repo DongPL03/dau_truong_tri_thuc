@@ -6,6 +6,7 @@ import {HttpUtilService} from './http.util.service';
 import {ResponseObject} from '../responses/response-object';
 import {PageResponse} from '../responses/page-response';
 import {LeaderboardEntryResponse} from '../responses/bangxephang/leaderboard-entry-response';
+import {UserSummaryResponse} from '../responses/nguoidung/user-summary-response';
 
 @Injectable({providedIn: 'root'})
 export class LeaderboardService {
@@ -37,6 +38,22 @@ export class LeaderboardService {
     return this.http.get<ResponseObject<PageResponse<LeaderboardEntryResponse>>>(
       `${this.api}/global`,
       {params, headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  // leaderboard.service.ts (gợi ý)
+  get_user_summary(user_id: number) {
+    return this.http.get<ResponseObject<UserSummaryResponse>>(
+      `${environment.apiBaseUrl}/leaderboard/user/${user_id}`,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  recalc_rankings_admin() {
+    return this.http.post<ResponseObject<any>>(
+      `${environment.apiBaseUrl}/leaderboard/admin/recalc-rank`,
+      {},
+      {headers: this.httpUtil.createAuthHeaders()}
     );
   }
 

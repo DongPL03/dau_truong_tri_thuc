@@ -12,6 +12,7 @@ import com.app.backend.models.constant.LuatTinhDiem;
 import com.app.backend.models.constant.TrangThaiBoCauHoi;
 import com.app.backend.models.constant.TrangThaiTranDau;
 import com.app.backend.repositories.*;
+import com.app.backend.responses.admin.QuestionAnswersAdminResponse;
 import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
 import com.app.backend.responses.trandau.*;
 import com.app.backend.responses.websocket.FinishedEvent;
@@ -413,6 +414,16 @@ public class TranDauService implements ITranDauService {
     }
 
     @Override
+    public Page<LichSuTranDauResponse> getAllHistory(int page, int limit) {
+        PageRequest pageable = PageRequest.of(page, limit);
+
+        return lichSuTranDauRepository
+                .findAllByOrderByHoanThanhLucDesc(pageable)
+                .map(LichSuTranDauResponse::fromEntity);
+    }
+
+
+    @Override
     @Transactional
     public BattleFinishResponse finishBattle(Long tranDauId, Long currentUserId, boolean autoMode) throws Exception {
         System.out.println(">>> [SERVICE] finishBattle CALLED, tranDauId=" + tranDauId
@@ -693,6 +704,7 @@ public class TranDauService implements ITranDauService {
                             .tongTran(0)
                             .soTranThang(0)
                             .soTranThua(0)
+                            .xepHang(0)
                             .build());
 
             // Mỗi lần kết thúc trận -> +1 tổng trận
@@ -715,8 +727,14 @@ public class TranDauService implements ITranDauService {
                 bxh.setSoTranThua(bxh.getSoTranThua() + 1);
             }
             // còn lại (0 điểm, không thuộc winner) -> coi như tham gia nhưng ko +thắng cũng ko +thua
-            bangXepHangRepository.save(bxh);
 
+            //cap nhat truong xep hang
+//            long betterPlayersCount = bangXepHangRepository
+//                    .countByTongDiemGreaterThanAndNguoiDung_IdNot(bxh.getTongDiem(), userId);
+//
+//            bxh.setXepHang((int) betterPlayersCount + 1);
+            bangXepHangRepository.save(bxh);
+            bangXepHangRepository.updateAllRankings();
         }
     }
 
@@ -776,6 +794,48 @@ public class TranDauService implements ITranDauService {
                 ))
                 .toList();
         res.setQuestions(qList);
+        return res;
+    }
+
+    @Override
+    public LichSuTranDauDetailResponse getHistoryDetailAdmin(Long lichSuId) throws Exception {
+        // 1) Lấy bản ghi lịch sử
+        LichSuTranDau myHistory = lichSuTranDauRepository.findById(lichSuId)
+                .orElseThrow(() -> new DataNotFoundException("Lịch sử trận đấu không tồn tại"));
+
+        TranDau td = myHistory.getTranDau();
+        Long userId = myHistory.getNguoiDung().getId();
+
+        // 2) Base info
+        LichSuTranDauDetailResponse res = LichSuTranDauDetailResponse.baseFrom(td, myHistory);
+
+        // 3) Leaderboard
+        List<LichSuTranDau> all = lichSuTranDauRepository
+                .findByTranDau_IdOrderByXepHangAsc(td.getId());
+
+        List<FinishedPlayer> leaderboard = all.stream()
+                .map(ls -> FinishedPlayer.builder()
+                        .userId(ls.getNguoiDung().getId())
+                        .hoTen(ls.getNguoiDung().getHoTen())
+                        .diem(ls.getTongDiem())
+                        .soCauDung(ls.getSoCauDung())
+                        .xepHang(ls.getXepHang())
+                        .build())
+                .toList();
+        res.setLeaderboard(leaderboard);
+
+        // 4) Câu hỏi / đáp án của user tương ứng
+        List<TraLoiTranDau> answers = traLoiTranDauRepository
+                .findByTranDau_IdAndNguoiDung_IdOrderByTraLoiLucAsc(td.getId(), userId);
+
+        List<LichSuTranDauQuestionResponse> qList = answers.stream()
+                .map(tl -> LichSuTranDauQuestionResponse.fromEntities(
+                        tl,
+                        tl.getCauHoi()
+                ))
+                .toList();
+        res.setQuestions(qList);
+
         return res;
     }
 
@@ -858,5 +918,60 @@ public class TranDauService implements ITranDauService {
 
         wsPublisher.publishLeaderboard(tranDauId, rows);
     }
+
+    // 1) Admin xem chi tiết từng câu của 1 user trong trận
+    @Override
+    public List<LichSuTranDauQuestionResponse> getPlayerAnswersAdmin(Long tranDauId, Long userId) throws DataNotFoundException {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        List<TraLoiTranDau> answers = traLoiTranDauRepository
+                .findByTranDau_IdAndNguoiDung_IdOrderByTraLoiLucAsc(tranDauId, userId);
+
+        return answers.stream()
+                .map(tl -> LichSuTranDauQuestionResponse.fromEntities(
+                        tl,
+                        tl.getCauHoi()
+                ))
+                .toList();
+    }
+
+    // 2) Admin xem tất cả người chơi của 1 câu hỏi
+    @Override
+    public QuestionAnswersAdminResponse getQuestionAnswersAdmin(Long tranDauId, Long cauHoiId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        CauHoi q = cauHoiRepository.findById(cauHoiId)
+                .orElseThrow(() -> new DataNotFoundException("Câu hỏi không tồn tại"));
+
+        List<TraLoiTranDau> answers = traLoiTranDauRepository
+                .findByTranDau_IdAndCauHoi_IdOrderByTraLoiLucAsc(tranDauId, cauHoiId);
+
+        List<QuestionAnswersAdminResponse.PlayerAnswerRow> nguoiChoi = answers.stream()
+                .map(tl -> QuestionAnswersAdminResponse.PlayerAnswerRow.builder()
+                        .userId(tl.getNguoiDung().getId())
+                        .hoTen(tl.getNguoiDung().getHoTen())
+                        .luaChon(tl.getLuaChon())
+                        .dungHaySai(tl.getDungHaySai())
+                        .thoiGianMs(tl.getThoiGianMs())
+                        .build())
+                .toList();
+
+        return QuestionAnswersAdminResponse.builder()
+                .tranDauId(td.getId())
+                .cauHoiId(q.getId())
+                .noiDung(q.getNoiDung())
+                .loaiNoiDung(q.getLoaiNoiDung())
+                .duongDanTep(q.getDuongDanTep())
+                .luaChonA(q.getLuaChonA())
+                .luaChonB(q.getLuaChonB())
+                .luaChonC(q.getLuaChonC())
+                .luaChonD(q.getLuaChonD())
+                .dapAnDung(q.getDapAnDung())
+                .nguoiChoi(nguoiChoi)
+                .build();
+    }
+
 
 }

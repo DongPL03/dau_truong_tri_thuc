@@ -1,0 +1,196 @@
+<div class="admin-bch-detail">
+
+  <div class="detail-header">
+    <button class="btn-link" (click)="router.navigate(['/admin/bo-cau-hoi'])">
+      <i class="fas fa-arrow-left"></i> Quay lại danh sách
+    </button>
+  </div>
+
+  @if (bo_cau_hoi) {
+    <div class="detail-card">
+      <div class="detail-header-main">
+        <div class="detail-title-line">
+          <h2 class="detail-title">{{ bo_cau_hoi.tieu_de }}</h2>
+          @if (bo_cau_hoi.is_official) {
+            <span class="badge-official"><i class="fas fa-crown"></i> OFFICIAL</span>
+          }
+        </div>
+        <p class="detail-subtitle">
+          Chủ đề: <strong>{{ bo_cau_hoi.chu_de || '-' }}</strong> ·
+          Người tạo: <strong>{{ bo_cau_hoi.nguoi_tao || '-' }}</strong>
+        </p>
+        <span class="badge" [ngClass]="bo_cau_hoi.trang_thai">{{ mapTrangThai(bo_cau_hoi.trang_thai) }}</span>
+      </div>
+    </div>
+
+    <div class="detail-actions-top">
+          <span class="badge" [ngClass]="bo_cau_hoi.trang_thai">
+            {{ bo_cau_hoi.trang_thai }}
+          </span>
+
+      @if (co_quyen_sua) {
+        <button
+          class="btn-outline"
+          (click)="goToEditBo()">
+          <i class="fas fa-edit"></i> Sửa bộ câu hỏi
+        </button>
+      }
+
+      @if (bo_cau_hoi.trang_thai === 'CHO_DUYET') {
+        <button
+          class="btn"
+          [disabled]="cau_hoi_list.length === 0"
+          (click)="approveBo()">
+          <i class="fas fa-check"></i> Duyệt
+        </button>
+
+        <button class="btn-danger" (click)="rejectBo()">
+          <i class="fas fa-times"></i> Từ chối
+        </button>
+      }
+
+    </div>
+
+    <button
+      class="btn-outline-danger"
+      (click)="deleteBo()">
+      <i class="fas fa-trash"></i> Xoá bộ
+    </button>
+    @if (co_quyen_sua && bo_cau_hoi.trang_thai === 'DA_DUYET' && !bo_cau_hoi.is_official) {
+      <button class="btn-secondary" (click)="markOfficialBo()">
+        <i class="fas fa-star"></i> Đánh dấu bộ thi đấu
+      </button>
+    } @else if (co_quyen_sua && bo_cau_hoi.trang_thai === 'DA_DUYET' && bo_cau_hoi.is_official) {
+      <button class="btn-secondary-outline" (click)="disMarkOfficialBo()">
+        <i class="far fa-star"></i> Bỏ đánh dấu official
+      </button>
+    }
+
+    @if (bo_cau_hoi.mo_ta) {
+      <p class="detail-description">
+        {{ bo_cau_hoi.mo_ta }}
+      </p>
+    }
+
+    @if (bo_cau_hoi.trang_thai === 'TU_CHOI' && bo_cau_hoi.ly_do_tu_choi) {
+      <p class="detail-reject-reason">
+        <strong>Lý do từ chối:</strong> {{ bo_cau_hoi.ly_do_tu_choi }}
+      </p>
+    }
+  }
+
+  <div class="detail-card">
+    <div class="detail-header-main">
+      <div>
+        <h3 class="detail-title">Danh sách câu hỏi</h3>
+        <p class="detail-subtitle">
+          Tổng số: {{ cau_hoi_list.length }}
+        </p>
+      </div>
+      @if (co_quyen_sua) {
+        <button class="btn-outline" (click)="goToAddQuestion()">
+          <i class="fas fa-plus"></i> Thêm câu hỏi
+        </button>
+      }
+
+    </div>
+
+    @if (cau_hoi_list.length > 0) {
+      <table class="table-questions">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Nội dung</th>
+          <th>Đáp án</th>
+          <th>Độ khó</th>
+          @if (co_quyen_sua) {
+            <th>Hành động</th>
+          }
+        </tr>
+        </thead>
+        <tbody>
+          @for (ch of cau_hoi_list; track $index; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td class="col-noi-dung">
+                @switch (ch.loai_noi_dung) {
+                  @case ('VAN_BAN') {
+                    {{ ch.noi_dung }}
+                  }
+                  @case ('HINH_ANH') {
+                    <div class="question-media">
+                      <img [src]="'http://localhost:8088/api/v1/cauHoi/media/' + ch.duong_dan_tep"
+                           alt="Câu hỏi hình ảnh"/>
+                    </div>
+
+                    @if (ch.noi_dung) {
+                      <div class="mt-1">
+                        {{ ch.noi_dung }}
+                      </div>
+                    }
+                  }
+                  @case ('AM_THANH') {
+                    <div class="question-media">
+                      <audio controls [src]="'http://localhost:8088/api/v1/cauHoi/media/' + ch.duong_dan_tep"></audio>
+                    </div>
+
+                    @if (ch.noi_dung) {
+                      <div class="mt-1">
+                        {{ ch.noi_dung }}
+                      </div>
+                    }
+                  }
+                  @case ('VIDEO') {
+                    <div class="question-media">
+                      <video controls [src]="'http://localhost:8088/api/v1/cauHoi/media/' + ch.duong_dan_tep"></video>
+                    </div>
+
+                    @if (ch.noi_dung) {
+                      <div class="mt-1">
+                        {{ ch.noi_dung }}
+                      </div>
+                    }
+                  }
+                  @default {
+                    {{ ch.noi_dung }}
+                  }
+                }
+              </td>
+              <td>
+                A. {{ ch.lua_chon_a }}<br>
+                B. {{ ch.lua_chon_b }}<br>
+                C. {{ ch.lua_chon_c }}<br>
+                D. {{ ch.lua_chon_d }}<br>
+                <strong>Đúng: {{ ch.dap_an_dung }}</strong>
+              </td>
+              <td>
+          <span class="badge-difficulty" [ngClass]="ch.do_kho">
+            {{ mapDoKho(ch.do_kho) }}
+          </span>
+              </td>
+
+              @if (co_quyen_sua) {
+                <td>
+                  <div class="question-actions">
+                    <button class="btn-edit" (click)="goToEditQuestion(ch.id)">
+                      <i class="fas fa-edit"></i> Chỉnh sửa
+                    </button>
+                    <button class="btn-delete" (click)="onDeleteQuestion(ch.id)">
+                      <i class="fas fa-trash"></i> Xóa
+                    </button>
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+
+    } @else {
+      <div class="text-center text-sm text-gray-400 py-4">
+        Bộ câu hỏi chưa có câu hỏi nào.
+      </div>
+    }
+  </div>
+
+</div>

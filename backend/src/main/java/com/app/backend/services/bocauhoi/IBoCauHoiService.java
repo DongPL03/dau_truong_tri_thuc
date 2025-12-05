@@ -39,6 +39,8 @@ public interface IBoCauHoiService {
 
     BoCauHoi markOfficial(Long id, Long adminId) throws DataNotFoundException, PermissionDenyException;
 
+    BoCauHoi disMarkOfficial(Long id, Long adminId) throws DataNotFoundException, PermissionDenyException;
+
     Page<BoCauHoi> findPracticeSets(PageRequest pageRequest,
                                     Long creatorId,
                                     boolean isAdmin);

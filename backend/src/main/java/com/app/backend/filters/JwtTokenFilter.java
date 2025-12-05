@@ -33,20 +33,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws IOException {
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             String path = request.getRequestURI();
 
-            // ✅ 1. Bỏ qua request SockJS "info" (handshake đầu tiên)
+            // ✅ 1. Bỏ qua request SockJS "info"
             if (path.startsWith("/ws/info")) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // ✅ 2. Cho phép toàn bộ WebSocket / STOMP endpoints
+            // ✅ 2. Xử lý logic WebSocket (Giữ nguyên logic của bạn)
             if (path.startsWith("/ws") || path.startsWith("/topic") || path.startsWith("/app")) {
-
-                // Thử đọc token từ query param nếu có (?token=Bearer%20xxxxx)
+                // ... (Logic check token query param giữ nguyên) ...
                 String queryToken = request.getParameter("token");
                 if (queryToken != null && queryToken.startsWith("Bearer ")) {
                     String token = queryToken.substring(7);
@@ -65,29 +64,22 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                 List<SimpleGrantedAuthority> authorities = roles.stream()
                                         .map(SimpleGrantedAuthority::new)
                                         .toList();
-
                                 UsernamePasswordAuthenticationToken authenticationToken =
                                         new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                            } else {
-                                // Không chặn request WS, chỉ log cảnh báo
-                                System.err.println("⚠️ Token valid nhưng userDetails null hoặc validation fail");
                             }
                         }
                     } catch (Exception e) {
-                        // Không chặn WS nếu token sai, chỉ log cảnh báo
                         System.out.println("Warning: Invalid WebSocket token - " + e.getMessage());
                     }
                 }
-
-                // Luôn cho phép WebSocket request tiếp tục (kể cả không có token)
+                // Luôn cho phép WebSocket đi tiếp
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // ✅ 3. Bỏ qua các API công khai trong hệ thống
+            // ✅ 3. Bỏ qua các API công khai
             if (isBypassToken(request)) {
                 filterChain.doFilter(request, response);
                 return;
@@ -100,7 +92,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 token = authHeader.substring(7);
             }
 
-            // ✅ 5. Không có token header → chặn (chỉ với API)
+            // ✅ 5. Không có token header → chặn (chỉ với API thường)
             if (token == null) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization token");
                 return;
@@ -125,23 +117,26 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 }
             }
 
-            // ✅ 7. Cho phép request tiếp tục
-            filterChain.doFilter(request, response);
+            // ❌ ĐÃ XÓA filterChain.doFilter Ở ĐÂY ❌
 
         } catch (Exception e) {
-            // ⚠️ Log nội bộ (tránh stacktrace tràn)
-            System.err.println("❌ JwtTokenFilter error: " + e.getMessage());
+            // ⚠️ Chỉ bắt lỗi liên quan đến xác thực (Token sai, hết hạn...)
+            System.err.println("❌ JwtTokenFilter Authentication error: " + e.getMessage());
 
-            // ⚙️ Chỉ set status + header, KHÔNG flush buffer
             if (!response.isCommitted()) {
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"error\": \"Unauthorized: " + e.getMessage() + "\"}");
             }
+            return; // ⛔ QUAN TRỌNG: Dừng lại, không cho chạy xuống doFilter bên dưới
         }
-    }
 
+        // ✅ 7. Cho phép request tiếp tục (ĐẶT Ở NGOÀI TRY-CATCH)
+        // Khi đặt ở đây: Nếu Controller ném Exception (ví dụ: IllegalArgumentException),
+        // nó sẽ bay thẳng sang GlobalExceptionHandler xử lý thành lỗi 400.
+        filterChain.doFilter(request, response);
+    }
 
     private boolean isBypassToken(@NonNull HttpServletRequest request) {
         final List<Pair<String, String>> bypassTokens = Arrays.asList(

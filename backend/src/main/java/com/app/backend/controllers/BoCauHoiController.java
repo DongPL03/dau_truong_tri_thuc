@@ -234,6 +234,21 @@ public class BoCauHoiController {
         );
     }
 
+    @PutMapping("/{id}/dis-mark-official")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> disMarkOfficial(@PathVariable Long id) throws DataNotFoundException, PermissionDenyException {
+        Long adminId = securityUtils.getLoggedInUserId(); // hoặc method tương đương của bạn
+        BoCauHoi updated = boCauHoiService.disMarkOfficial(id, adminId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .message("Hủy đánh dấu bộ câu hỏi chính thức thành công")
+                        .status(HttpStatus.OK)
+                        .data(BoCauHoiResponse.from(updated))
+                        .build()
+        );
+    }
+
 
     @GetMapping("/{id}/thong-ke")
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")

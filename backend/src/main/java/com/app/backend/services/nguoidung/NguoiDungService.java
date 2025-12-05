@@ -14,6 +14,7 @@ import com.app.backend.models.EmailVerificationToken;
 import com.app.backend.models.NguoiDung;
 import com.app.backend.models.Token;
 import com.app.backend.models.VaiTro;
+import com.app.backend.models.constant.TrangThaiNguoiDung;
 import com.app.backend.repositories.INguoiDungRepository;
 import com.app.backend.repositories.ITokenRepository;
 import com.app.backend.repositories.IVaiTroRepository;
@@ -30,10 +31,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import static com.app.backend.utils.ValidationUtils.isValidEmail;
+
+import java.security.SecureRandom;
 
 
 @RequiredArgsConstructor
@@ -49,6 +53,21 @@ public class NguoiDungService implements INguoiDungService {
     private final TokenService tokenService;
     private final EmailVerificationService emailVerificationService;
 
+
+    private String generateRandomDisplayName() {
+        // Bộ ký tự cho phép: Chữ hoa, chữ thường và số
+        String allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(8); // Độ dài chuỗi random, ví dụ 8 ký tự
+
+        for (int i = 0; i < 8; i++) {
+            int index = random.nextInt(allowedChars.length());
+            sb.append(allowedChars.charAt(index));
+        }
+
+        // Kết quả ví dụ: "User_a1b2C3d4" hoặc chỉ "a1b2C3d4" tùy bạn chọn
+        return "User_" + sb.toString();
+    }
 
     @Override
     @Transactional
@@ -68,11 +87,13 @@ public class NguoiDungService implements INguoiDungService {
         if (role.getTenVaiTro().equalsIgnoreCase(VaiTro.ADMIN)) {
             throw new PermissionDenyException("Registering admin accounts is not allowed");
         }
+        String finalDisplayName = generateRandomDisplayName();
         //convert from userDTO => user
         NguoiDung newUser = NguoiDung.builder()
                 .tenDangNhap(userDTO.getTenDangNhap())
                 .email(userDTO.getEmail())
                 .password(userDTO.getPassword())
+                .tenHienThi(finalDisplayName)
                 .active(true) // sau khi lên frontend thif sửa lại false
                 .build();
 
@@ -127,6 +148,11 @@ public class NguoiDungService implements INguoiDungService {
         if (!passwordEncoder.matches(userLoginDTO.getPassword(), existingUser.getPassword())) {
             throw new DataNotFoundException("Wrong phone number or password");
         }
+
+        existingUser.setTrangThai(TrangThaiNguoiDung.ONLINE);
+        existingUser.setDangNhapLanCuoi(Instant.now());
+        userRepository.save(existingUser);
+
 
         // ✅ Tạo token hợp lệ
         return jwtTokenUtil.generateToken(existingUser);
@@ -250,6 +276,12 @@ public class NguoiDungService implements INguoiDungService {
     }
 
     @Override
+    public NguoiDung getUserById(Long userId) throws Exception {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+    }
+
+    @Override
     public NguoiDung getUserDetailsFromToken(String token) throws Exception {
         if (jwtTokenUtil.isTokenExpired(token)) {
             throw new ExpiredTokenException("Token is expired");
@@ -334,13 +366,11 @@ public class NguoiDungService implements INguoiDungService {
      * ADMIN cập nhật vai trò user
      */
     @Transactional
-    public void updateRole(Long userId, Long roleName) throws Exception {
+    public void updateRole(Long userId, String roleName) throws Exception {
         NguoiDung user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
-        VaiTro role = roleRepository.findById(roleName)
-                .orElseThrow(() -> new DataNotFoundException(
-                        localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
+        VaiTro role = roleRepository.findByTenVaiTro(roleName);
         user.setVaiTro(role);
         userRepository.save(user);
 

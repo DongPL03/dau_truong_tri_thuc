@@ -11,6 +11,10 @@ import {CauHoiService} from '../../services/cauhoi.service';
 import {WsTrandauService} from '../../services/ws-trandau.service';
 import {LuyenTapService} from '../../services/luyentap.service';
 import {LeaderboardService} from '../../services/leaderboard.service';
+import {AdminService} from '../../services/admin.service';
+import {AdminStatsService} from '../../services/admin-stats.service';
+import {FriendService} from '../../services/friend.service';
+import {NotificationService} from '../../services/notification.service';
 
 export class Base {
   router: Router = inject(Router);
@@ -25,6 +29,10 @@ export class Base {
   wsTrandauService: WsTrandauService = inject(WsTrandauService);
   luyenTapService: LuyenTapService = inject(LuyenTapService);
   leaderboardService: LeaderboardService = inject(LeaderboardService);
+  adminService: AdminService = inject(AdminService);
+  adminStatsService: AdminStatsService = inject(AdminStatsService);
+  friendService: FriendService = inject(FriendService);
+  notificationService: NotificationService = inject(NotificationService);
   document: Document = inject(DOCUMENT);
   location: Location = inject(Location);
 }

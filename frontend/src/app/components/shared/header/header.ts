@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {UserResponse} from '../../../responses/nguoidung/user-response';
 import {Base} from '../../base/base';
+import {NotificationBell} from '../../notification-bell/notification-bell';
 
 /**
  * 🔹 Header Component
@@ -11,7 +12,7 @@ import {Base} from '../../base/base';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, NotificationBell],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
 })
@@ -69,13 +70,29 @@ export class Header extends Base implements OnInit {
 
   /** 🚪 Đăng xuất người dùng */
   logout(): void {
+    // Gọi backend logout để set OFFLINE + revoke token
+    this.userService.logoutBackend().subscribe({
+      next: (res) => {
+        console.log('Logout backend ok:', res);
+        this.afterLogout();
+      },
+      error: (err) => {
+        console.error('Logout backend error:', err);
+        // Dù lỗi (ví dụ token hết hạn) vẫn nên clear FE để tránh kẹt user
+        this.afterLogout();
+      }
+    });
+  }
+
+// Tách phần clear local state riêng cho gọn
+  private afterLogout(): void {
     this.tokenService.clear();
     this.userService.removeUserFromLocalStorage();
     this.router.navigate(['/login']).then(() => {
-      // Reload trang để clear state
       setTimeout(() => location.reload(), 200);
     });
   }
+
 
   /** 🚫 Ẩn các dropdown khi click ra ngoài */
   @HostListener('document:click')

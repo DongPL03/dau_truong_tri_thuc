@@ -24,6 +24,8 @@ public interface INguoiDungService {
 
     NguoiDung updateUser(Long userId, UpdateUserDTO updatedUserDTO) throws Exception;
 
+    NguoiDung getUserById(Long userId) throws Exception;
+
     Page<NguoiDung> findAll(String keyword, Pageable pageable) throws Exception;
 
     void resetPassword(Long userId, String newPassword)
@@ -37,7 +39,7 @@ public interface INguoiDungService {
     // add
     void changePasswordWithOldCheck(Long userId, String oldPassword, String newPassword) throws Exception;
 
-    void updateRole(Long userId, Long roleId) throws Exception;
+    void updateRole(Long userId, String roleName) throws Exception;
 
     void softDeleteUser(Long userId) throws Exception;
 

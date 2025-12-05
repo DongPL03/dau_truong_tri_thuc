@@ -1,0 +1,53 @@
+<div class="notif-wrapper" (click)="$event.stopPropagation()">
+  <button class="notif-btn" (click)="toggleDropdown()">
+    <span class="icon">🔔</span>
+    @if (unread_count > 0) {
+      <span class="badge">{{ unread_count > 9 ? '9+' : unread_count }}</span>
+    }
+  </button>
+
+  @if (show_dropdown) {
+    <div class="notif-dropdown">
+      <div class="notif-header">
+        <span>Thông báo</span>
+        <button class="link" (click)="markAllRead()" [disabled]="unread_count === 0">
+          Đánh dấu đã đọc hết
+        </button>
+      </div>
+
+      @if (loading && notifications.length === 0) {
+        <div class="notif-empty">Đang tải...</div>
+      } @else {
+        @if (notifications.length === 0) {
+          <div class="notif-empty">Chưa có thông báo nào.</div>
+        } @else {
+          <ul class="notif-list">
+            @for (n of notifications; track n.thong_bao_id) {
+              <li class="notif-item"
+                  [class.unread]="!n.da_doc"
+                  (click)="onClickItem(n)">
+                <div class="notif-title">
+                  <strong>{{ n.nguoi_gui_ten }}</strong>
+                  <span class="notif-type">• {{ n.loai }}</span>
+                </div>
+                <div class="notif-body">
+                  {{ n.noi_dung }}
+                </div>
+                <div class="notif-time">
+                  {{ n.tao_luc | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </li>
+            }
+          </ul>
+
+          @if (has_more && !loading) {
+            <button class="load-more" (click)="loadMore()">Tải thêm</button>
+          }
+          @if (loading && notifications.length > 0) {
+            <div class="notif-loading-more">Đang tải thêm...</div>
+          }
+        }
+      }
+    </div>
+  }
+</div>

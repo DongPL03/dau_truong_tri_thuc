@@ -45,18 +45,28 @@ export class Home extends Base implements OnInit {
   }
 
   navigateQuiz() {
-    this.router.navigate(['/bo-cau-hoi/danh-sach-bo-cau-hoi']).then(r => {});
+    this.router.navigate(['/bo-cau-hoi/danh-sach-bo-cau-hoi']).then(r => {
+    });
   }
 
   navigateBattle() {
-    this.router.navigate(['/tran-dau/pending']).then(r => {});
+    this.router.navigate(['/tran-dau/pending']).then(r => {
+    });
   }
 
   navigateHistory() {
-    this.router.navigate(['/tran-dau/lich-su-tran-dau']).then(r => {});
+    this.router.navigate(['/tran-dau/lich-su-tran-dau']).then(r => {
+    });
   }
 
   navigatePractice() {
-    this.router.navigate(['/luyen-tap']).then(r => {});
+    this.router.navigate(['/luyen-tap']).then(r => {
+    });
   }
+
+  navigateFriend(): void {
+    this.router.navigate(['/ban-be']).then(r => {
+    });
+  }
+
 }

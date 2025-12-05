@@ -53,4 +53,9 @@ public interface IBoCauHoiRepository extends JpaRepository<BoCauHoi, Long> {
             """)
     Page<BoCauHoi> findBattleSets(Pageable pageable);
 
+    @Override
+    long count();
+
+    long countByTrangThai(String trangThai);
+
 }

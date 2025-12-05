@@ -42,7 +42,7 @@ public class NguoiDung implements UserDetails {
     @Column(name = "mat_khau", nullable = false)
     private String password;
 
-    @Column(name = "is_active")
+    @Column(name = "is_kich_hoat")
     private boolean active;
 
     @Column(name = "is_xoa", nullable = false)

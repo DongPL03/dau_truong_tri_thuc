@@ -189,8 +189,27 @@ public class TranDauController {
         );
     }
 
+    @GetMapping("/history/all")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getAllHistory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        Page<LichSuTranDauResponse> result = tranDauService.getAllHistory(page, limit);
+        PageResponse<LichSuTranDauResponse> pageRes = PageResponse.fromPage(result);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy lịch sử tất cả trận đấu thành công")
+                        .data(pageRes)
+                        .build()
+        );
+    }
+
+
     @GetMapping("/history/user/{userId}")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getUserHistory(
             @PathVariable("userId") Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -226,6 +245,58 @@ public class TranDauController {
                         .build()
         );
     }
+
+    @GetMapping("/history/admin/{lichSuId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getHistoryDetailAdmin(
+            @PathVariable("lichSuId") Long lichSuId
+    ) throws Exception {
+        LichSuTranDauDetailResponse data = tranDauService.getHistoryDetailAdmin(lichSuId);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy chi tiết lịch sử trận đấu (admin) thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
+
+    // Admin xem chi tiết câu hỏi theo từng user
+    @GetMapping("/history/admin/player-answers")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getPlayerAnswersAdmin(
+            @RequestParam("tranDauId") Long tranDauId,
+            @RequestParam("userId") Long userId
+    ) throws Exception {
+        var data = tranDauService.getPlayerAnswersAdmin(tranDauId, userId);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy chi tiết câu hỏi theo người chơi thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
+    // Admin xem tất cả người chơi của 1 câu hỏi
+    @GetMapping("/history/admin/question-answers")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getQuestionAnswersAdmin(
+            @RequestParam("tranDauId") Long tranDauId,
+            @RequestParam("cauHoiId") Long cauHoiId
+    ) throws Exception {
+        var data = tranDauService.getQuestionAnswersAdmin(tranDauId, cauHoiId);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy đáp án của tất cả người chơi cho câu hỏi thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
 
     @PostMapping("/chat")
     @PreAuthorize("hasRole('ROLE_USER')")

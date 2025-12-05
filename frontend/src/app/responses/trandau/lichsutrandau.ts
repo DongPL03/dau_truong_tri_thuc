@@ -3,6 +3,7 @@ export interface LichSuTranDauResponse {
   tran_dau_id: number;
   ten_phong: string;
   bo_cau_hoi_tieu_de: string | null;
+  ten_hien_thi: string | null;
   tong_diem: number;
   so_cau_dung: number;
   tong_thoi_gian_ms: number;

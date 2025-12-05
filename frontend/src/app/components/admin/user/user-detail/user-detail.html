@@ -1,0 +1,152 @@
+<div class="admin-user-detail-container">
+
+  <button class="btn-back" (click)="goBack()">
+    ← Quay lại danh sách
+  </button>
+
+  <h2>Chi tiết người dùng (Admin)</h2>
+
+  @if (loading) {
+    <div class="loading">
+      Đang tải dữ liệu...
+    </div>
+  } @else {
+    @if (user) {
+      <section class="card">
+        <h3>Thông tin tài khoản</h3>
+        <div class="info-grid">
+          <div>
+            <span class="label">ID:</span>
+            <span>{{ user.id }}</span>
+          </div>
+          <div>
+            <span class="label">Tên hiển thị:</span>
+            <span>{{ user.ho_ten || '-' }}</span>
+          </div>
+          <div>
+            <span class="label">Username:</span>
+            <span>{{ user.ten_dang_nhap || '-' }}</span>
+          </div>
+          <div>
+            <span class="label">Email:</span>
+            <span>{{ user.email || '-' }}</span>
+          </div>
+          <div>
+            <span class="label">Vai trò:</span>
+            <span>{{ user.vai_tro?.ten_vai_tro || '-' }}</span>
+          </div>
+
+          @if (user) {
+            <div>
+              <span class="label">Trạng thái:</span>
+              <span>
+      @if (user.is_xoa === 1) {
+        Đã vô hiệu hoá
+      } @else if (!user.is_active) {
+        Đã bị khoá
+      } @else {
+        Đang hoạt động
+      }
+    </span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (summary) {
+      <section class="card">
+        <h3>Tổng quan & thống kê</h3>
+
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="label">Tổng điểm</div>
+            <div class="value">{{ summary.tong_diem || '-' }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Số trận đã chơi</div>
+            <div class="value">{{ summary.tong_tran || '-' }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Số trận thắng</div>
+            <div class="value">{{ summary.so_tran_thang || '-' }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Số trận thua</div>
+            <div class="value">{{ summary.so_tran_thua || '-' }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Tỉ lệ thắng (%)</div>
+            <div class="value">{{ summary.ti_le_thang || '-' }}</div>
+          </div>
+          <div class="stat">
+            <div class="label">Hạng hiện tại</div>
+            <div class="value">{{ summary.xep_hang || '-' }}</div>
+          </div>
+        </div>
+
+        <div class="raw-json">
+          <h4>Dữ liệu đầy đủ (debug)</h4>
+          <pre>{{ summary | json }}</pre>
+        </div>
+      </section>
+    } @else {
+      <section class="card">
+        <p>Không có dữ liệu tổng quan cho người dùng này.</p>
+      </section>
+    }
+
+    <section class="card">
+      <h3>Lịch sử trận đấu gần đây</h3>
+
+      @if (battleHistory.length > 0) {
+        <div>
+          <table class="history-table">
+            <thead>
+            <tr>
+              <th>ID Trận</th>
+              <th>Phòng</th>
+              <th>Chủ đề</th>
+              <th>Thời gian</th>
+              <th>Kết quả</th>
+              <th>Điểm</th>
+              <th>Xếp hạng</th>
+            </tr>
+            </thead>
+            <tbody>
+
+              @for (h of battleHistory; track h.tran_dau_id) {
+                <tr>
+                  <td>{{ h.tran_dau_id }}</td>
+                  <td>{{ h.ten_phong || '-' }}</td>
+                  <td>{{ h.bo_cau_hoi_tieu_de || '-' }}</td>
+                  <td>
+                    <div>
+                      <span class="label-sm">Kết thúc:</span>
+                      {{ h.hoan_thanh_luc | date: 'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </td>
+                  <td>
+                    {{ h.tong_diem || '-' }}
+                    <div class="label-sm">
+                      {{ h.so_cau_dung || '?' }} câu đúng
+                    </div>
+                  </td>
+                  <td>
+                    {{ h.xep_hang || '-' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      } @else if (!loading) {
+        <div class="empty">
+          Không có trận đấu nào trong lịch sử.
+        </div>
+      }
+    </section>
+  }
+
+</div>

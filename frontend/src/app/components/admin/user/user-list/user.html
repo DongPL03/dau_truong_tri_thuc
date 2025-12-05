@@ -1,0 +1,106 @@
+<div class="admin-user-container">
+
+  <h2 class="title">Quản lý người dùng (Admin)</h2>
+
+  <div class="filter-row">
+    <input
+      type="text"
+      [(ngModel)]="keyword"
+      placeholder="Tìm theo tên, email, username..."
+    />
+
+    <select [(ngModel)]="statusFilter" (change)="applyStatusFilter()">
+      @for (opt of statusOptions; track opt.value) {
+        <option [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      }
+    </select>
+
+    <button (click)="onSearch()">Tìm kiếm</button>
+  </div>
+
+  @if (!loading) {
+
+    <div>
+      <table class="admin-user-table">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Avatar</th>
+          <th>Tên hiển thị</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Vai trò</th>
+          <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+
+          @if (users.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-cell">Không có người dùng nào</td>
+            </tr>
+          } @else {
+
+            @for (u of users; track u.id) {
+              <tr>
+                <td>{{ u.id }}</td>
+                <td>
+                  @if (u.avatar_url) {
+                    <img
+                      [src]="'http://localhost:8088/api/v1/users/profile-images/'+u.avatar_url"
+                      alt="avatar"
+                      class="avatar"
+                    />
+                  }
+                </td>
+                <td>{{ u.ho_ten || '-' }}</td>
+                <td>{{ u.ten_dang_nhap || '-' }}</td>
+                <td>{{ u.email || '-' }}</td>
+                <td>{{ u.vai_tro?.ten_vai_tro || '-' }}</td>
+
+                <td class="actions">
+                  <button (click)="viewSummary(u)">Tổng quan</button>
+                  <button (click)="viewDetail(u)">Chi tiết</button>
+                  <button (click)="resetPassword(u)">Reset mật khẩu</button>
+                  <button (click)="blockOrEnable(u, false)">Khoá</button>
+                  <button (click)="blockOrEnable(u, true)">Mở khoá</button>
+
+                  <button
+                    (click)="changeRole(u, 'USER')"
+                    [disabled]="u.vai_tro?.ten_vai_tro === 'USER'">
+                    Set USER
+                  </button>
+                  <button
+                    (click)="changeRole(u, 'ADMIN')"
+                    [disabled]="u.vai_tro?.ten_vai_tro === 'ADMIN'">
+                    Set ADMIN
+                  </button>
+
+                  <button (click)="restore(u)">Khôi phục</button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button (click)="changePage(page - 1)" [disabled]="page === 0">
+          &laquo;
+        </button>
+        <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
+        <button (click)="changePage(page + 1)" [disabled]="page >= totalPages - 1">
+          &raquo;
+        </button>
+      </div>
+    }
+
+  } @else {
+    <div class="loading-row">Đang tải danh sách người dùng...</div>
+  }
+
+</div>

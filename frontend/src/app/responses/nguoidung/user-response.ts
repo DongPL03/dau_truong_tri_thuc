@@ -9,6 +9,7 @@ export interface UserResponse {
   ten_hien_thi?: string;
   avatar_url?: string;
   is_active: boolean;
+  is_xoa?: number;
   vai_tro?: VaiTro;
   tao_luc?: string; // ISO
 }

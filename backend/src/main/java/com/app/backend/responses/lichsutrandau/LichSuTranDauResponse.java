@@ -25,6 +25,9 @@ public class LichSuTranDauResponse {
     @JsonProperty("bo_cau_hoi_tieu_de")
     private String boCauHoiTieuDe;
 
+    @JsonProperty("ten_hien_thi")
+    private String tenHienThi;
+
     @JsonProperty("tong_diem")
     private Integer tongDiem;
 
@@ -54,6 +57,7 @@ public class LichSuTranDauResponse {
                                 ? e.getTranDau().getBoCauHoi().getTieuDe()
                                 : null
                 )
+                .tenHienThi(e.getNguoiDung().getTenHienThi())
                 .tongDiem(e.getTongDiem())
                 .soCauDung(e.getSoCauDung())
                 .tongThoiGianMs(Long.valueOf(e.getTongThoiGianMs()))

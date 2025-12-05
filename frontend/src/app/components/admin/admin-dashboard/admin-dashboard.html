@@ -1,0 +1,389 @@
+<div class="space-y-6">
+
+  <!-- Tiêu đề -->
+  <section>
+    <h2 class="text-2xl font-semibold text-slate-100">
+      Dashboard tổng quan
+    </h2>
+    <p class="text-sm text-slate-400 mt-1">
+      Thống kê nhanh hệ thống Đấu Trường Tri Thức: user, bộ câu hỏi, trận đấu, nội dung chờ duyệt.
+    </p>
+  </section>
+
+  <!-- KPI Cards: 4 thẻ rõ ràng -->
+  <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <!-- Tổng người dùng -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 flex items-center gap-4 shadow-sm">
+      <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+        <i class="fas fa-users text-emerald-400"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-xs uppercase tracking-wide text-slate-400">
+          Tổng người dùng
+        </span>
+        <span class="text-2xl font-semibold text-slate-50">
+          {{ total_users }}
+        </span>
+        <span class="text-xs text-slate-500">
+          Số tài khoản đã đăng ký hệ thống
+        </span>
+      </div>
+    </div>
+
+    <!-- Tổng bộ câu hỏi -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 flex items-center gap-4 shadow-sm">
+      <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
+        <i class="fas fa-layer-group text-indigo-400"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-xs uppercase tracking-wide text-slate-400">
+          Tổng bộ câu hỏi
+        </span>
+        <span class="text-2xl font-semibold text-slate-50">
+          {{ total_bo_cau_hoi }}
+        </span>
+        <span class="text-xs text-slate-500">
+          Bao gồm bộ do user &amp; admin tạo
+        </span>
+      </div>
+    </div>
+
+    <!-- Bộ chờ duyệt -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 flex items-center gap-4 shadow-sm">
+      <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+        <i class="fas fa-hourglass-half text-amber-400"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-xs uppercase tracking-wide text-slate-400">
+          Bộ câu hỏi chờ duyệt
+        </span>
+        <span class="text-2xl font-semibold text-slate-50">
+          {{ pending_bo_cau_hoi }}
+        </span>
+        <span class="text-xs text-slate-500">
+          Đang chờ admin xem xét &amp; phê duyệt
+        </span>
+      </div>
+    </div>
+
+    <!-- Tổng trận đấu -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 flex items-center gap-4 shadow-sm">
+      <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center">
+        <i class="fas fa-gamepad text-sky-400"></i>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-xs uppercase tracking-wide text-slate-400">
+          Tổng trận đấu
+        </span>
+        <span class="text-2xl font-semibold text-slate-50">
+          {{ total_tran_dau }}
+        </span>
+        <span class="text-xs text-slate-500">
+          Trận đấu đã được tạo trong hệ thống
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hàng 2: Bảng pending + Quick links -->
+  <section class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+
+    <!-- Bảng bộ câu hỏi chờ duyệt -->
+    <div class="xl:col-span-2 rounded-2xl bg-slate-800/90 border border-slate-700 p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-base font-semibold text-slate-100">
+            Bộ câu hỏi chờ duyệt gần đây
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Các bộ mới tạo đang chờ admin xem xét &amp; phê duyệt.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-xs text-indigo-400 hover:text-indigo-300"
+          (click)="goToBoCauHoi()">
+          Xem tất cả
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+          <tr class="border-b border-slate-700 text-slate-400 text-xs">
+            <th class="text-left py-2 pr-4">Tiêu đề</th>
+            <th class="text-left py-2 pr-4">Chủ đề</th>
+            <th class="text-left py-2 pr-4">Người tạo</th>
+            <th class="text-left py-2 pr-4">Tạo lúc</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngIf="!pending_list?.length">
+            <td colspan="4" class="py-4 text-center text-xs text-slate-500">
+              Không có bộ câu hỏi nào đang chờ duyệt.
+            </td>
+          </tr>
+
+          <tr
+            *ngFor="let quiz of pending_list"
+            class="border-b border-slate-800 last:border-0 hover:bg-slate-700/40"
+          >
+            <td class="py-2 pr-4 text-slate-100">
+              {{ quiz.tieu_de }}
+            </td>
+            <td class="py-2 pr-4 text-slate-300">
+              {{ quiz.chu_de || '-' }}
+            </td>
+            <td class="py-2 pr-4 text-slate-300">
+              {{ quiz.nguoi_tao || '-' }}
+            </td>
+            <td class="py-2 pr-4 text-slate-400 text-xs">
+              {{ quiz.tao_luc | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 flex flex-col gap-3 shadow-sm">
+      <h3 class="text-base font-semibold text-slate-100 mb-1">
+        Lối tắt quản trị
+      </h3>
+
+      <button
+        type="button"
+        class="flex items-center gap-3 rounded-xl bg-slate-900/60 px-3 py-2 text-left hover:bg-slate-700/80 transition"
+        (click)="goToUsers()"
+      >
+        <div class="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center">
+          <i class="fas fa-user-cog text-sky-400 text-sm"></i>
+        </div>
+        <div>
+          <div class="text-sm font-medium text-slate-100">Quản lý người dùng</div>
+          <div class="text-xs text-slate-400">Khoá/mở tài khoản, phân quyền admin</div>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center gap-3 rounded-xl bg-slate-900/60 px-3 py-2 text-left hover:bg-slate-700/80 transition"
+        (click)="goToBoCauHoi()"
+      >
+        <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+          <i class="fas fa-list-alt text-amber-400 text-sm"></i>
+        </div>
+        <div>
+          <div class="text-sm font-medium text-slate-100">Duyệt bộ câu hỏi</div>
+          <div class="text-xs text-slate-400">Xem chi tiết, duyệt / từ chối, gắn Official</div>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center gap-3 rounded-xl bg-slate-900/60 px-3 py-2 text-left hover:bg-slate-700/80 transition"
+        (click)="goToTranDau()"
+      >
+        <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+          <i class="fas fa-shield-alt text-emerald-400 text-sm"></i>
+        </div>
+        <div>
+          <div class="text-sm font-medium text-slate-100">Quản lý trận đấu</div>
+          <div class="text-xs text-slate-400">Xem lịch sử, xử lý trận bất thường</div>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center gap-3 rounded-xl bg-slate-900/60 px-3 py-2 text-left hover:bg-slate-700/80 transition"
+        (click)="goToThongKe()"
+      >
+        <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
+          <i class="fas fa-chart-line text-indigo-400 text-sm"></i>
+        </div>
+        <div>
+          <div class="text-sm font-medium text-slate-100">Báo cáo thống kê</div>
+          <div class="text-xs text-slate-400">Biểu đồ Chart.js theo đúng G1, D5, G6</div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- Hàng 3: Biểu đồ tổng quan User vs Trận đấu -->
+  <!-- Hàng 3: Biểu đồ -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Biểu đồ tổng quan User vs Trận đấu (bar) -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 shadow-sm">
+      <h3 class="text-base font-semibold text-slate-100 mb-2">
+        Tổng quan User vs Trận đấu
+      </h3>
+      <p class="text-xs text-slate-400 mb-4">
+        So sánh tổng số người dùng và tổng số trận đấu trong hệ thống.
+      </p>
+
+      <div class="bg-slate-900/60 rounded-xl p-3 h-72">
+        <canvas
+          baseChart
+          [data]="kpiBarChartData"
+          [options]="kpiBarChartOptions"
+          [type]="'bar'">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Donut: Tỷ lệ bộ câu hỏi theo trạng thái -->
+    <div class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 shadow-sm">
+      <h3 class="text-base font-semibold text-slate-100 mb-2">
+        Tỷ lệ bộ câu hỏi theo trạng thái
+      </h3>
+      <p class="text-xs text-slate-400 mb-4">
+        Phân bố giữa bộ đã duyệt, đang chờ duyệt và bị từ chối.
+      </p>
+
+      <div class="bg-slate-900/60 rounded-xl p-3 h-72 flex items-center justify-center">
+        <canvas
+          baseChart
+          [data]="boCauHoiDonutData"
+          [options]="boCauHoiDonutOptions"
+          [type]="'doughnut'">
+        </canvas>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Hàng 4: Line chart User mới theo ngày (nếu bạn đang dùng) -->
+  <section class="rounded-2xl bg-slate-800/90 border border-slate-700 p-4 shadow-sm mt-6">
+    <div class="flex items-center justify-between mb-2">
+      <div>
+        <h3 class="text-base font-semibold text-slate-100">
+          User mới theo ngày
+        </h3>
+        <p class="text-xs text-slate-400">
+          Số lượng tài khoản đăng ký mới trong 7 ngày gần nhất.
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-slate-900/60 rounded-xl p-3 h-72">
+      <canvas
+        baseChart
+        [data]="userNewLineChartData"
+        [options]="userNewLineChartOptions"
+        [type]="'line'">
+      </canvas>
+    </div>
+  </section>
+
+  <!-- KPI Cards -->
+  <section class="grid kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Tổng người dùng</div>
+      <div class="kpi-value">
+        @if (loading_summary) {
+          ...
+        } @else {
+          {{ summary?.tong_nguoi_dung ?? 0 }}
+        }
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Tổng trận đấu</div>
+      <div class="kpi-value">
+        @if (loading_summary) {
+          ...
+        } @else {
+          {{ summary?.tong_tran_dau ?? 0 }}
+        }
+      </div>
+      <div class="kpi-sub">
+        Đang chờ: {{ summary?.tran_dang_cho ?? 0 }} ·
+        Đang diễn ra: {{ summary?.tran_dang_dien_ra ?? 0 }} ·
+        Đã kết thúc: {{ summary?.tran_da_ket_thuc ?? 0 }}
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Bộ câu hỏi</div>
+      <div class="kpi-value">
+        @if (loading_summary) {
+          ...
+        } @else {
+          {{ summary?.tong_bo_cau_hoi ?? 0 }}
+        }
+      </div>
+      <div class="kpi-sub">
+        Tổng câu hỏi: {{ summary?.tong_cau_hoi ?? 0 }}
+      </div>
+    </div>
+  </section>
+
+  <section class="card mt-4">
+    <div class="card-header">
+      <h3>Số trận theo ngày ({{ battle_chart_labels.length }} ngày gần đây)</h3>
+    </div>
+
+    @if (loading_battles_chart) {
+      <div class="loading">Đang tải thống kê...</div>
+    } @else {
+      @if (battles_by_day.length === 0) {
+        <div>Không có dữ liệu.</div>
+      } @else {
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Số trận</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (d of battles_by_day; track $index) {
+              <tr>
+                <td>{{ d.ngay }}</td>
+                <td>{{ d.so_luong }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </section>
+
+  <section class="card mt-4">
+    <div class="card-header">
+      <h3>Top bộ câu hỏi được sử dụng nhiều</h3>
+    </div>
+
+    @if (loading_top_bo) {
+      <div class="loading">Đang tải...</div>
+    } @else {
+      @if (top_bo_cau_hoi.length === 0) {
+        <div>Không có dữ liệu.</div>
+      } @else {
+        <table class="table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Bộ câu hỏi</th>
+            <th>Số trận</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (bch of top_bo_cau_hoi; track $index; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ bch.tieu_de }}</td>
+                <td>{{ bch.so_tran }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </section>
+
+
+</div>

@@ -1,0 +1,132 @@
+<div class="admin-trandau-container">
+
+  <h2>Quản lý trận đấu (Admin)</h2>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Phòng đang chờ</h3>
+      <button class="btn-refresh" (click)="loadPending()">Tải lại</button>
+    </div>
+
+    @if (loadingPending) {
+      <div class="loading">Đang tải...</div>
+    } @else {
+      @if (pendingBattles.length > 0) {
+        <table class="table">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Mã phòng</th>
+            <th>Tên phòng</th>
+            <th>Chủ phòng</th>
+            <th>Chủ đề</th>
+            <th>Giới hạn / hiện tại</th>
+            <th>Trạng thái</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (p of pendingBattles; track p.id) {
+              <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.ma_phong }}</td>
+                <td>{{ p.ten_phong }}</td>
+                <td>{{ p.chu_phong_ten }}</td>
+                <td>{{ p.bo_cau_hoi_tieu_de || p.bo_cau_hoi_tieu_de }}</td>
+                <td>{{ p.da_tham_gia || '?' }} / {{ p.gioi_han_nguoi_choi }}</td>
+                <td>{{ p.trang_thai }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="empty">
+          Không có phòng nào đang chờ.
+        </div>
+      }
+    }
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Lịch sử trận đấu toàn hệ thống</h3>
+      <div class="filter-row">
+        <input
+          type="text"
+          [(ngModel)]="keyword"
+          (ngModelChange)="applyHistoryFilter()"
+          placeholder="Lọc theo phòng, chủ đề, username, ID trận..."
+        />
+        <button (click)="onHistorySearch()">Tải lại</button>
+      </div>
+    </div>
+
+    @if (loadingHistory) {
+      <div class="loading">Đang tải...</div>
+    } @else {
+
+      @if (filteredHistory.length > 0) {
+        <div>
+          <table class="table">
+            <thead>
+            <tr>
+              <th>ID Lịch sử</th>
+              <th>ID Trận</th>
+              <th>Phòng</th>
+              <th>Bộ câu hỏi</th>
+              <th>Tên hiển thị</th>
+              <th>Hoàn thành lúc</th>
+              <th>Điểm / Câu đúng</th>
+              <th>Thời gian trả lời</th>
+              <th>Xếp hạng</th>
+              <th>Luật điểm</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (h of filteredHistory; track $index) {
+                <tr>
+                  <td>
+                    <a class="link" (click)="viewHistoryDetail(h)">
+                      {{ h.lich_su_id }}
+                    </a>
+                  </td>
+                  <td>{{ h.tran_dau_id }}</td>
+                  <td>{{ h.ten_phong }}</td>
+                  <td>{{ h.bo_cau_hoi_tieu_de || '-' }}</td>
+                  <td>{{ h.ten_hien_thi }}</td>
+                  <td>
+                    {{ h.hoan_thanh_luc | date: 'dd/MM/yyyy HH:mm' }}
+                  </td>
+                  <td>
+                    {{ h.tong_diem }} điểm<br>
+                    <span class="label-sm">{{ h.so_cau_dung }} câu đúng</span>
+                  </td>
+                  <td>
+                    {{ (h.tong_thoi_gian_ms / 1000) | number:'1.0-1' }} giây
+                  </td>
+                  <td>{{ h.xep_hang }}</td>
+                  <td>{{ h.luat_tinh_diem }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="pagination">
+            <button (click)="goHistoryPage(historyPage - 1)" [disabled]="historyPage === 0">
+              « Trước
+            </button>
+            <span>Trang {{ historyPage + 1 }} / {{ historyTotalPages }}</span>
+            <button (click)="goHistoryPage(historyPage + 1)" [disabled]="historyPage >= historyTotalPages - 1">
+              Sau »
+            </button>
+          </div>
+        </div>
+
+      } @else {
+        <div class="empty">
+          Không có dữ liệu lịch sử.
+        </div>
+      }
+    }
+  </section>
+
+</div>

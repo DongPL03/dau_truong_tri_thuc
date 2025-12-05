@@ -23,6 +23,8 @@ public interface ILichSuTranDauRepository extends JpaRepository<LichSuTranDau, L
 
     List<LichSuTranDau> findByTranDau_IdOrderByXepHangAsc(Long tranDauId);
 
+    Page<LichSuTranDau> findAllByOrderByHoanThanhLucDesc(Pageable pageable);
+
     @Query("""
             SELECT 
               l.nguoiDung.id AS userId,

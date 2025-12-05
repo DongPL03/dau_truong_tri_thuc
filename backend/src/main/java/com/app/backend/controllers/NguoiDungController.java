@@ -7,6 +7,7 @@ import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.exceptions.InvalidPasswordException;
 import com.app.backend.models.NguoiDung;
 import com.app.backend.models.Token;
+import com.app.backend.models.constant.TrangThaiNguoiDung;
 import com.app.backend.responses.ResponseObject;
 import com.app.backend.responses.user.LoginResponse;
 import com.app.backend.responses.user.UserListResponse;
@@ -56,7 +57,7 @@ public class NguoiDungController {
     private final SecurityUtils securityUtils;
     private final IEmailVerificationService emailVerificationService;
     private final IBangXepHangService bangXepHangService;
-
+    private final com.app.backend.repositories.INguoiDungRepository userRepository;
 
     @GetMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -181,6 +182,7 @@ public class NguoiDungController {
                 .username(userDetail.getUsername())
                 .roles(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
                 .id(userDetail.getId())
+                .status(userDetail.getTrangThai())
                 .build();
 
         // Trả về phản hồi
@@ -324,6 +326,21 @@ public class NguoiDungController {
                 .build());
     }
 
+    @GetMapping("details/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> getUserDetailsById(
+            @PathVariable Long userId
+    ) throws Exception {
+        NguoiDung user = userService.getUserById(userId);
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .message("Get user's detail successfully")
+                        .data(UserResponse.fromUser(user))
+                        .status(HttpStatus.OK)
+                        .build()
+        );
+    }
+
     @PostMapping(value = "/upload-profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> uploadProfileImage(
@@ -421,7 +438,7 @@ public class NguoiDungController {
     }
 
     @GetMapping("/{id}/summary")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getUserSummary(@PathVariable("id") Long userId) throws DataNotFoundException {
         UserSummaryResponse data = bangXepHangService.getUserSummary(userId);
 
@@ -539,6 +556,13 @@ public class NguoiDungController {
         try {
             // Lấy token từ header Authorization
             String header = request.getHeader("Authorization");
+            Long userId = securityUtils.getLoggedInUserIdSafe();
+            if (userId != null) {
+                userRepository.findById(userId).ifPresent(u -> {
+                    u.setTrangThai(TrangThaiNguoiDung.OFFLINE);
+                    userRepository.save(u);
+                });
+            }
             if (header == null || !header.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         ResponseObject.builder()
@@ -547,8 +571,10 @@ public class NguoiDungController {
                                 .build()
                 );
             }
+
             String token = header.substring(7); // bỏ "Bearer "
             tokenService.revokeToken(token);
+
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)

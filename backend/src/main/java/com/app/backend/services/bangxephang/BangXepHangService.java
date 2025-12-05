@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -206,6 +207,7 @@ public class BangXepHangService implements IBangXepHangService {
                 .soTranThua(soThua)
                 .tiLeThang(tiLeThang)
                 .rankTier(tier)
+                .xepHang(bxh != null ? bxh.getXepHang() : null)
                 .build();
     }
 
@@ -228,6 +230,12 @@ public class BangXepHangService implements IBangXepHangService {
         } else {
             return "BRONZE";
         }
+    }
+
+    @Override
+    @Transactional
+    public void recalcAllRankings() {
+        bangXepHangRepository.updateAllRankings();
     }
 
 }

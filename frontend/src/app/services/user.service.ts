@@ -10,6 +10,7 @@ import {LoginDTO} from '../dtos/nguoi-dung/login-dto';
 import {UserResponse} from '../responses/nguoidung/user-response';
 import {UpdateUserDTO} from '../dtos/nguoi-dung/update-user-dto';
 import {UserSummaryResponse} from '../responses/nguoidung/user-summary-response';
+import {UserListResponse} from '../responses/nguoidung/user-list-response';
 
 @Injectable({providedIn: 'root'})
 export class UserService {
@@ -59,9 +60,18 @@ export class UserService {
     );
   }
 
-  logout(): void {
-    this.removeUserFromLocalStorage();
-    this.tokenService.clear();
+  logoutBackend(): Observable<ResponseObject<null>> {
+    const token = this.tokenService.getAccessToken();
+    return this.http.post<ResponseObject<null>>(
+      `${this.baseUrl}/logout`,
+      {},
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }),
+      }
+    );
   }
 
   refreshToken(refreshToken: string): Observable<ResponseObject> {
@@ -162,9 +172,86 @@ export class UserService {
   }
 
 
-  getUsers(params: { page: number; limit: number; keyword: string }): Observable<ResponseObject> {
-    return this.http.get<ResponseObject>(this.baseUrl, {params});
+  getUsers(params: { page: number; limit: number; keyword: string }): Observable<ResponseObject<UserListResponse>> {
+    const token = this.tokenService.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token ?? ''}`,
+    });
+    return this.http.get<ResponseObject<UserListResponse>>(this.baseUrl, {params, headers});
   }
+
+  /** 🔹 Admin lấy thông tin chi tiết user theo ID */
+  getUserById(user_id: number): Observable<ResponseObject<UserResponse>> {
+    const token = this.tokenService.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token ?? ''}`,
+    });
+
+    return this.http.get<ResponseObject<UserResponse>>(
+      `${this.baseUrl}/details/${user_id}`,
+      {headers}
+    );
+  }
+
+  /** 🔐 Admin reset mật khẩu cho user, data trả về là mật khẩu mới (string) */
+  resetUserPassword(user_id: number): Observable<ResponseObject<string>> {
+    const token = this.tokenService.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token ?? ''}`,
+    });
+
+    return this.http.put<ResponseObject<string>>(
+      `${this.baseUrl}/reset-password/${user_id}`,
+      {},
+      {headers}
+    );
+  }
+
+  /** 🚫 Khoá hoặc mở khoá user (active = false -> khoá, true -> mở) */
+  blockOrEnableUser(user_id: number, active: boolean): Observable<ResponseObject> {
+    const token = this.tokenService.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token ?? ''}`,
+    });
+
+    const activeFlag = active ? 1 : 0;
+    return this.http.put<ResponseObject>(
+      `${this.baseUrl}/block/${user_id}/${activeFlag}`,
+      {},
+      {headers}
+    );
+  }
+
+  /** 👑 Cập nhật vai trò user (ví dụ: 'ROLE_USER', 'ROLE_ADMIN') */
+  updateUserRole(user_id: number, role: string): Observable<ResponseObject> {
+    const token = this.tokenService.getAccessToken();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token ?? ''}`,
+    });
+
+    const body = {role};
+    return this.http.put<ResponseObject>(
+      `${this.baseUrl}/role/${user_id}`,
+      body,
+      {headers}
+    );
+  }
+
+  /** ♻️ Khôi phục user đã deactivate / soft-delete */
+  restoreUser(user_id: number): Observable<ResponseObject> {
+    const token = this.tokenService.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token ?? ''}`,
+    });
+
+    return this.http.put<ResponseObject>(
+      `${this.baseUrl}/restore/${user_id}`,
+      {},
+      {headers}
+    );
+  }
+
 
   // --- LOCAL STORAGE ---
   saveUserResponseToLocalStorage(userResponse?: UserResponse) {

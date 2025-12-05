@@ -150,6 +150,18 @@ export class TrandauService {
   }
 
   /**
+   * 🔹 Lấy toàn bộ lịch sử trận đấu (dành cho Admin)
+   */
+  getAllHistory(page = 0, limit = 10) {
+    const params = {page, limit};
+    return this.http.get<ResponseObject<PageResponse<LichSuTranDauResponse>>>(
+      `${environment.apiBaseUrl}/tranDau/history/all`,
+      {params, headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+
+  /**
    *  🔹 Lấy lịch sử trận đấu của 1 user bất kỳ (dùng cho bảng xếp hạng)
    */
   getUserHistory(user_id: number, page = 0, limit = 10) {
@@ -159,6 +171,35 @@ export class TrandauService {
       {params, headers: this.httpUtil.createAuthHeaders()}
     );
   }
+
+  /**
+   * 🔹 Lấy chi tiết lịch sử trận đấu theo lich_su_id (dành cho Admin)
+   */
+  getHistoryDetailAdmin(lich_su_id: number) {
+    return this.http.get<ResponseObject<any>>(
+      `${environment.apiBaseUrl}/tranDau/history/admin/${lich_su_id}`,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /** Admin – tất cả câu trả lời của 1 người chơi trong trận */
+  getPlayerAnswersAdmin(tran_dau_id: number, user_id: number) {
+    const params = {tranDauId: tran_dau_id, userId: user_id};
+    return this.http.get<ResponseObject<any>>(
+      `${environment.apiBaseUrl}/tranDau/history/admin/player-answers`,
+      {params, headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /** Admin – tất cả câu trả lời của tất cả người chơi cho 1 câu hỏi trong trận */
+  getQuestionAnswersAdmin(tran_dau_id: number, cau_hoi_id: number) {
+    const params = {tranDauId: tran_dau_id, cauHoiId: cau_hoi_id};
+    return this.http.get<ResponseObject<any>>(
+      `${environment.apiBaseUrl}/tranDau/history/admin/question-answers`,
+      {params, headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
 
   /**
    * 🔹 Gửi chat trong trận đấu

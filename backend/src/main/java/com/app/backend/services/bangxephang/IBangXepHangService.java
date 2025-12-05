@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 public interface IBangXepHangService {
-    public Page<LeaderboardEntryResponse> getGlobalLeaderboard(
+    Page<LeaderboardEntryResponse> getGlobalLeaderboard(
             PageRequest pageRequest,
             String timeRange,
             Long chuDeId,
@@ -17,4 +17,6 @@ public interface IBangXepHangService {
     );
 
     UserSummaryResponse getUserSummary(Long userId) throws DataNotFoundException;
+
+    void recalcAllRankings();
 }

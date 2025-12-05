@@ -39,6 +39,9 @@ public class UserResponse extends BaseResponse {
     @JsonProperty("is_active")
     private boolean active;
 
+    @JsonProperty("is_xoa")
+    private boolean isXoa;
+
     @JsonProperty("vai_tro")
     private VaiTro vaiTro;
 
@@ -56,6 +59,7 @@ public class UserResponse extends BaseResponse {
                 .tenHienThi(nguoiDung.getTenHienThi())
                 .avatarUrl(nguoiDung.getAvatarUrl())
                 .active(nguoiDung.isActive())
+                .isXoa(nguoiDung.isXoa())
                 .vaiTro(nguoiDung.getVaiTro())
                 .createdAt(nguoiDung.getTaoLuc())
                 .build();

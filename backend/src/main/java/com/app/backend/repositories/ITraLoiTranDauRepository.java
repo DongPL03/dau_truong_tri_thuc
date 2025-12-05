@@ -9,4 +9,7 @@ public interface ITraLoiTranDauRepository extends JpaRepository<TraLoiTranDau, L
     List<TraLoiTranDau> findAllByTranDau_Id(Long tranDauId);
 
     List<TraLoiTranDau> findByTranDau_IdAndNguoiDung_IdOrderByTraLoiLucAsc(Long tranDauId, Long nguoiDungId);
+
+    List<TraLoiTranDau> findByTranDau_IdAndCauHoi_IdOrderByTraLoiLucAsc(
+            Long tranDauId, Long cauHoiId);
 }

@@ -1,0 +1,130 @@
+.admin-user-detail-container {
+  padding: 1.5rem;
+}
+
+.btn-back {
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.loading {
+  margin: 1rem 0;
+}
+
+.card {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #0f172a;
+  color: #e5e7eb;
+
+  h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.5rem 1rem;
+
+  .label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+
+  .stat {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.4rem;
+    background: #020617;
+    border: 1px solid #1e293b;
+
+    .label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 0.25rem;
+    }
+
+    .value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+}
+
+.raw-json {
+  margin-top: 1rem;
+
+  pre {
+    max-height: 280px;
+    overflow: auto;
+    background: #020617;
+    border-radius: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+
+  th, td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #1e293b;
+    font-size: 0.85rem;
+    vertical-align: top;
+  }
+
+  th {
+    text-align: left;
+    color: #e5e7eb;
+    background: #020617;
+  }
+
+  .label-sm {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge-win {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+  }
+
+  .badge-lose {
+    background: rgba(248, 113, 113, 0.15);
+    color: #fca5a5;
+  }
+
+  .badge-draw {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+  }
+}
+
+.empty {
+  color: #9ca3af;
+}

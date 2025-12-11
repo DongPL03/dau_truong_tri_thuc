@@ -15,6 +15,7 @@ import {SyncStateResponse} from '../responses/trandau/syncstate-response';
 import {LichSuTranDauResponse} from '../responses/trandau/lichsutrandau';
 import {LichSuTranDauDetailResponse} from '../responses/trandau/lich-su-tran-dau-detail-response';
 import {GuiChatDTO} from '../dtos/tran-dau/guichat-dto';
+import {BattleInviteDto} from '../dtos/tran-dau/battle-invite-dto';
 
 
 @Injectable({providedIn: 'root'})
@@ -209,6 +210,17 @@ export class TrandauService {
     return this.http.post<ResponseObject<any>>(
       `${environment.apiBaseUrl}/tranDau/chat`,
       dto
+    );
+  }
+
+  inviteFriend(tran_dau_id: number, target_user_id: number):
+    Observable<ResponseObject<any>> {
+
+    const body: BattleInviteDto = {target_user_id};
+    return this.http.post<ResponseObject<any>>(
+      `${this.api}/${tran_dau_id}/invite-friend`,
+      body,
+      {headers: this.httpUtil.createAuthHeaders()}
     );
   }
 }

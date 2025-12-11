@@ -1,0 +1,134 @@
+<div class="chat-page">
+
+  <!-- 📨 Cột trái: Danh sách bạn bè -->
+  <aside class="chat-sidebar">
+    <header class="sidebar-header">
+      <h2>Hộp thư</h2>
+      <p class="subtitle">Các cuộc hội thoại 1-1 với bạn bè</p>
+    </header>
+
+    <div class="sidebar-body">
+      @if (inbox_loading && inbox_items.length === 0) {
+        <div class="empty">Đang tải danh sách bạn bè...</div>
+      } @else {
+        @if (inbox_items.length === 0) {
+          <div class="empty">Bạn chưa có người bạn nào.</div>
+        } @else {
+          <ul class="conversation-list">
+            @for (item of inbox_items; track item.partner_id) {
+              <li
+                class="conversation-item"
+                [class.active]="active_partner?.partner_id === item.partner_id"
+                (click)="select_partner(item)"
+              >
+                <div class="avatar-wrapper">
+                  <img
+                    [src]="'http://localhost:8088/api/v1/users/profile-images/' + item.partner_avatar_url || default_avatar"
+                    alt="avatar"
+                    class="avatar"
+                  />
+                </div>
+                <div class="conversation-info">
+                  <div class="conversation-top">
+                    <span class="name">{{ item.partner_name }}</span>
+                    <span class="time">
+                      {{ item.last_time | date:'dd/MM HH:mm' }}
+                    </span>
+                  </div>
+                  <div class="conversation-bottom">
+                    <span class="last-message">
+                      {{ item.last_message || 'Nhấn để bắt đầu trò chuyện' }}
+                    </span>
+                    @if ((item.unread_count ?? 0) > 0) {
+                      <span
+                        class="badge-unread">{{ (item.unread_count ?? 0) > 9 ? '9+' : (item.unread_count ?? 0) }}</span>
+                    }
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </div>
+  </aside>
+
+  <!-- 💬 Cột phải: Chat -->
+  <section class="chat-main">
+    @if (!active_partner) {
+      <div class="chat-empty">
+        <h3>Chọn một người bạn để trò chuyện</h3>
+        <p>Hãy chọn một người ở danh sách bên trái để bắt đầu chat 1-1.</p>
+      </div>
+    } @else {
+
+      <!-- Header -->
+      <header class="chat-header">
+        <div class="partner-info">
+          <img
+            [src]="active_partner.partner_avatar_url || default_avatar"
+            alt="avatar"
+            class="avatar"
+          />
+          <div>
+            <div class="name">{{ active_partner.partner_name }}</div>
+            <div class="hint">Đã là bạn bè • Chat 1-1</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Danh sách message -->
+      <div class="chat-messages" #messagesContainer>
+        @if (messages_loading && messages.length === 0) {
+          <div class="messages-loading">Đang tải tin nhắn...</div>
+        } @else {
+          @if (messages_has_more && !messages_loading) {
+            <button class="load-more-messages" (click)="load_more_messages()">
+              Tải thêm tin nhắn cũ
+            </button>
+          }
+          @if (messages_loading && messages.length > 0) {
+            <div class="messages-loading-more">Đang tải thêm...</div>
+          }
+
+          @for (m of messages; track m.tin_nhan_id) {
+            <div
+              class="message-row"
+              [class.mine]="m.la_toi"
+            >
+              <div class="message-bubble">
+                <div class="message-text">
+                  {{ m.noi_dung }}
+                </div>
+                <div class="message-time">
+                  {{ m.gui_luc | date:'dd/MM HH:mm' }}
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (messages.length === 0 && !messages_loading) {
+            <div class="messages-empty">
+              Chưa có tin nhắn nào, hãy gửi lời chào 👋
+            </div>
+          }
+        }
+      </div>
+      <!-- Input -->
+      <footer class="chat-input">
+        <textarea
+          [(ngModel)]="new_message_noi_dung"
+          placeholder="Nhập tin nhắn..."
+          (keydown.enter)="on_enter_send($any($event))"
+        ></textarea>
+        <button
+          class="btn-send"
+          (click)="send_message()"
+          [disabled]="sending || !new_message_noi_dung.trim()"
+        >
+          Gửi
+        </button>
+      </footer>
+    }
+  </section>
+</div>

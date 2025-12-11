@@ -1,0 +1,15 @@
+<div class="toast-wrapper">
+  @for (t of toasts$ | async; track t.toast_id) {
+    <div class="toast"
+         [class.toast-success]="t.type === 'success'"
+         [class.toast-error]="t.type === 'error'"
+         (click)="on_click_toast(t)">
+      <div class="toast-message">
+        {{ t.message }}
+      </div>
+      <button class="toast-close" (click)="on_click_close($event, t)">
+        ✕
+      </button>
+    </div>
+  }
+</div>

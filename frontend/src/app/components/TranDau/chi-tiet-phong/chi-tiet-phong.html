@@ -51,6 +51,14 @@
             >
               Kết thúc
             </button>
+
+            <button
+              class="btn"
+              (click)="open_invite_panel()"
+              [disabled]="saving() || !isPending()"
+            >
+              Mời bạn bè
+            </button>
           }
           <button class="btn ghost" (click)="leave()" [disabled]="saving()">Rời phòng</button>
         </div>
@@ -237,64 +245,6 @@
                         }
                       }
                     }
-
-                    <!--                    <div class="choices" [class.long-layout]="hasLongAnswer()">-->
-                    <!--                      @for (opt of ['A', 'B', 'C', 'D']; track $index) {-->
-                    <!--                        <button-->
-                    <!--                          class="choice"-->
-                    <!--                          [class.active]="selectedAnswer() === opt"-->
-                    <!--                          [class.correct]="revealedCorrectAnswer() === opt"-->
-                    <!--                          [class.incorrect]="-->
-                    <!--                            submittedCurrentAnswer() &&-->
-                    <!--                            selectedAnswer() === opt &&-->
-                    <!--                            revealedCorrectAnswer() &&-->
-                    <!--                            revealedCorrectAnswer() !== opt"-->
-                    <!--                          (click)="selectAnswer(opt)"-->
-
-                    <!--                          [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0 || !!revealedCorrectAnswer()"-->
-                    <!--                        >-->
-                    <!--                          <strong>{{ opt }}.</strong>-->
-                    <!--                          {{-->
-                    <!--                            opt === 'A' ? s.a : opt === 'B' ? s.b : opt === 'C' ? s.c : opt === 'D' ? s.d : ''-->
-                    <!--                          }}-->
-                    <!--                        </button>-->
-                    <!--                      }-->
-                    <!--                    </div>-->
-
-                    <!--                    @if (submittedCurrentAnswer() && !revealedCorrectAnswer()) {-->
-                    <!--                      <div class="hint animate-pulse">-->
-                    <!--                        <i class="fas fa-check-circle"></i>-->
-                    <!--                        Bạn đã chọn: <strong class="badge-choice">{{ selectedAnswer() }}</strong>. Đang chờ kết quả...-->
-                    <!--                      </div>-->
-                    <!--                    }-->
-
-                    <!--                    @if (revealedCorrectAnswer()) {-->
-                    <!--                      <div class="answer-reveal animate-fade-in"-->
-                    <!--                           [class.is-correct-bg]="selectedAnswer() === revealedCorrectAnswer()"-->
-                    <!--                           [class.is-wrong-bg]="selectedAnswer() !== revealedCorrectAnswer()">-->
-                    <!--                        <div class="answer-row">-->
-                    <!--                          <span class="label">Đáp án đúng:</span>-->
-                    <!--                          <span class="badge-correct">{{ revealedCorrectAnswer() }}</span>-->
-                    <!--                        </div>-->
-                    <!--                        <div class="answer-row user-selection">-->
-                    <!--                          <span class="label">Bạn đã chọn:</span>-->
-
-                    <!--                          @if (selectedAnswer() === revealedCorrectAnswer()) {-->
-                    <!--                            <span class="badge-user correct">{{ selectedAnswer() }} <i class="fas fa-check"></i></span>-->
-                    <!--                          } @else {-->
-                    <!--                            <span class="badge-user wrong">{{ selectedAnswer() }} <i class="fas fa-times"></i></span>-->
-                    <!--                          }-->
-                    <!--                        </div>-->
-
-                    <!--                        @if (revealedExplanation()) {-->
-                    <!--                          <hr class="divider">-->
-                    <!--                          <div class="answer-explain">-->
-                    <!--                            <strong><i class="fas fa-info-circle"></i> Giải thích:</strong>-->
-                    <!--                            {{ revealedExplanation() }}-->
-                    <!--                          </div>-->
-                    <!--                        }-->
-                    <!--                      </div>-->
-                    <!--                    }-->
                     <div class="choices" [class.long-layout]="hasLongAnswer()">
                       @for (opt of ['A', 'B', 'C', 'D']; track $index) {
                         <button
@@ -461,6 +411,63 @@
 
           </div>
         </div>
+        @if (show_invite_panel) {
+          <div class="invite-overlay" (click)="close_invite_panel()">
+            <div class="invite-panel" (click)="$event.stopPropagation()">
+              <header class="invite-header">
+                <h3>Mời bạn bè vào phòng</h3>
+                <button class="btn-close" (click)="close_invite_panel()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </header>
+
+              <div class="invite-body">
+                @if (invite_loading) {
+                  <div class="invite-empty">Đang tải danh sách bạn bè...</div>
+                } @else {
+                  @if (invite_friends.length === 0) {
+                    <div class="invite-empty">
+                      Bạn chưa có bạn bè nào để mời.
+                    </div>
+                  } @else {
+                    <ul class="invite-list">
+                      @for (f of invite_friends; track f.user_id) {
+                        <li class="invite-item">
+                          <div class="friend-info">
+                            <img
+                              [src]="build_friend_avatar(f.avatar_url)"
+                              class="avatar"
+                              alt="avatar"
+                            />
+                            <div class="friend-text">
+                              <div class="name">{{ f.ho_ten }}</div>
+                              <div class="status">
+                                {{ f.trang_thai === 'ONLINE' ? 'Đang online' : 'Offline' }}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            class="btn small"
+                            (click)="invite_friend_to_battle(f)"
+                            [disabled]="is_inviting(f.user_id)"
+                          >
+                            @if (is_inviting(f.user_id)) {
+                              Đang mời...
+                            } @else {
+                              Mời
+                            }
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        }
+
       }
     </div>
   </div>

@@ -24,7 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/app");
 
         // Server gửi broadcast → /topic/**
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/topic/notifications", "/topic/chat/**");
 
         // Nếu gửi riêng user
         registry.setUserDestinationPrefix("/user");

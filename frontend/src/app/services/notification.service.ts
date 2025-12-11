@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {environment} from '../environments/environment';
 import {HttpUtilService} from './http.util.service';
 import {ResponseObject} from '../responses/response-object';
@@ -11,6 +11,9 @@ import {NotificationResponse} from '../responses/notification/notification-respo
 export class NotificationService {
 
   private readonly api = `${environment.apiBaseUrl}/notifications`;
+
+  private _realtime$ = new Subject<NotificationResponse>();
+  realtime$ = this._realtime$.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -51,5 +54,9 @@ export class NotificationService {
       {},
       {headers: this.httpUtil.createAuthHeaders()}
     );
+  }
+
+  pushRealtime(notification: NotificationResponse) {
+    this._realtime$.next(notification);
   }
 }

@@ -23,7 +23,6 @@ public class ThongBaoService implements IThongBaoService {
     private final INguoiDungRepository nguoiDungRepository;
     private final NotificationWsPublisher notificationWsPublisher;
 
-
     @Override
     @Transactional(readOnly = true)
     public Page<NotificationResponse> getMyNotifications(Long currentUserId, PageRequest pageRequest) {
@@ -75,6 +74,116 @@ public class ThongBaoService implements IThongBaoService {
                 .taoLuc(Instant.now())
                 .build();
 
-        thongBaoRepository.save(tb);
+        ThongBao saved = thongBaoRepository.save(tb);
+
+        // 🔔 Bắn realtime qua WebSocket cho người nhận
+        NotificationResponse payload = NotificationResponse.fromEntity(saved);
+        notificationWsPublisher.publishToUser(nguoiNhanId, payload);
+    }
+
+    // =========================================================
+    //  FRIEND MODULE – helper cho kết bạn
+    // =========================================================
+
+    /**
+     * Gửi thông báo khi A gửi lời mời kết bạn cho B
+     */
+    @Override
+    @Transactional
+    public void notifyFriendRequest(Long nguoiGuiId, Long nguoiNhanId, Long ketBanId) {
+        NguoiDung sender = nguoiDungRepository.getReferenceById(nguoiGuiId);
+
+        String hoTen = sender.getHoTen() != null && !sender.getHoTen().isBlank()
+                ? sender.getHoTen()
+                : sender.getTenDangNhap();
+
+        String noiDung = hoTen + " đã gửi lời mời kết bạn cho bạn.";
+
+        // metadata JSON đơn giản, đủ dùng cho FE
+        String metadataJson =
+                "{"
+                        + "\"type\":\"FRIEND_REQUEST\","
+                        + "\"ket_ban_id\":" + ketBanId + ","
+                        + "\"from_user_id\":" + nguoiGuiId + ","
+                        + "\"from_ho_ten\":\"" + escapeJson(hoTen) + "\""
+                        + "}";
+
+        createNotification(
+                nguoiGuiId,
+                nguoiNhanId,
+                "FRIEND_REQUEST",
+                noiDung,
+                metadataJson
+        );
+    }
+
+    /**
+     * Gửi thông báo cho người gửi khi lời mời được chấp nhận
+     */
+    @Override
+    @Transactional
+    public void notifyFriendAccepted(Long nguoiChapNhanId, Long nguoiGuiLoiMoiId, Long ketBanId) {
+        NguoiDung accepter = nguoiDungRepository.getReferenceById(nguoiChapNhanId);
+
+        String hoTen = accepter.getHoTen() != null && !accepter.getHoTen().isBlank()
+                ? accepter.getHoTen()
+                : accepter.getTenDangNhap();
+
+        String noiDung = hoTen + " đã chấp nhận lời mời kết bạn của bạn.";
+
+        String metadataJson =
+                "{"
+                        + "\"type\":\"FRIEND_ACCEPTED\","
+                        + "\"ket_ban_id\":" + ketBanId + ","
+                        + "\"accepter_id\":" + nguoiChapNhanId + ","
+                        + "\"accepter_ho_ten\":\"" + escapeJson(hoTen) + "\""
+                        + "}";
+
+        createNotification(
+                nguoiChapNhanId,
+                nguoiGuiLoiMoiId,
+                "FRIEND_REQUEST", // vẫn dùng loại FRIEND_REQUEST
+                noiDung,
+                metadataJson
+        );
+    }
+
+    /**
+     * Gửi thông báo cho người gửi khi lời mời bị từ chối
+     */
+    @Override
+    @Transactional
+    public void notifyFriendDeclined(Long nguoiTuChoiId, Long nguoiGuiLoiMoiId, Long ketBanId) {
+        NguoiDung decliner = nguoiDungRepository.getReferenceById(nguoiTuChoiId);
+
+        String hoTen = decliner.getHoTen() != null && !decliner.getHoTen().isBlank()
+                ? decliner.getHoTen()
+                : decliner.getTenDangNhap();
+
+        String noiDung = hoTen + " đã từ chối lời mời kết bạn của bạn.";
+
+        String metadataJson =
+                "{"
+                        + "\"type\":\"FRIEND_DECLINED\","
+                        + "\"ket_ban_id\":" + ketBanId + ","
+                        + "\"decliner_id\":" + nguoiTuChoiId + ","
+                        + "\"decliner_ho_ten\":\"" + escapeJson(hoTen) + "\""
+                        + "}";
+
+        createNotification(
+                nguoiTuChoiId,
+                nguoiGuiLoiMoiId,
+                "FRIEND_REQUEST",
+                noiDung,
+                metadataJson
+        );
+    }
+
+    /**
+     * Helper nhỏ để escape dấu " trong tên cho metadata JSON thủ công
+     */
+    private String escapeJson(String input) {
+        if (input == null) return "";
+        return input.replace("\"", "\\\"");
     }
 }

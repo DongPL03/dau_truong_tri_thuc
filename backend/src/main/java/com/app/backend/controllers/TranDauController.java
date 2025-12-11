@@ -6,11 +6,7 @@ import com.app.backend.models.TranDau;
 import com.app.backend.responses.PageResponse;
 import com.app.backend.responses.ResponseObject;
 import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
-import com.app.backend.responses.trandau.LichSuTranDauDetailResponse;
-import com.app.backend.responses.trandau.BattleFinishResponse;
-import com.app.backend.responses.trandau.BattleStartResponse;
-import com.app.backend.responses.trandau.SubmitAnswerResponse;
-import com.app.backend.responses.trandau.TranDauResponse;
+import com.app.backend.responses.trandau.*;
 import com.app.backend.services.trandau.ITranDauService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -311,4 +307,25 @@ public class TranDauController {
         );
     }
 
+    @PostMapping("/{tranDauId}/invite-friend")
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> inviteFriend(
+            @PathVariable("tranDauId") Long tranDauId,
+            @RequestBody BattleInviteRequestDto dto
+    ) throws Exception {
+        Long currentUserId = securityUtils.getLoggedInUserId();
+
+        tranDauService.inviteFriendToBattle(
+                tranDauId,
+                currentUserId,
+                dto.targetUserId()
+        );
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Đã gửi lời mời vào phòng thành công")
+                        .build()
+        );
+    }
 }

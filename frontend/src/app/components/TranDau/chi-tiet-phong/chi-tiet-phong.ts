@@ -16,6 +16,7 @@ import {ChatMessage} from '../../../responses/nguoidung/chatmessage';
 import {finalize} from 'rxjs/operators';
 import {PickerComponent} from '@ctrl/ngx-emoji-mart';
 import {UserResponse} from '../../../responses/nguoidung/user-response';
+import {FriendSummaryResponse} from '../../../responses/banbe/friend_summary_response';
 
 @Component({
   selector: 'app-chi-tiet-phong',
@@ -91,6 +92,15 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   // đã nằm trong class ChiTietPhong
   joinedBattle = signal<boolean>(false);
+
+  show_invite_panel = false;
+  invite_loading = false;
+  invite_friends: FriendSummaryResponse[] = [];
+  private inviting_ids = new Set<number>();
+
+// nếu bạn có sẵn base url avatar thì có thể dùng lại
+  readonly default_avatar = 'assets/images/default-profile-image.jpeg';
+  readonly image_base_url = 'http://localhost:8088/api/v1/users/profile-images/';
 
 
   constructor() {
@@ -886,4 +896,66 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       (s.c || '').length > threshold ||
       (s.d || '').length > threshold;
   });
+
+  open_invite_panel(): void {
+    this.show_invite_panel = true;
+
+    // Chỉ load 1 lần, hoặc bạn thích thì luôn reload
+    if (this.invite_friends.length === 0) {
+      this.load_friends_for_invite();
+    }
+  }
+
+  close_invite_panel(): void {
+    this.show_invite_panel = false;
+  }
+
+  private load_friends_for_invite(): void {
+    this.invite_loading = true;
+
+    this.friendService.getFriends().subscribe({
+      next: (res: ResponseObject<FriendSummaryResponse[]>) => {
+        this.invite_friends = res.data || [];
+        this.invite_loading = false;
+      },
+      error: () => {
+        this.invite_loading = false;
+        this.invite_friends = [];
+      }
+    });
+  }
+
+  build_friend_avatar(avatar_url?: string | null): string {
+    if (!avatar_url) {
+      return this.default_avatar;
+    }
+    return this.image_base_url + avatar_url;
+  }
+
+  is_inviting(user_id: number): boolean {
+    return this.inviting_ids.has(user_id);
+  }
+
+  invite_friend_to_battle(friend: FriendSummaryResponse): void {
+    // Lấy id trận đấu hiện tại – chỉnh lại cho đúng field của bạn
+    const battle = this.battle?.(); // nếu bạn đang dùng signal
+    if (!battle) {
+      return;
+    }
+    const tran_dau_id = (battle.id) as number;
+
+    this.inviting_ids.add(friend.user_id);
+
+    this.tranDauService.inviteFriend(tran_dau_id, friend.user_id)
+      .subscribe({
+        next: () => {
+          this.inviting_ids.delete(friend.user_id);
+          // Có thể popup nhỏ: “Đã gửi lời mời cho XXX”
+        },
+        error: () => {
+          this.inviting_ids.delete(friend.user_id);
+        }
+      });
+  }
+
 }

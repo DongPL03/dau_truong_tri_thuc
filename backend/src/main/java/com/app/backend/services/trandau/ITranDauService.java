@@ -52,5 +52,7 @@ public interface ITranDauService {
     // 2) Admin xem tất cả người chơi của 1 câu hỏi
     QuestionAnswersAdminResponse getQuestionAnswersAdmin(Long tranDauId, Long cauHoiId) throws Exception;
 
+    void inviteFriendToBattle(Long tranDauId, Long currentUserId, Long targetUserId)
+            throws Exception;
 
 }

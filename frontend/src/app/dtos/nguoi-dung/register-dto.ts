@@ -15,8 +15,6 @@ export class RegisterDto {
   @IsNotEmpty()
   password: string = "";
 
-  @IsString()
-  dia_chi?: string = "";
   retype_password: string = "";
   role_id: number | null = 1;
 

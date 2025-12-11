@@ -15,6 +15,10 @@ import {AdminService} from '../../services/admin.service';
 import {AdminStatsService} from '../../services/admin-stats.service';
 import {FriendService} from '../../services/friend.service';
 import {NotificationService} from '../../services/notification.service';
+import {NotificationWsService} from '../../services/notification-ws.service';
+import {ToastNotificationService} from '../../services/toast-notification.service';
+import {ChatService} from '../../services/chat.service';
+import {ChatWsService} from '../../services/chat-ws.service';
 
 export class Base {
   router: Router = inject(Router);
@@ -33,6 +37,10 @@ export class Base {
   adminStatsService: AdminStatsService = inject(AdminStatsService);
   friendService: FriendService = inject(FriendService);
   notificationService: NotificationService = inject(NotificationService);
+  notificationWsService: NotificationWsService = inject(NotificationWsService);
+  toastService: ToastNotificationService = inject(ToastNotificationService);
+  protected chatService: ChatService = inject(ChatService);
+  protected chatWsService: ChatWsService = inject(ChatWsService);
   document: Document = inject(DOCUMENT);
   location: Location = inject(Location);
 }

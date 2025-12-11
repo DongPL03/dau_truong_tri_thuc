@@ -23,4 +23,10 @@ public interface IThongBaoService {
             String noiDung,
             String metadataJson
     );
+
+    void notifyFriendRequest(Long senderId, Long receiverId, Long ketBanId);
+
+    void notifyFriendAccepted(Long accepterId, Long requesterId, Long ketBanId);
+
+    void notifyFriendDeclined(Long declinerId, Long requesterId, Long ketBanId);
 }

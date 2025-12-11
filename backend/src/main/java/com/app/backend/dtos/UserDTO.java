@@ -27,9 +27,6 @@ public class UserDTO {
     @NotBlank(message = "Password cannot be blank")
     private String password = "";
 
-    @JsonProperty("dia_chi")
-    private String diaChi = "";
-
     @JsonProperty("retype_password")
     private String retypePassword = "";
 

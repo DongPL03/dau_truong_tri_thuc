@@ -135,3 +135,67 @@
     background: #020617;
   }
 }
+
+.notif-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.battle-invite-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 320px;
+  background: #020617;
+  color: #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  padding: 12px 14px;
+  z-index: 1100;
+  border: 1px solid #10b981;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.toast-body {
+  font-size: 0.9rem;
+}
+
+.toast-body .room-code {
+  font-weight: 700;
+  color: #22c55e;
+  margin-left: 4px;
+}
+
+.toast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.toast-actions .btn-ghost,
+.toast-actions .btn-primary {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+}
+
+.toast-actions .btn-ghost {
+  background: transparent;
+  color: #9ca3af;
+}
+
+.toast-actions .btn-primary {
+  background: #22c55e;
+  color: #020617;
+  font-weight: 600;
+}

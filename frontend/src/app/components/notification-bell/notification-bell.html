@@ -10,10 +10,14 @@
     <div class="notif-dropdown">
       <div class="notif-header">
         <span>Thông báo</span>
-        <button class="link" (click)="markAllRead()" [disabled]="unread_count === 0">
-          Đánh dấu đã đọc hết
-        </button>
+        <div class="notif-header-actions">
+          <button class="link" (click)="markAllRead()" [disabled]="unread_count === 0">
+            Đánh dấu đã đọc hết
+          </button>
+          <a routerLink="/notifications" class="link">Xem tất cả</a>
+        </div>
       </div>
+
 
       @if (loading && notifications.length === 0) {
         <div class="notif-empty">Đang tải...</div>
@@ -51,3 +55,22 @@
     </div>
   }
 </div>
+@if (battle_invite_toast) {
+  <div class="battle-invite-toast" (click)="$event.stopPropagation()">
+    <div class="toast-title">
+      📣 Lời mời tham gia phòng đấu
+    </div>
+    <div class="toast-body">
+      <strong>{{ battle_invite_toast.nguoi_gui_ten }}</strong>
+      <span> đã mời bạn vào phòng </span>
+      @if (battle_invite_ma_phong) {
+        <span class="room-code">#{{ battle_invite_ma_phong }}</span>
+      }
+    </div>
+    <div class="toast-actions">
+      <button class="btn-ghost" (click)="dismissBattleInvite()">Để sau</button>
+      <button class="btn-primary" (click)="acceptBattleInvite()">Tham gia ngay</button>
+    </div>
+  </div>
+}
+

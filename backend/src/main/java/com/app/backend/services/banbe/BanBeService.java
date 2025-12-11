@@ -1,18 +1,15 @@
 package com.app.backend.services.banbe;
 
-
 import com.app.backend.dtos.FriendRequestDTO;
 import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.models.KetBan;
 import com.app.backend.models.NguoiDung;
-import com.app.backend.models.ThongBao;
 import com.app.backend.models.constant.TrangThaiKetBan;
 import com.app.backend.repositories.IKetBanRepository;
 import com.app.backend.repositories.INguoiDungRepository;
-import com.app.backend.repositories.IThongBaoRepository;
-
 import com.app.backend.responses.banbe.FriendRequestItemResponse;
 import com.app.backend.responses.banbe.FriendSummaryResponse;
+import com.app.backend.services.notification.ThongBaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +23,7 @@ public class BanBeService implements IBanBeService {
 
     private final IKetBanRepository ketBanRepository;
     private final INguoiDungRepository nguoiDungRepository;
-    private final IThongBaoRepository thongBaoRepository;
+    private final ThongBaoService thongBaoService;   // 👈 dùng service thông báo, không dùng repo trực tiếp
 
     @Override
     @Transactional
@@ -59,17 +56,8 @@ public class BanBeService implements IBanBeService {
                 .build();
         ketBanRepository.save(kb);
 
-        // tạo thông báo FRIEND_REQUEST cho receiver
-        ThongBao tb = ThongBao.builder()
-                .nguoiGui(sender)
-                .nguoiNhan(receiver)
-                .loai("FRIEND_REQUEST")
-                .noiDung(sender.getHoTen() + " đã gửi lời mời kết bạn")
-                .metadata(null)
-                .daDoc(false)
-                .taoLuc(Instant.now())
-                .build();
-        thongBaoRepository.save(tb);
+        // 🔔 Thông báo realtime + lưu DB cho người được mời
+        thongBaoService.notifyFriendRequest(sender.getId(), receiver.getId(), kb.getId());
     }
 
     @Override
@@ -85,17 +73,11 @@ public class BanBeService implements IBanBeService {
         kb.setTrangThai(TrangThaiKetBan.ACCEPTED);
         ketBanRepository.save(kb);
 
-        // Thông báo cho người gửi
-        ThongBao tb = ThongBao.builder()
-                .nguoiGui(kb.getNguoiNhan())
-                .nguoiNhan(kb.getNguoiGui())
-                .loai("FRIEND_REQUEST")
-                .noiDung(kb.getNguoiNhan().getHoTen() + " đã chấp nhận lời mời kết bạn")
-                .metadata(null)
-                .daDoc(false)
-                .taoLuc(Instant.now())
-                .build();
-        thongBaoRepository.save(tb);
+        Long requesterId = kb.getNguoiGui().getId();
+        Long accepterId = kb.getNguoiNhan().getId();
+
+        // 🔔 Thông báo cho người gửi lời mời biết đã được chấp nhận
+        thongBaoService.notifyFriendAccepted(accepterId, requesterId, kb.getId());
     }
 
     @Override
@@ -105,9 +87,17 @@ public class BanBeService implements IBanBeService {
                 .orElseThrow(() -> new DataNotFoundException("Lời mời không tồn tại hoặc không thuộc về bạn"));
 
         if (!TrangThaiKetBan.PENDING.equals(kb.getTrangThai())) {
-            return; // coi như đã xử lý
+            return; // coi như đã xử lý rồi, không làm gì thêm
         }
+
+        Long requesterId = kb.getNguoiGui().getId();
+        Long declinerId = kb.getNguoiNhan().getId();
+
+        // Xoá lời mời
         ketBanRepository.delete(kb);
+
+        // 🔔 Thông báo cho người gửi là đã bị từ chối
+        thongBaoService.notifyFriendDeclined(declinerId, requesterId, requestId);
     }
 
     @Override
@@ -120,6 +110,7 @@ public class BanBeService implements IBanBeService {
             throw new IllegalStateException("Chỉ có thể huỷ lời mời đang chờ");
         }
         ketBanRepository.delete(kb);
+        // (tuỳ bạn: có thể không cần thông báo gì cho bên kia khi huỷ)
     }
 
     @Override
@@ -132,6 +123,8 @@ public class BanBeService implements IBanBeService {
                         (k.getNguoiGui().getId().equals(friendUserId)
                                 || k.getNguoiNhan().getId().equals(friendUserId)))
                 .forEach(ketBanRepository::delete);
+
+        // (tuỳ bạn: có thể thêm 1 thông báo "X đã huỷ kết bạn với bạn" nếu muốn)
     }
 
     @Override

@@ -1,0 +1,38 @@
+<div class="notif-page">
+  <header class="notif-page-header">
+    <div>
+      <h2>Thông báo của bạn</h2>
+      <p>Danh sách tất cả thông báo từ hệ thống, trận đấu và bạn bè.</p>
+    </div>
+    <button class="btn-filter" (click)="toggleFilterUnread()">
+      {{ only_unread ? 'Hiện tất cả' : 'Chỉ hiện chưa đọc' }}
+    </button>
+  </header>
+
+  @if (loading) {
+    <div class="loading">Đang tải...</div>
+  } @else {
+    @if (notifications.length === 0) {
+      <div class="empty">Không có thông báo nào.</div>
+    } @else {
+      <ul class="notif-list">
+        @for (n of notifications; track n.thong_bao_id) {
+          <li class="notif-item" [class.unread]="!n.da_doc">
+            <div class="title-row">
+              <span class="sender">{{ n.nguoi_gui_ten }}</span>
+              <span class="type">{{ n.loai }}</span>
+            </div>
+            <div class="body">{{ n.noi_dung }}</div>
+            <div class="time">{{ n.tao_luc | date:'dd/MM/yyyy HH:mm' }}</div>
+          </li>
+        }
+      </ul>
+
+      <div class="pagination">
+        <button (click)="prevPage()" [disabled]="page === 0">« Trước</button>
+        <span>Trang {{ page + 1 }} / {{ total_pages || 1 }}</span>
+        <button (click)="nextPage()" [disabled]="page + 1 >= total_pages">Sau »</button>
+      </div>
+    }
+  }
+</div>

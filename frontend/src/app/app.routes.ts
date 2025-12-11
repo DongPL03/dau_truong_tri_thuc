@@ -87,7 +87,21 @@ export const routes: Routes = [
         loadComponent: () => import('./components/ban-be/user-friend/user-friend').then(m => m.UserFriend),
         title: 'Bạn bè'
       },
-
+      {
+        path: 'notifications',
+        loadComponent: () => import('./components/notification-page/user-notification-page/user-notification-page').then(m => m.UserNotificationPage),
+        title: 'Thông báo'
+      },
+      {
+        path: 'chat',
+        loadComponent: () => import('./components/chat/user-chat/user-chat').then(m => m.UserChat),
+        title: 'Trò chuyện'
+      },
+      {
+        path: 'chat/:partner_id',
+        loadComponent: () => import('./components/chat/user-chat/user-chat').then(m => m.UserChat),
+        title: 'Trò chuyện'
+      }
     ]
   },
   {

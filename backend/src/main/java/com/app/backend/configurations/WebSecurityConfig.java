@@ -39,6 +39,7 @@ public class WebSecurityConfig {
                     requests
                             .requestMatchers("/ws/**").permitAll()
                             .requestMatchers("/topic/**").permitAll()
+                            .requestMatchers("/topic/notifications/**").permitAll()
                             .requestMatchers("/app/**").permitAll()
                             .requestMatchers("/queue/**").permitAll()
                             .requestMatchers(

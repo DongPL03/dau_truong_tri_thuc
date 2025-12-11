@@ -17,6 +17,7 @@ import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
 import com.app.backend.responses.trandau.*;
 import com.app.backend.responses.websocket.FinishedEvent;
 import com.app.backend.responses.websocket.LeaderboardUpdateEvent;
+import com.app.backend.services.notification.IThongBaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +46,8 @@ public class TranDauService implements ITranDauService {
     private final ILichSuTranDauRepository lichSuTranDauRepository;
     private final IBangXepHangRepository bangXepHangRepository;
     private final IThanhTichBoCauHoiRepository thanhTichBoCauHoiRepository;
+    private final IKetBanRepository ketBanRepository;
+    private final IThongBaoService thongBaoService;
 
 
     /**
@@ -973,5 +976,63 @@ public class TranDauService implements ITranDauService {
                 .build();
     }
 
+
+    @Override
+    @Transactional
+    public void inviteFriendToBattle(Long tranDauId,
+                                     Long currentUserId,
+                                     Long targetUserId) throws Exception {
+
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        // Chỉ chủ phòng mới mời được
+        if (!td.getChuPhong().getId().equals(currentUserId)) {
+            throw new SecurityException("Chỉ chủ phòng mới có thể mời bạn bè vào phòng");
+        }
+
+        // Trạng thái trận đấu phải đang chờ (tuỳ bạn, có thể cho cả ONGOING)
+        if (!TrangThaiTranDau.PENDING.equals(td.getTrangThai())) {
+            throw new IllegalStateException("Chỉ có thể mời khi phòng đang ở trạng thái chờ");
+        }
+
+        if (currentUserId.equals(targetUserId)) {
+            throw new IllegalArgumentException("Không thể tự mời chính mình");
+        }
+
+        // Check user tồn tại
+        NguoiDung target = nguoiDungRepository.findById(targetUserId)
+                .orElseThrow(() -> new DataNotFoundException("Người được mời không tồn tại"));
+
+        // Phải là bạn bè
+        boolean areFriends = ketBanRepository.areFriends(currentUserId, targetUserId);
+        if (!areFriends) {
+            throw new IllegalStateException("Chỉ có thể mời những người đã là bạn bè");
+        }
+
+        // Tạo nội dung + metadata cho notification
+        NguoiDung chuPhong = td.getChuPhong();
+        String noiDung = chuPhong.getHoTen() + " đã mời bạn vào phòng đấu: "
+                + (td.getMaPhong() != null ? td.getMaPhong() : ("#" + td.getId()));
+
+        String metadataJson = """
+                {
+                  "tran_dau_id": %d,
+                  "ma_phong": "%s"
+                }
+                """.formatted(
+                td.getId(),
+                td.getMaPhong() != null ? td.getMaPhong() : ""
+        );
+
+        // Gửi notification type BATTLE_INVITE (đã dùng trong bell)
+        thongBaoService.createNotification(
+                chuPhong.getId(),
+                target.getId(),
+                "BATTLE_INVITE",
+                noiDung,
+                metadataJson
+        );
+    }
 
 }

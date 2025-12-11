@@ -28,7 +28,6 @@ export class DangKy extends Base
   password = '';
   retypePassword = '';
   hoTen = '';
-  diaChi = '';
   showPassword = false;
 
   // constructor(private renderer: Renderer2,
@@ -48,7 +47,6 @@ export class DangKy extends Base
     this.password = '';
     this.retypePassword = '';
     this.hoTen = '';
-    this.diaChi = '';
     this.showPassword = false;
   }
 
@@ -73,7 +71,6 @@ export class DangKy extends Base
       ten_dang_nhap: this.tenDangNhap,
       email: this.email,
       ho_ten: this.hoTen,
-      dia_chi: this.diaChi,
       password: this.password,
       retype_password: this.retypePassword,
       role_id: 1, // mặc định role USER

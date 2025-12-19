@@ -1,214 +1,517 @@
-.dashboard-container {
-  padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
-  color: #333;
+/* --- BIẾN MÀU SẮC (THEME GAME TƯƠI SÁNG) --- */
+:host {
+  --primary: #6C5DD3; /* Tím chủ đạo */
+  --primary-dark: #5b4cc4;
+  --accent: #FF754C; /* Cam nổi bật (Nút bấm) */
+  --accent-hover: #ff5f2e;
+  --bg-body: #F0F2F5; /* Nền xám xanh nhạt */
+  --card-bg: #ffffff;
+  --text-main: #11142D;
+  --text-muted: #808191;
+  --success: #7FBA7A;
+  --gold: #FFCE73;
+  --danger: #FF754C;
+  --radius: 20px; /* Bo góc lớn */
+  --shadow-card: 0px 10px 20px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0px 4px 10px rgba(108, 93, 211, 0.3);
 }
 
-.dashboard-greeting {
-  background: #fff;
-  border-radius: 10px;
-  padding: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
+.game-dashboard {
+  background-color: var(--bg-body);
+  min-height: 100vh;
+  padding: 30px;
+  font-family: 'Nunito', 'Segoe UI', sans-serif; /* Khuyên dùng font tròn trịa */
+  color: var(--text-main);
+}
+
+/* --- HERO HEADER --- */
+.hero-header {
+  margin-bottom: 30px;
+  animation: slideDown 0.5s ease-out;
+}
+
+.hero-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.highlight-name {
+  color: var(--primary);
+  background: linear-gradient(120deg, var(--primary) 0%, #a29bfe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-header p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-top: 5px;
+}
+
+/* --- LAYOUT GRID --- */
+.main-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 30px;
+}
+
+/* --- CHUNG CHO CARD --- */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 24px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--text-main);
+}
+
+/* --- CỘT TRÁI (SIDEBAR) --- */
+.profile-card {
   text-align: center;
-
-  h1 {
-    font-size: 1.8em;
-    font-weight: bold;
-    color: #222;
-  }
-
-  .username {
-    color: #4caf50;
-  }
-
-  p {
-    margin-top: 5px;
-    color: #666;
-  }
 }
 
-.dashboard-layout {
+.avatar-container {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #a0d2eb, #e5eaf5);
+  border-radius: 50%;
+  margin: 0 auto 10px;
   display: flex;
-  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--primary);
+  border: 4px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.dashboard-sidebar {
-  width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.quick-stats-card,
-.quick-actions-card,
-.activity-feed-card,
-.battle-pending-card,
-.featured-quiz-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.quick-stats-card h2,
-.quick-actions-card h2,
-.activity-feed-card h2,
-.battle-pending-card h2,
-.featured-quiz-card h2 {
-  color: #4caf50;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+.level-badge {
+  background: var(--primary);
+  color: white;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
   margin-bottom: 15px;
 }
 
-.stat-grid {
+.progress-track {
+  background: #E4E5EE;
+  height: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--primary), #a29bfe);
+  height: 100%;
+}
+
+.xp-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Stats Grid */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 24px;
 }
 
-.stat-box-small {
-  background: #f9f9f9;
-  border: 1px solid #eee;
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
-
-  i {
-    font-size: 1.5em;
-    color: #2196f3;
-  }
-
-  .stat-value {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .stat-label {
-    font-size: 0.85em;
-    color: #777;
-  }
+.stat-item {
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s;
 }
 
-.btn-action {
+.stat-item:hover {
+  transform: scale(1.05);
+}
+
+.icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px;
+  justify-content: center;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+}
+
+.rank-icon {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.win-icon {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.coin-icon {
+  background: #fff8e1;
+  color: #ffc107;
+}
+
+.score-icon {
+  background: #f3e5f5;
+  color: #9c27b0;
+}
+
+.stat-text {
+  text-align: center;
+}
+
+.stat-text .label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.stat-text .value {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.text-gold {
+  color: #f39c12;
+}
+
+/* --- ACTION CENTER (Nút bấm) --- */
+.action-center {
+  margin-bottom: 30px;
+}
+
+/* NÚT 3D STYLE */
+.btn-3d {
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  color: #fff;
   cursor: pointer;
-  margin-bottom: 10px;
+  border-radius: 16px;
+  transition: all 0.1s;
+  position: relative;
+  overflow: hidden;
 }
 
-.battle-search {
-  background: #2196f3;
+.btn-3d:active {
+  transform: translateY(3px); /* Hiệu ứng nhấn xuống */
+  box-shadow: none !important;
 }
 
-.practice-select {
-  background: #4caf50;
+/* Nút tìm trận khổng lồ */
+.btn-battle-big {
+  width: 100%;
+  padding: 30px;
+  background: linear-gradient(135deg, var(--primary) 0%, #8c7ae6 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  box-shadow: 0 10px 0 var(--primary-dark), 0 10px 20px rgba(0, 0, 0, 0.2); /* Bóng cứng 3D */
+  margin-bottom: 20px;
 }
 
-.create-quiz {
-  background: #666;
+.btn-battle-big i {
+  margin-right: 15px;
+  font-size: 2rem;
 }
 
-.battle-history {
-  background: #ff9800;
+.btn-battle-big .btn-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
 }
 
-.btn-action:hover {
+.btn-battle-big small {
+  font-size: 0.9rem;
+  font-weight: 400;
   opacity: 0.9;
 }
 
-.dashboard-main-content {
-  flex: 1;
+/* Hiệu ứng bóng loáng chạy qua nút */
+.shine-effect {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-25deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  100% {
+    left: 200%;
+  }
+}
+
+/* Các nút phụ */
+.sub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--text-main);
+  padding: 15px;
+  font-weight: 700;
+  box-shadow: 0 5px 0 #e1e1e1, 0 5px 10px rgba(0, 0, 0, 0.05);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary i {
+  color: var(--primary);
+}
+
+.btn-secondary:hover {
+  background: #fcfcfc;
+}
+
+.btn-weekly {
+  width: 100%;
+  padding: 15px;
+  background: var(--gold);
+  color: #78350f;
+  font-weight: 700;
+  box-shadow: 0 5px 0 #e6b350;
+  margin-top: 10px;
+}
+
+/* --- FEED LIST --- */
+.feed-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dashed #eee;
+  transition: background 0.2s;
+}
+
+.feed-row:hover {
+  background-color: #f9f9f9;
+  padding-left: 10px;
+  border-radius: 8px;
+}
+
+.badge-win, .badge-rank {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  min-width: 60px;
+  text-align: center;
+  display: inline-block;
+  margin-right: 15px;
+}
+
+.badge-win {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-rank {
+  background: #eee;
+  color: #555;
+}
+
+.quiz-name {
+  font-weight: 700;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.quiz-score {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* --- ANIMATION --- */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .sub-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Featured Quiz Section --- */
+
+/* 1. Biến danh sách UL thành lưới Grid */
+.featured-quiz-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  /* Tự động chia cột: Ít nhất 280px một thẻ, còn lại tự giãn */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
 }
 
-.feed-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px dashed #eee;
-  padding: 10px 0;
-  font-size: 0.95em;
-
-  .feed-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px;
-  }
-
-  .win-icon {
-    background: #4caf50;
-  }
-
-  .loss-icon {
-    background: #e53935;
-  }
-
-  .friend-icon {
-    background: #f39c12;
-  }
-
-  .feed-time {
-    color: #999;
-    font-size: 0.8em;
-  }
-}
-
-.battle-item,
+/* 2. Style cho từng thẻ Quiz (Item) */
 .quiz-item {
+  background: #ffffff;
+  border: 2px solid #f0f2f5; /* Viền nhẹ */
+  border-radius: 20px; /* Bo góc tròn trịa */
+  padding: 20px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nhún */
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-join,
-.btn-train {
-  background: #4caf50;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-size: 0.9em;
+/* Hiệu ứng khi rê chuột vào thẻ */
+.quiz-item:hover {
+  border-color: var(--primary); /* Đổi màu viền sang tím */
+  transform: translateY(-8px); /* Bay lên */
+  box-shadow: 0 15px 30px rgba(108, 93, 211, 0.15); /* Đổ bóng màu tím nhạt */
 }
 
-.btn-join:hover,
-.btn-train:hover {
-  background: #43a047;
+/* 3. Phần thông tin bên trong */
+.quiz-info {
+  margin-bottom: 15px;
 }
 
+/* Tag chủ đề (Ví dụ: Lịch sử, Toán...) */
 .quiz-category-tag {
-  background: #e3f2fd;
-  color: #2196f3;
-  font-size: 0.8em;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 4px;
+  display: inline-block;
+  background: #e3f2fd; /* Nền xanh nhạt */
+  color: #2196f3; /* Chữ xanh đậm */
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
+/* Tiêu đề bộ câu hỏi */
 .quiz-title {
-  font-weight: 600;
-  margin-top: 3px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #11142d;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+
+  /* Cắt bớt nếu tên quá dài (tối đa 2 dòng) */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
+/* Thông tin người tạo */
+.quiz-meta {
+  font-size: 0.85rem;
+  color: #808191;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Thêm icon nhỏ trước tên người tạo bằng CSS */
+.quiz-meta::before {
+  content: '\f007'; /* Mã icon User của FontAwesome */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  opacity: 0.5;
+}
+
+/* 4. Nút Luyện tập */
+.btn-train {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background-color: #f0f2f5;
+  color: #11142d;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Icon cho nút (nếu muốn thêm bằng CSS fake) */
+.btn-train::before {
+  content: "🚀";
+  font-size: 1.1em;
+}
+
+/* Hover vào nút */
+.btn-train:hover {
+  background-color: var(--primary); /* Màu tím chủ đạo */
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(108, 93, 211, 0.3);
+}
+
+/* Style cho trạng thái trống (No data) */
 .no-data {
-  color: #888;
+  text-align: center;
+  color: #808191;
   font-style: italic;
+  padding: 40px;
+  background: #f9f9f9;
+  border-radius: 20px;
+  border: 2px dashed #eee;
 }

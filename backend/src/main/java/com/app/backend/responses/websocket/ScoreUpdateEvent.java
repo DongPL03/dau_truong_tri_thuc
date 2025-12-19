@@ -37,4 +37,14 @@ public class ScoreUpdateEvent {
 
     @JsonProperty("question_index")
     private int questionIndex;
+
+    @JsonProperty("combo_streak")
+    private int comboStreak;
+
+    @JsonProperty("combo_bonus")
+    private int comboBonus;
+
+    @JsonProperty("combo_multiplier")
+    private double comboMultiplier;
+
 }

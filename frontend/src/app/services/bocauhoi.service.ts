@@ -7,6 +7,7 @@ import {HttpUtilService} from './http.util.service';
 import {ResponseObject} from '../responses/response-object';
 import {PageResponse} from '../responses/page-response';
 import {BoCauHoiResponse} from '../responses/bocauhoi/bocauhoi-response';
+import {UnlockBoCauHoiResponse} from '../responses/bocauhoi/unlock-bo-cau-hoi-response';
 
 @Injectable({providedIn: 'root'})
 export class BocauhoiService {
@@ -140,6 +141,28 @@ export class BocauhoiService {
     );
   }
 
+
+  /**
+   * ✅ Lấy danh sách bộ câu hỏi dùng cho trận đấu thường
+   */
+  getCasualBattleSets() {
+    return this.http.get<ResponseObject<BoCauHoiResponse[]>>(
+      `${this.api}/battle-sets/casual`,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  /**
+   * ✅ Lấy danh sách bộ câu hỏi dùng cho trận đấu xếp hạng
+   */
+  getRankedBattleSets() {
+    return this.http.get<ResponseObject<BoCauHoiResponse[]>>(
+      `${this.api}/battle-sets/ranked`,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+
   /** Gắn cờ Official cho 1 bộ câu hỏi (chỉ admin)
    * @param id
    */
@@ -181,6 +204,15 @@ export class BocauhoiService {
     return this.http.put<ResponseObject<BoCauHoiResponse>>(
       `${this.api}/${id}/reject`,
       body,
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  unlock_bo_cau_hoi(id: number) {
+    const url = `${this.api}/unlock/${id}`;
+    return this.http.put<ResponseObject<UnlockBoCauHoiResponse>>(
+      url,
+      {},
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }

@@ -1,6 +1,8 @@
 package com.app.backend.responses.bangxephang;
 
 import com.app.backend.models.BangXepHang;
+import com.app.backend.models.constant.RankTier;
+import com.app.backend.services.bangxephang.BangXepHangService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -34,13 +36,14 @@ public class LeaderboardEntryResponse {
     @JsonProperty("ti_le_thang")
     private Double tiLeThang; // % thắng
 
-    @JsonProperty("xep_hang")
-    private Integer xepHang;
+    @JsonProperty("level")
+    private Integer level;
 
     @JsonProperty("rank_tier")
-    private String rankTier;
+    private RankTier rankTier;
 
-    public static LeaderboardEntryResponse from(BangXepHang bxh, int rank) {
+
+    public static LeaderboardEntryResponse from(BangXepHang bxh, BangXepHangService bangXepHangService) {
         var user = bxh.getNguoiDung();
         int tongTran = bxh.getTongTran() != null ? bxh.getTongTran() : 0;
         int soThang = bxh.getSoTranThang() != null ? bxh.getSoTranThang() : 0;
@@ -49,7 +52,7 @@ public class LeaderboardEntryResponse {
         if (tongTran > 0) {
             winRate = (soThang * 100.0) / tongTran;
         }
-
+        RankTier tier = bangXepHangService.getRankTier(bxh);
         return LeaderboardEntryResponse.builder()
                 .userId(user.getId())
                 .hoTen(user.getHoTen())
@@ -59,7 +62,7 @@ public class LeaderboardEntryResponse {
                 .soTranThang(soThang)
                 .soTranThua(bxh.getSoTranThua())
                 .tiLeThang(winRate)
-                .xepHang(rank)
+                .rankTier(tier)
                 .build();
     }
 }

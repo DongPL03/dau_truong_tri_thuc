@@ -6,6 +6,7 @@ import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.exceptions.PermissionDenyException;
 import com.app.backend.models.BoCauHoi;
 import com.app.backend.models.CauHoi;
+import com.app.backend.responses.bocauhoi.UnlockBoCauHoiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
@@ -47,4 +48,11 @@ public interface IBoCauHoiService {
 
     Page<BoCauHoi> findBattleSets(PageRequest pageRequest);
 
+    List<BoCauHoi> getBattleSetsCasualForCurrentUser() throws Exception;
+
+    List<BoCauHoi> getBattleSetsRankedForCurrentUser() throws Exception;
+
+    UnlockBoCauHoiResponse unlockBoCauHoi(Long boCauHoiId, Long userId) throws Exception;
+
+    boolean hasUserUnlockedBo(Long boCauHoiId, Long userId);
 }

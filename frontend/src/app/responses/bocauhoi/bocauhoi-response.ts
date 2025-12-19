@@ -37,6 +37,12 @@ export interface BoCauHoiResponse {
   /** 🕒 Thời điểm tạo */
   tao_luc?: string;
 
+  can_mo_khoa?: boolean;   // true = phải mở khoá mới luyện được
+
+  gia_mo_khoa?: number;    // giá vàng
+
+  da_mo_khoa?: boolean;    // backend set true nếu user này đã mở khoá
+
   /** 🕓 Thời điểm cập nhật gần nhất */
   cap_nhat_luc?: string;
 }

@@ -18,7 +18,7 @@ import {BoCauHoiResponse} from '../../../responses/bocauhoi/bocauhoi-response';
   standalone: true
 })
 export class TaoTran extends Base implements OnInit {
-  @ViewChild('createForm') createForm!: NgForm;   // ✅ giống style trước giờ
+  @ViewChild('createForm') createForm!: NgForm;
   saving = false;
 
   form: TaoTranDauDTO = new TaoTranDauDTO({});
@@ -27,9 +27,14 @@ export class TaoTran extends Base implements OnInit {
 
   isModalOpen = false;
 
-  boCauHoiOptions: { id: number; tieu_de: string }[] = [];
+  // ⭐ Dùng luôn BoCauHoiResponse để sau này muốn show thêm meta cũng được
+  boCauHoiOptions: BoCauHoiResponse[] = [];
 
   keywordBoCauHoi = '';
+
+  // ⭐ Mode hiện tại (CASUAL / RANKED)
+  current_mode: 'CASUAL' | 'RANKED' = 'CASUAL';
+  loading_sets = false;
 
   // === THÊM BIẾN LƯU TRỮ METADATA ===
   preview_difficulty_counts: any = {};
@@ -38,17 +43,68 @@ export class TaoTran extends Base implements OnInit {
 
   preview_loading = false;
   preview_questions: {
-    loai_noi_dung: "VAN_BAN" | "HINH_ANH" | "AM_THANH" | "VIDEO";
-    do_kho: "DE" | "TRUNG_BINH" | "KHO";
+    loai_noi_dung: 'VAN_BAN' | 'HINH_ANH' | 'AM_THANH' | 'VIDEO';
+    do_kho: 'DE' | 'TRUNG_BINH' | 'KHO';
     duong_dan_tep: string | null | undefined;
     noi_dung: string;
-    id: number
+    id: number;
   }[] = [];
   preview_total = 0;
 
   ngOnInit() {
-    this.loadBoCauHoi();
+    // ⭐ Default: CASUAL
+    this.form.loai_tran_dau = 'CASUAL';
+    this.current_mode = 'CASUAL';
+    this.loadBoCauHoiForMode('CASUAL');
   }
+
+  // ====== LOAD BỘ CÂU HỎI THEO MODE ======
+
+  loadBoCauHoiForMode(mode: 'CASUAL' | 'RANKED') {
+    this.loading_sets = true;
+    this.current_mode = mode;
+
+    const obs = mode === 'RANKED'
+      ? this.bocauHoiService.getRankedBattleSets()
+      : this.bocauHoiService.getCasualBattleSets();
+
+    obs.subscribe({
+      next: (res: ResponseObject<BoCauHoiResponse[] | PageResponse<BoCauHoiResponse>>) => {
+        this.loading_sets = false;
+
+        // Nếu backend trả List<BoCauHoiResponse>:
+        if (Array.isArray(res.data)) {
+          this.boCauHoiOptions = res.data as BoCauHoiResponse[];
+        } else {
+          // Nếu backend vẫn trả PageResponse:
+          const page = res.data as PageResponse<BoCauHoiResponse> | undefined;
+          this.boCauHoiOptions = page?.items ?? [];
+        }
+      },
+      error: () => {
+        this.loading_sets = false;
+        this.boCauHoiOptions = [];
+        Swal.fire('Lỗi', 'Không tải được danh sách bộ câu hỏi', 'error');
+      }
+    });
+  }
+
+  // Gọi khi user đổi radio CASUAL/RANKED
+  onLoaiTranDauChange(mode: 'CASUAL' | 'RANKED') {
+    // SỬA Ở ĐÂY: So sánh với this.current_mode
+    if (this.current_mode === mode && this.boCauHoiOptions.length > 0) {
+      return;
+    }
+
+    // Các logic bên dưới giữ nguyên
+    this.form.loai_tran_dau = mode;
+    this.form.bo_cau_hoi_id = 0 as any;
+
+    // Hàm này sẽ cập nhật lại this.current_mode = mode sau khi chạy
+    this.loadBoCauHoiForMode(mode);
+  }
+
+  // ====== PHẦN PREVIEW BO CÂU HỎI (GIỮ NGUYÊN) ======
 
   onBoCauHoiChanged(bo_cau_hoi_id: number) {
     this.form.bo_cau_hoi_id = bo_cau_hoi_id;
@@ -70,8 +126,8 @@ export class TaoTran extends Base implements OnInit {
     console.log('Fetching preview for BoCauHoi ID:', bo_cau_hoi_id);
     this.preview_loading = true;
     this.preview_questions = [];
-    this.preview_difficulty_counts = {}; // Reset thống kê
-    this.preview_type_counts = {};     // Reset thống kê
+    this.preview_difficulty_counts = {};
+    this.preview_type_counts = {};
     this.preview_total = 0;
 
     this.cauHoiService.getByBoCauHoi(bo_cau_hoi_id).subscribe({
@@ -81,25 +137,23 @@ export class TaoTran extends Base implements OnInit {
           id: q.id,
           noi_dung: q.noi_dung,
           do_kho: q.do_kho,
-          loai_noi_dung: q.loai_noi_dung, // <-- THÊM DÒNG NÀY
-          duong_dan_tep: q.duong_dan_tep   // <-- THÊM DÒNG NÀY
+          loai_noi_dung: q.loai_noi_dung,
+          duong_dan_tep: q.duong_dan_tep
         }));
-        this.preview_total = page.items.length; // tuỳ bạn đặt tên trong PageResponse
-        // === TÍNH TOÁN METADATA ===
-        // 2. Tính toán độ khó
+        this.preview_total = page.items.length;
+
         this.preview_difficulty_counts = page.items.reduce((acc, q) => {
-          const key = q.do_kho; // Ví dụ: 'DE', 'KHO'
+          const key = q.do_kho;
           acc[key] = (acc[key] || 0) + 1;
           return acc;
-        }, {} as any); // Kết quả: { DE: 1, TRUNG_BINH: 1, KHO: 1 }
+        }, {} as any);
 
-        // 3. Tính toán loại nội dung
         this.preview_type_counts = page.items.reduce((acc, q) => {
-          const key = q.loai_noi_dung; // Ví dụ: 'VAN_BAN', 'HINH_ANH'
+          const key = q.loai_noi_dung;
           acc[key] = (acc[key] || 0) + 1;
           return acc;
-        }, {} as any); // Kết quả: { VAN_BAN: 1, HINH_ANH: 1, AM_THANH: 1 }
-        // === KẾT THÚC TÍNH TOÁN ===
+        }, {} as any);
+
         this.preview_loading = false;
       },
       error: () => {
@@ -108,19 +162,7 @@ export class TaoTran extends Base implements OnInit {
     });
   }
 
-  loadBoCauHoi() {
-    this.bocauHoiService.getBattleSets().subscribe({
-      next: (res: ResponseObject<PageResponse<BoCauHoiResponse>>) => {
-        const page = res.data;
-        this.boCauHoiOptions = page?.items ?? [];
-      },
-      error: () => {
-        Swal.fire('Lỗi', 'Không tải được danh sách bộ câu hỏi', 'error').then(() => {
-        });
-      }
-    });
-  }
-
+  // ====== (các hàm submit, cancel... giữ nguyên) ======
 
   onSubmit() {
     if (this.createForm.invalid) {
@@ -130,7 +172,6 @@ export class TaoTran extends Base implements OnInit {
       return;
     }
 
-    // validate business rule giống backend
     if (!this.form.cong_khai && (!this.form.ma_pin || !this.form.ma_pin.trim())) {
       Swal.fire('Thiếu PIN', 'Phòng riêng tư bắt buộc nhập mã PIN', 'info').then(r => {
       });
@@ -172,18 +213,11 @@ export class TaoTran extends Base implements OnInit {
   }
 
   getTieuDeBoCauHoi(): string {
-    // 1. Lấy ID một cách an toàn
     const id = this.form?.bo_cau_hoi_id;
-
-    // 2. Nếu không có ID, trả về một chuỗi mặc định
     if (id === null || id === undefined) {
-      return 'Chưa chọn'; // Hoặc trả về '' (chuỗi rỗng)
+      return 'Chưa chọn';
     }
-
-    // 3. Tìm tiêu đề
     const boCauHoi = this.boCauHoiOptions.find(b => b.id === id);
-
-    // 4. Trả về tiêu đề hoặc chuỗi mặc định nếu không tìm thấy
     return boCauHoi?.tieu_de || 'Không tìm thấy';
   }
 

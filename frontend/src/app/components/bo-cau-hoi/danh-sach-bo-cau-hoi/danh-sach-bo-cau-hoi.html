@@ -92,7 +92,8 @@
                 <p class="quiz-desc">{{ quiz.mo_ta || 'Không có mô tả' }}</p>
               </div>
               <div class="quiz-actions">
-                <button class="btn-action view" (click)="navigateDetail(quiz.id)" [attr.title]="'Xem chi tiết bộ câu hỏi này'">
+                <button class="btn-action view" (click)="navigateDetail(quiz.id)"
+                        [attr.title]="'Xem chi tiết bộ câu hỏi này'">
                   <i class="fas fa-list"></i> Xem
                 </button>
                 <!-- Sửa -->
@@ -117,9 +118,19 @@
                   {{ canDelete(quiz) ? 'Xóa' : 'Khoá' }}
                 </button>
 
-                <!-- Luyện -->
-                <button class="btn-action practice" [attr.title]="'Luyện bộ câu hỏi này'">
-                  <i class="fas fa-brain"></i> Luyện
+                <!-- Luyện / Mở khoá -->
+                <button
+                  class="btn-action practice"
+                  [attr.title]="quiz.can_mo_khoa && !quiz.da_mo_khoa ? 'Mở khoá bộ câu hỏi này' : 'Luyện bộ câu hỏi này'"
+                  [disabled]="unlocking_id === quiz.id"
+                  (click)="handlePracticeClick(quiz)"
+                >
+                  <i class="fas" [ngClass]="unlocking_id === quiz.id ? 'fa-spinner fa-spin' : 'fa-brain'"></i>
+                  @if (quiz.can_mo_khoa && !quiz.da_mo_khoa) {
+                    Mở khoá ({{ quiz.gia_mo_khoa || 0 }} vàng)
+                  } @else {
+                    Luyện
+                  }
                 </button>
               </div>
             </div>

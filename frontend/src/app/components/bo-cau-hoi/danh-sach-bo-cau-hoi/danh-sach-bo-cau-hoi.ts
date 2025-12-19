@@ -1,19 +1,19 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import {BoCauHoiResponse} from '../../../responses/bocauhoi/bocauhoi-response';
-import {ResponseObject} from '../../../responses/response-object';
-import {PageResponse} from '../../../responses/page-response';
-import {Base} from '../../base/base';
-import {ChuDe} from '../../../models/chude';
+import { ChuDe } from '../../../models/chude';
+import { BoCauHoiResponse } from '../../../responses/bocauhoi/bocauhoi-response';
+import { PageResponse } from '../../../responses/page-response';
+import { ResponseObject } from '../../../responses/response-object';
+import { Base } from '../../base/base';
 
 @Component({
   selector: 'app-bo-cau-hoi-danh-sach-bo-cau-hoi',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './danh-sach-bo-cau-hoi.html',
-  styleUrl: './danh-sach-bo-cau-hoi.scss'
+  styleUrl: './danh-sach-bo-cau-hoi.scss',
 })
 export class BoCauHoiList extends Base implements OnInit {
   loading = false;
@@ -27,13 +27,14 @@ export class BoCauHoiList extends Base implements OnInit {
   totalPages = 0;
   currentUserId: number = 0;
   items: BoCauHoiResponse[] = [];
+  unlocking_id: number | null = null;
 
   chuDes: ChuDe[] = [];
   readonly trangThaiOptions = [
-    {value: '', label: 'Tất cả'},
-    {value: 'DA_DUYET', label: 'Đã duyệt'},
-    {value: 'CHO_DUYET', label: 'Chờ duyệt'},
-    {value: 'TU_CHOI', label: 'Từ chối'}
+    { value: '', label: 'Tất cả' },
+    { value: 'DA_DUYET', label: 'Đã duyệt' },
+    { value: 'CHO_DUYET', label: 'Chờ duyệt' },
+    { value: 'TU_CHOI', label: 'Từ chối' },
   ];
 
   ngOnInit() {
@@ -44,7 +45,16 @@ export class BoCauHoiList extends Base implements OnInit {
 
   loadData() {
     this.loading = true;
-    this.bocauHoiService.getAll(this.keyword, this.chuDeId, this.cheDoHienThi, this.trangThai, this.sortOrder, this.page, this.limit)
+    this.bocauHoiService
+      .getAll(
+        this.keyword,
+        this.chuDeId,
+        this.cheDoHienThi,
+        this.trangThai,
+        this.sortOrder,
+        this.page,
+        this.limit
+      )
       .subscribe({
         next: (res: ResponseObject<PageResponse<BoCauHoiResponse>>) => {
           const data = res.data!;
@@ -54,9 +64,8 @@ export class BoCauHoiList extends Base implements OnInit {
         },
         error: () => {
           this.loading = false;
-          Swal.fire('Lỗi', 'Không thể tải danh sách bộ câu hỏi', 'error').then(r => {
-          });
-        }
+          Swal.fire('Lỗi', 'Không thể tải danh sách bộ câu hỏi', 'error').then((r) => {});
+        },
       });
   }
 
@@ -66,9 +75,8 @@ export class BoCauHoiList extends Base implements OnInit {
         this.chuDes = res.data || [];
       },
       error: () => {
-        Swal.fire('Lỗi', 'Không thể tải danh sách chủ đề', 'error').then(r => {
-        });
-      }
+        Swal.fire('Lỗi', 'Không thể tải danh sách chủ đề', 'error').then((r) => {});
+      },
     });
   }
 
@@ -89,11 +97,9 @@ export class BoCauHoiList extends Base implements OnInit {
       title: `Không thể ${action}`,
       text: `Bạn không thể ${action} bộ câu hỏi của người khác hoặc của admin!`,
       confirmButtonColor: '#3085d6',
-      confirmButtonText: 'Đã hiểu'
-    }).then(r => {
-    });
+      confirmButtonText: 'Đã hiểu',
+    }).then((r) => {});
   }
-
 
   onSearch() {
     this.page = 0;
@@ -111,7 +117,6 @@ export class BoCauHoiList extends Base implements OnInit {
     return text.replace(regex, '<mark>$1</mark>');
   }
 
-
   clearFilter() {
     this.keyword = '';
     this.cheDoHienThi = '';
@@ -120,11 +125,9 @@ export class BoCauHoiList extends Base implements OnInit {
     this.loadData();
   }
 
-
   goToCreateQuiz() {
     // sau này sẽ điều hướng đến trang tạo bộ câu hỏi
-    this.router.navigateByUrl('/bo-cau-hoi/tao-moi-bo-cau-hoi').then(r => {
-    });
+    this.router.navigateByUrl('/bo-cau-hoi/tao-moi-bo-cau-hoi').then((r) => {});
   }
 
   getVisiblePages(): number[] {
@@ -133,7 +136,7 @@ export class BoCauHoiList extends Base implements OnInit {
     const total = this.totalPages;
 
     if (total <= maxVisible) {
-      return Array.from({length: total}, (_, i) => i);
+      return Array.from({ length: total }, (_, i) => i);
     }
 
     const start = Math.max(0, this.page - 3);
@@ -163,8 +166,7 @@ export class BoCauHoiList extends Base implements OnInit {
   }
 
   navigateDetail(id: number) {
-    this.router.navigate(['/bo-cau-hoi/chi-tiet-bo-cau-hoi', id]).then(r => {
-    });
+    this.router.navigate(['/bo-cau-hoi/chi-tiet-bo-cau-hoi', id]).then((r) => {});
   }
 
   confirmDelete(id: number) {
@@ -175,8 +177,8 @@ export class BoCauHoiList extends Base implements OnInit {
       showCancelButton: true,
       confirmButtonText: 'Xóa',
       cancelButtonText: 'Hủy',
-      confirmButtonColor: '#e11d48'
-    }).then(result => {
+      confirmButtonColor: '#e11d48',
+    }).then((result) => {
       if (result.isConfirmed) {
         this.deleteBoCauHoi(id);
       }
@@ -186,14 +188,12 @@ export class BoCauHoiList extends Base implements OnInit {
   deleteBoCauHoi(id: number) {
     this.bocauHoiService.delete(id).subscribe({
       next: (res) => {
-        Swal.fire('Thành công', res.message || 'Xóa thành công', 'success').then(r => {
-        });
+        Swal.fire('Thành công', res.message || 'Xóa thành công', 'success').then((r) => {});
         this.loadData(); // reload lại danh sách
       },
       error: (err) => {
-        Swal.fire('Lỗi', err.error?.message || 'Không thể xóa bộ câu hỏi', 'error').then(r => {
-        });
-      }
+        Swal.fire('Lỗi', err.error?.message || 'Không thể xóa bộ câu hỏi', 'error').then((r) => {});
+      },
     });
   }
 
@@ -204,30 +204,107 @@ export class BoCauHoiList extends Base implements OnInit {
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Đồng ý',
-      cancelButtonText: 'Huỷ'
-    }).then(result => {
+      cancelButtonText: 'Huỷ',
+    }).then((result) => {
       if (!result.isConfirmed) {
         return;
       }
 
       this.bocauHoiService.markOfficial(quiz.id).subscribe({
         next: (res: ResponseObject<BoCauHoiResponse>) => {
-          Swal.fire('Thành công', res.message || 'Đã gắn Official', 'success').then(r => {
-          });
+          Swal.fire('Thành công', res.message || 'Đã gắn Official', 'success').then((r) => {});
           this.loadData(); // hàm bạn đang dùng để reload danh sách
         },
-        error: err => {
+        error: (err) => {
           const msg = err?.error?.message || 'Không thể gắn Official';
-          Swal.fire('Lỗi', msg, 'error').then(r => {
-          });
-        }
+          Swal.fire('Lỗi', msg, 'error').then((r) => {});
+        },
       });
     });
   }
 
-
   navigateEdit(id: number) {
-    this.router.navigate(['/bo-cau-hoi/sua-bo-cau-hoi', id]).then(r => {
+    this.router.navigate(['/bo-cau-hoi/sua-bo-cau-hoi', id]).then((r) => {});
+  }
+
+  /** Click nút Luyện / Mở khoá */
+  handlePracticeClick(quiz: BoCauHoiResponse) {
+    // Nếu không cần mở khoá hoặc đã mở rồi -> đi luyện luôn
+    if (!quiz.can_mo_khoa || quiz.da_mo_khoa) {
+      this.navigatePractice(quiz.id);
+      return;
+    }
+
+    // Nếu là chủ bộ hoặc admin -> đi luyện luôn (không cần mở khóa)
+    const roles = this.tokenService.getRoles();
+    const isAdmin = roles.includes('ROLE_ADMIN');
+    if (quiz.nguoi_tao_id === this.currentUserId || isAdmin) {
+      this.navigatePractice(quiz.id);
+      return;
+    }
+
+    const price = quiz.gia_mo_khoa ?? 0;
+
+    Swal.fire({
+      icon: 'question',
+      title: 'Mở khoá bộ câu hỏi?',
+      html: `
+        <p>Bộ: <strong>${quiz.tieu_de}</strong></p>
+        <p>Giá mở khoá: <strong>${price} vàng</strong></p>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Mở khoá',
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.doUnlockBoCauHoi(quiz);
+      }
     });
+  }
+
+  /** Gọi API mở khoá bộ câu hỏi */
+  private doUnlockBoCauHoi(quiz: BoCauHoiResponse) {
+    this.unlocking_id = quiz.id;
+
+    this.bocauHoiService.unlock_bo_cau_hoi(quiz.id).subscribe({
+      next: (res: ResponseObject<any>) => {
+        this.unlocking_id = null;
+        const data = res.data;
+
+        Swal.fire({
+          icon: 'success',
+          title: data?.da_mo_khoa_truoc_do ? 'Đã mở khoá từ trước' : 'Mở khoá thành công!',
+          html: `
+            <p>Bộ: <strong>${quiz.tieu_de}</strong></p>
+            <p>Đã trừ: <strong>${
+              data?.da_mo_khoa_truoc_do ? 0 : data?.gia_mo_khoa
+            } vàng</strong></p>
+            <p>Vàng còn lại: <strong>${data?.tien_vang_sau}</strong></p>
+          `,
+          confirmButtonText: 'Luyện ngay',
+        }).then(() => {
+          // Reload lại danh sách để cập nhật trạng thái unlock (button sẽ chuyển từ "Mở khoá" sang "Luyện")
+          this.loadData();
+          // Sau đó đi luyện
+          this.navigatePractice(quiz.id);
+        });
+      },
+      error: (err) => {
+        this.unlocking_id = null;
+        const msg = err?.error?.message || 'Không thể mở khoá bộ câu hỏi';
+        Swal.fire('Lỗi', msg, 'error').then((r) => {});
+      },
+    });
+  }
+
+  /** Điều hướng sang trang luyện tập bộ câu hỏi */
+  private navigatePractice(id: number) {
+    this.router
+      .navigate(['/luyen-tap'], {
+        queryParams: {
+          bo_cau_hoi_id: id,
+        },
+      })
+      .then((r) => {});
   }
 }

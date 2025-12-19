@@ -7,17 +7,19 @@ import com.app.backend.dtos.*;
 import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.exceptions.PermissionDenyException;
 import com.app.backend.models.*;
-import com.app.backend.models.constant.CheDoHienThi;
-import com.app.backend.models.constant.LuatTinhDiem;
-import com.app.backend.models.constant.TrangThaiBoCauHoi;
-import com.app.backend.models.constant.TrangThaiTranDau;
+import com.app.backend.models.constant.*;
 import com.app.backend.repositories.*;
+import com.app.backend.responses.achievement.AchievementResponse;
 import com.app.backend.responses.admin.QuestionAnswersAdminResponse;
 import com.app.backend.responses.lichsutrandau.LichSuTranDauResponse;
 import com.app.backend.responses.trandau.*;
 import com.app.backend.responses.websocket.FinishedEvent;
 import com.app.backend.responses.websocket.LeaderboardUpdateEvent;
+import com.app.backend.services.banbe.IBanBeService;
+import com.app.backend.services.bangxephang.IBangXepHangService;
 import com.app.backend.services.notification.IThongBaoService;
+import com.app.backend.services.thanhtich.IThanhTichService;
+import com.app.backend.utils.LevelInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +50,8 @@ public class TranDauService implements ITranDauService {
     private final IThanhTichBoCauHoiRepository thanhTichBoCauHoiRepository;
     private final IKetBanRepository ketBanRepository;
     private final IThongBaoService thongBaoService;
+    private final IBangXepHangService bangXepHangService;
+    private final IThanhTichService thanhTichService;
 
 
     /**
@@ -100,6 +104,13 @@ public class TranDauService implements ITranDauService {
         tranDau.setCongKhai(taoTranDauDTO.getCongKhai());
         tranDau.setMaPin(taoTranDauDTO.getCongKhai() ? null : taoTranDauDTO.getMaPin());
         tranDau.setMaPhong(generateRoomCode(6));
+        // Chế độ CASUAL / RANKED
+        String loaiTranDau = taoTranDauDTO.getLoaiTranDau();
+        if (!LoaiTranDau.CASUAL.equals(loaiTranDau) && !LoaiTranDau.RANKED.equals(loaiTranDau)) {
+            loaiTranDau = LoaiTranDau.CASUAL; // fallback an toàn
+        }
+        tranDau.setLoaiTranDau(loaiTranDau);
+
         tranDau.setGioiHanNguoiChoi(taoTranDauDTO.getGioiHanNguoiChoi());
         tranDau.setGioiHanThoiGianCauGiay(taoTranDauDTO.getGioiHanThoiGianCauGiay());
         // Luật tính điểm nếu có enum:
@@ -253,6 +264,22 @@ public class TranDauService implements ITranDauService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<TranDau> danhSachPhongCho(PageRequest pageRequest, String loaiTranDau) {
+        if (loaiTranDau == null || loaiTranDau.isBlank()) {
+            // Tất cả
+            return tranDauRepository.findByTrangThai(TrangThaiTranDau.PENDING, pageRequest);
+        }
+        // Chỉ CASUAL hoặc RANKED
+        return tranDauRepository.findByTrangThaiAndLoaiTranDau(
+                TrangThaiTranDau.PENDING,
+                loaiTranDau,
+                pageRequest
+        );
+    }
+
+
+    @Override
     @Transactional
     public BattleStartResponse startBattle(Long tranDauId, Long currentUserId) throws Exception {
         TranDau td = tranDauRepository.findById(tranDauId)
@@ -359,22 +386,56 @@ public class TranDauService implements ITranDauService {
         long elapsedMs = Duration.between(state.getCurrentQuestionStart(), Instant.now()).toMillis();
         boolean withinTime = elapsedMs <= totalMs;
 
-        // 6️⃣ Tính điểm
+        // 6️⃣ Tính điểm & combo
         boolean correct = withinTime && ans.equalsIgnoreCase(String.valueOf(q.getDapAnDung()));
+
+        // 6.1) Cập nhật combo trong state
+        int comboStreak = state.updateCombo(currentUserId, idx, correct);
+
+        int basePoints = 0;
+        int comboBonus = 0;
         int gained = 0;
+        double comboMultiplier = 1.0;
+
         if (correct) {
+            // a) Điểm cơ bản / speed bonus
             if (LuatTinhDiem.SPEED_BONUS.equalsIgnoreCase(td.getLuatTinhDiem())) {
                 long remain = Math.max(0, totalMs - elapsedMs);
                 double ratio = (double) remain / (double) totalMs;
-                gained = (int) Math.max(100, Math.round(1000 * ratio));
+
+                // Tối thiểu 100, tối đa 1000
+                basePoints = (int) Math.max(100, Math.round(1000 * ratio));
             } else {
-                gained = 100;
+                basePoints = 100;
             }
+
+            // b) Bonus theo combo
+            // Bạn có thể chỉnh lại ngưỡng cho hợp game:
+            boolean isRanked = LoaiTranDau.RANKED.equals(td.getLoaiTranDau());
+            if (comboStreak >= 3 && comboStreak <= 4) {
+                comboMultiplier = isRanked ? 1.10 : 1.05;
+            } else if (comboStreak >= 5 && comboStreak <= 6) {
+                comboMultiplier = isRanked ? 1.20 : 1.10;
+            } else if (comboStreak >= 7) {
+                comboMultiplier = isRanked ? 1.30 : 1.15;
+            } else {
+                comboMultiplier = 1.0;
+            }
+
+            gained = (int) Math.round(basePoints * comboMultiplier);
+            comboBonus = gained - basePoints;
+        } else {
+            // Sai → reset combo đã làm ở updateCombo(...), gained=0
+            gained = 0;
+            basePoints = 0;
+            comboBonus = 0;
+            comboMultiplier = 0.0;
         }
 
-        // 7️⃣ Cập nhật điểm tổng
+        // 7️⃣ Cập nhật điểm tổng (trong RAM)
         int total = state.addScore(currentUserId, gained);
         battleStateManager.save(state);
+
 
         // ⭐ 7.1) Cập nhật DB: diem & so_cau_dung của người nộp
         NguoiDung user = nguoiDungRepository.findById(currentUserId)
@@ -401,7 +462,16 @@ public class TranDauService implements ITranDauService {
 
         // 9️⃣ Phát sự kiện WS cập nhật điểm cho người chơi này
         wsPublisher.publishScoreUpdate(
-                td.getId(), user.getId(), user.getHoTen(), correct, gained, total, idx
+                td.getId(),
+                currentUserId,
+                user.getHoTen(),
+                correct,
+                gained,
+                total,
+                idx,
+                comboStreak,
+                comboBonus,
+                comboMultiplier
         );
 
         // 🔟 Cập nhật và broadcast leaderboard tổng thể
@@ -446,7 +516,7 @@ public class TranDauService implements ITranDauService {
         // Đã kết thúc rồi → trả kết quả cũ, KHÔNG publish WS nữa
         if (TrangThaiTranDau.FINISHED.equals(td.getTrangThai())) {
             System.out.println("⚠️ [SERVICE] Trận đấu đã ở trạng thái FINISHED, trả BattleFinishResponse cũ");
-            return BattleFinishResponse.from(td, null, null);
+            return BattleFinishResponse.from(td, null, null, null, null);
         }
 
         // 2️⃣ Lấy state trong RAM (nếu còn)
@@ -454,7 +524,7 @@ public class TranDauService implements ITranDauService {
         if (state != null && !state.markFinishedOnce()) {
             // Có người khác finish trước rồi
             System.out.println("⚠️ [SERVICE] markFinishedOnce = false, có luồng khác đã finish trước");
-            return BattleFinishResponse.from(td, state.getDiemNguoiChoi(), null);
+            return BattleFinishResponse.from(td, state.getDiemNguoiChoi(), null, null, null);
         }
 
         // 3️⃣ Lấy danh sách người chơi trong phòng
@@ -468,7 +538,7 @@ public class TranDauService implements ITranDauService {
             td.setKetThucLuc(Instant.now());
             tranDauRepository.save(td);
             battleStateManager.remove(tranDauId);
-            return BattleFinishResponse.from(td, null, null);
+            return BattleFinishResponse.from(td, null, null, null, null);
         }
 
         // 4️⃣ Map điểm (ưu tiên BattleState)
@@ -537,6 +607,7 @@ public class TranDauService implements ITranDauService {
                 .map(p -> {
                     Long uid = p.getNguoiDung().getId();
                     Integer tongTime = totalTimeMap.getOrDefault(uid, 0);
+                    Integer maxCombo = (state != null) ? state.getMaxComboStreak(uid) : 0;
                     return LichSuTranDau.builder()
                             .tranDau(td)
                             .nguoiDung(p.getNguoiDung())
@@ -544,6 +615,7 @@ public class TranDauService implements ITranDauService {
                             .soCauDung(p.getSoCauDung())
                             .tongThoiGianMs(tongTime)
                             .xepHang(p.getXepHang())
+                            .maxCombo(maxCombo)
                             .hoanThanhLuc(now)
                             .build();
                 })
@@ -560,7 +632,25 @@ public class TranDauService implements ITranDauService {
                 .collect(Collectors.toSet());
 
         // cập nhật BXH theo best-score + winners
-        updateRankingAfterBattle(td, scoreMap, winnerIds);
+        // cập nhật BXH VÀ lấy thưởng từng người chơi
+        Map<Long, MatchRewardResponse> rewardMap = updateRankingAfterBattle(td, scoreMap, winnerIds);
+
+
+        MatchRewardResponse myReward = rewardMap.get(currentUserId);
+
+        // 🔥 Sau khi cập nhật BXH và thưởng, xử lý thành tích
+        Map<Long, List<AchievementResponse>> achievementMap = new HashMap<>();
+        for (Long uid : rewardMap.keySet()) {
+            List<AchievementResponse> newly = thanhTichService.processAfterBattle(uid);
+            if (!newly.isEmpty()) {
+                achievementMap.put(uid, newly);
+            }
+        }
+
+        // Thành tích mới của user hiện tại (host)
+        List<AchievementResponse> myNewAchievements =
+                achievementMap.getOrDefault(currentUserId, List.of());
+
 
         System.out.println(">>> [SERVICE] Đã lưu lich_su_tran_dau, size=" + lichSuList.size());
 
@@ -574,6 +664,11 @@ public class TranDauService implements ITranDauService {
 
         System.out.println("🔥 [SERVICE] Chuẩn bị publish FINISHED WS cho tran_dau_id = " + td.getId()
                 + ", so_nguoi_choi = " + players.size());
+        Map<Long, Integer> maxComboMap = lichSuList.stream()
+                .collect(Collectors.toMap(
+                        ls -> ls.getNguoiDung().getId(),
+                        LichSuTranDau::getMaxCombo
+                ));
 
         wsPublisher.publishFinished(
                 td.getId(),
@@ -583,13 +678,27 @@ public class TranDauService implements ITranDauService {
                 td.getKetThucLuc(),
                 winData,
                 players.stream()
-                        .map(p -> FinishedEvent.Player.builder()
-                                .userId(p.getNguoiDung().getId())
-                                .hoTen(p.getNguoiDung().getHoTen())
-                                .diem(p.getDiem())
-                                .soCauDung(p.getSoCauDung())
-                                .xepHang(p.getXepHang())
-                                .build())
+                        .map(p -> {
+                            Long uid = p.getNguoiDung().getId();
+                            Integer maxCombo = maxComboMap.get(uid);
+                            MatchRewardResponse reward = rewardMap.get(uid);
+                            List<AchievementResponse> newAch = achievementMap.getOrDefault(uid, List.of());
+                            return FinishedEvent.Player.builder()
+                                    .userId(uid)
+                                    .hoTen(p.getNguoiDung().getHoTen())
+                                    .diem(p.getDiem())
+                                    .soCauDung(p.getSoCauDung())
+                                    .xepHang(p.getXepHang())
+                                    .maxCombo(maxCombo)   // ⭐ set vào WS
+                                    .xpGained(reward != null ? reward.getXpGained() : 0L)
+                                    .goldGained(reward != null ? reward.getGoldGained() : 0L)
+                                    .levelBefore(reward != null ? reward.getLevelBefore() : null)
+                                    .levelAfter(reward != null ? reward.getLevelAfter() : null)
+                                    .rankTierBefore(reward != null ? reward.getRankTierBefore() : null)
+                                    .rankTierAfter(reward != null ? reward.getRankTierAfter() : null)
+                                    .newAchievements(newAch)
+                                    .build();
+                        })
                         .toList()
         );
 
@@ -608,7 +717,7 @@ public class TranDauService implements ITranDauService {
                 .map(NguoiChoiTranDau::getNguoiDung)
                 .toList();
 
-        return BattleFinishResponse.from(td, finalScores, allUsers);
+        return BattleFinishResponse.from(td, finalScores, allUsers, myReward, myNewAchievements);
     }
 
 
@@ -657,49 +766,135 @@ public class TranDauService implements ITranDauService {
                 .build();
     }
 
-    private void updateRankingAfterBattle(TranDau td,
-                                          Map<Long, Integer> scores,
-                                          Set<Long> winnerIds) {
-        for (var e : scores.entrySet()) {
-            Long userId = e.getKey();
+    //    private void updateRankingAfterBattle(TranDau td,
+//                                          Map<Long, Integer> scores,
+//                                          Set<Long> winnerIds) {
+//        if (!com.app.backend.models.constant.LoaiTranDau.RANKED.equals(td.getLoaiTranDau())) {
+//            return;
+//        }
+//        for (var e : scores.entrySet()) {
+//            Long userId = e.getKey();
+//
+//            // Không cho điểm âm ảnh hưởng BXH
+//            int rawScore = e.getValue() != null ? e.getValue() : 0;
+//            int diemTranNay = Math.max(0, rawScore);
+//
+//            Long boCauHoiId = td.getBoCauHoi().getId();
+//
+//            // 1. Lấy record best-score hiện tại (nếu có)
+//            ThanhTichBoCauHoi thanhTich = thanhTichBoCauHoiRepository
+//                    .findByNguoiDung_IdAndBoCauHoi_Id(userId, boCauHoiId)
+//                    .orElse(null);
+//
+//            int oldBest = (thanhTich != null) ? thanhTich.getDiemCaoNhat() : 0;
+//            int delta = 0;
+//
+//            if (thanhTich == null) {
+//                // Chưa từng chơi bộ này => best-score mới
+//                delta = diemTranNay;
+//
+//                thanhTich = ThanhTichBoCauHoi.builder()
+//                        .nguoiDung(nguoiDungRepository.getReferenceById(userId))
+//                        .boCauHoi(td.getBoCauHoi())
+//                        .diemCaoNhat(diemTranNay)
+//                        .tranDau(td) // trận đầu tiên cũng là best
+//                        .build();
+//            } else if (diemTranNay > oldBest) {
+//                // Cải thiện kỷ lục
+//                delta = diemTranNay - oldBest;
+//                thanhTich.setDiemCaoNhat(diemTranNay);
+//                thanhTich.setTranDau(td);
+//            } else {
+//                // Không cải thiện => không cộng điểm rank
+//                delta = 0;
+//            }
+//
+//            thanhTichBoCauHoiRepository.save(thanhTich);
+//
+//            // 2. Cập nhật bảng xếp hạng tổng
+//            BangXepHang bxh = bangXepHangRepository.findByNguoiDung_Id(userId)
+//                    .orElse(BangXepHang.builder()
+//                            .nguoiDung(nguoiDungRepository.getReferenceById(userId))
+//                            .tongDiem(0)
+//                            .tongTran(0)
+//                            .soTranThang(0)
+//                            .soTranThua(0)
+//                            .xepHang(0)
+//                            .build());
+//
+//            // Mỗi lần kết thúc trận -> +1 tổng trận
+//            bxh.setTongTran(bxh.getTongTran() + 1);
+//
+//            // cộng delta (nếu > 0) vào tổng điểm
+//            if (delta > 0) {
+//                bxh.setTongDiem(bxh.getTongDiem() + delta);
+//            }
+//
+//            // --- Thắng / thua / AFK ---
+//            // Người thắng: thuộc winnerIds
+//            boolean isWinner = winnerIds != null && winnerIds.contains(userId);
+//
+//            // AFK/0 điểm: không tính là thua để thống kê đẹp hơn
+//            if (isWinner) {
+//                bxh.setSoTranThang(bxh.getSoTranThang() + 1);
+//            } else if (diemTranNay > 0) {
+//                // chỉ những người có >0 điểm mới tính là thua
+//                bxh.setSoTranThua(bxh.getSoTranThua() + 1);
+//            }
+//            // còn lại (0 điểm, không thuộc winner) -> coi như tham gia nhưng ko +thắng cũng ko +thua
+//
+//            //cap nhat truong xep hang
+////            long betterPlayersCount = bangXepHangRepository
+////                    .countByTongDiemGreaterThanAndNguoiDung_IdNot(bxh.getTongDiem(), userId);
+////
+////            bxh.setXepHang((int) betterPlayersCount + 1);
+//            bangXepHangRepository.save(bxh);
+//            bangXepHangRepository.updateAllRankings();
+//        }
+//    }
+    // TranDauService.java
 
-            // Không cho điểm âm ảnh hưởng BXH
-            int rawScore = e.getValue() != null ? e.getValue() : 0;
+    // trước: private void updateRankingAfterBattle(...)
+    private Map<Long, MatchRewardResponse> updateRankingAfterBattle(
+            TranDau tranDau,
+            Map<Long, Integer> scores,
+            Set<Long> winnerIds
+    ) {
+        Map<Long, MatchRewardResponse> rewardMap = new HashMap<>();
+
+        // Nếu bạn muốn chỉ RANKED mới cộng rank/xp/gold:
+        if (!LoaiTranDau.RANKED.equals(tranDau.getLoaiTranDau())) {
+            return rewardMap; // trận casual không có thưởng (hoặc sau này muốn đổi thì đổi chỗ này)
+        }
+
+        Long boCauHoiId = tranDau.getBoCauHoi().getId();
+
+        for (Map.Entry<Long, Integer> entry : scores.entrySet()) {
+            Long userId = entry.getKey();
+            int rawScore = entry.getValue() != null ? entry.getValue() : 0;
             int diemTranNay = Math.max(0, rawScore);
+            boolean isWinner = winnerIds.contains(userId);
 
-            Long boCauHoiId = td.getBoCauHoi().getId();
-
-            // 1. Lấy record best-score hiện tại (nếu có)
+            // --- 1) Thành tích theo bộ câu hỏi (delta điểm rank) ---
             ThanhTichBoCauHoi thanhTich = thanhTichBoCauHoiRepository
                     .findByNguoiDung_IdAndBoCauHoi_Id(userId, boCauHoiId)
                     .orElse(null);
 
-            int oldBest = (thanhTich != null) ? thanhTich.getDiemCaoNhat() : 0;
             int delta = 0;
-
             if (thanhTich == null) {
-                // Chưa từng chơi bộ này => best-score mới
                 delta = diemTranNay;
-
                 thanhTich = ThanhTichBoCauHoi.builder()
                         .nguoiDung(nguoiDungRepository.getReferenceById(userId))
-                        .boCauHoi(td.getBoCauHoi())
+                        .boCauHoi(tranDau.getBoCauHoi())
                         .diemCaoNhat(diemTranNay)
-                        .tranDau(td) // trận đầu tiên cũng là best
                         .build();
-            } else if (diemTranNay > oldBest) {
-                // Cải thiện kỷ lục
-                delta = diemTranNay - oldBest;
+            } else if (diemTranNay > thanhTich.getDiemCaoNhat()) {
+                delta = diemTranNay - thanhTich.getDiemCaoNhat();
                 thanhTich.setDiemCaoNhat(diemTranNay);
-                thanhTich.setTranDau(td);
-            } else {
-                // Không cải thiện => không cộng điểm rank
-                delta = 0;
             }
-
             thanhTichBoCauHoiRepository.save(thanhTich);
 
-            // 2. Cập nhật bảng xếp hạng tổng
+            // --- 2) Lấy hoặc tạo BXH ---
             BangXepHang bxh = bangXepHangRepository.findByNguoiDung_Id(userId)
                     .orElse(BangXepHang.builder()
                             .nguoiDung(nguoiDungRepository.getReferenceById(userId))
@@ -707,39 +902,70 @@ public class TranDauService implements ITranDauService {
                             .tongTran(0)
                             .soTranThang(0)
                             .soTranThua(0)
-                            .xepHang(0)
+                            .level(1)
+                            .tongXp(0L)
+                            .tienVang(0L)
+                            .rankTier(RankTier.BRONZE)
                             .build());
 
-            // Mỗi lần kết thúc trận -> +1 tổng trận
+            // Snapshot BEFORE
+            int levelBefore = bxh.getLevel() != null ? bxh.getLevel() : 1;
+            RankTier tierBefore = bxh.getRankTier() != null ? bxh.getRankTier() : RankTier.BRONZE;
+            long xpBefore = bxh.getTongXp() != null ? bxh.getTongXp() : 0L;
+            long goldBefore = bxh.getTienVang() != null ? bxh.getTienVang() : 0L;
+
+            // --- 3) Cập nhật thống kê rank (chỉ RANKED) ---
             bxh.setTongTran(bxh.getTongTran() + 1);
 
-            // cộng delta (nếu > 0) vào tổng điểm
             if (delta > 0) {
                 bxh.setTongDiem(bxh.getTongDiem() + delta);
             }
 
-            // --- Thắng / thua / AFK ---
-            // Người thắng: thuộc winnerIds
-            boolean isWinner = winnerIds != null && winnerIds.contains(userId);
-
-            // AFK/0 điểm: không tính là thua để thống kê đẹp hơn
             if (isWinner) {
                 bxh.setSoTranThang(bxh.getSoTranThang() + 1);
             } else if (diemTranNay > 0) {
-                // chỉ những người có >0 điểm mới tính là thua
                 bxh.setSoTranThua(bxh.getSoTranThua() + 1);
             }
-            // còn lại (0 điểm, không thuộc winner) -> coi như tham gia nhưng ko +thắng cũng ko +thua
 
-            //cap nhat truong xep hang
-//            long betterPlayersCount = bangXepHangRepository
-//                    .countByTongDiemGreaterThanAndNguoiDung_IdNot(bxh.getTongDiem(), userId);
-//
-//            bxh.setXepHang((int) betterPlayersCount + 1);
+//            if (bxh.getTongTran() > 0) {
+//                double winRate = (double) bxh.getSoTranThang() / bxh.getTongTran() * 100.0;
+//                bxh.setTiLeThang(winRate);
+//            }
+
+            // --- 4) Tính XP ---
+            long gainedXp = bangXepHangService.calculateXpFromMatch(diemTranNay, isWinner);
+            long newTotalXp = xpBefore + gainedXp;
+            bxh.setTongXp(newTotalXp);
+
+            LevelInfo li = bangXepHangService.computeLevelInfo(newTotalXp);
+            int levelAfter = li.getLevel();
+            bxh.setLevel(levelAfter);
+
+            // --- 5) Tính RankTier & Gold ---
+            RankTier tierAfter = bangXepHangService.getRankTier(bxh);
+            bxh.setRankTier(tierAfter);
+
+            long gainedGold = bangXepHangService
+                    .calculateGoldFromMatch(diemTranNay, isWinner, true, tierAfter);
+            long newTotalGold = goldBefore + gainedGold;
+            bxh.setTienVang(newTotalGold);
+
             bangXepHangRepository.save(bxh);
-            bangXepHangRepository.updateAllRankings();
+
+            // --- 6) Lưu reward cho user này ---
+            rewardMap.put(userId, MatchRewardResponse.builder()
+                    .xpGained(gainedXp)
+                    .goldGained(gainedGold)
+                    .levelBefore(levelBefore)
+                    .levelAfter(levelAfter)
+                    .rankTierBefore(tierBefore)
+                    .rankTierAfter(tierAfter).build());
         }
+
+        bangXepHangRepository.updateAllRankings();
+        return rewardMap;
     }
+
 
     @Override
     public Page<LichSuTranDauResponse> getMyHistory(Long currentUserId, int page, int limit) {
@@ -781,6 +1007,7 @@ public class TranDauService implements ITranDauService {
                         .diem(ls.getTongDiem())
                         .soCauDung(ls.getSoCauDung())
                         .xepHang(ls.getXepHang())
+                        .maxCombo(ls.getMaxCombo())
                         .build())
                 .toList();
 

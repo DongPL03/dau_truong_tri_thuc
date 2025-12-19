@@ -1,5 +1,6 @@
 package com.app.backend.dtos;
 
+import com.app.backend.models.constant.LoaiTranDau;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -36,4 +37,7 @@ public class TaoTranDauDTO {
 
     @JsonProperty("luat_tinh_diem")
     private String luatTinhDiem = "SPEED_BONUS"; // hoặc "BASIC"
+
+    @JsonProperty("loai_tran_dau")
+    private String loaiTranDau = LoaiTranDau.CASUAL;
 }

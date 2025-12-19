@@ -86,3 +86,18 @@ h2 {
   cursor: pointer;
   text-decoration: underline;
 }
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.badge-ranked {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.badge-casual {
+  background: #374151;
+  color: #e5e7eb;
+}

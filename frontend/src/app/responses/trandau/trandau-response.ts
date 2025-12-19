@@ -7,6 +7,7 @@ export interface TranDauResponse {
   gioi_han_nguoi_choi: number;
   gioi_han_thoi_gian_cau_giay: number;
   luat_tinh_diem: 'BASIC' | 'SPEED_BONUS';
+  loai_tran_dau: 'CASUAL' | 'RANKED';
   trang_thai: 'PENDING' | 'ONGOING' | 'FINISHED';
   chu_phong_ten: string;
   bo_cau_hoi_id: number;

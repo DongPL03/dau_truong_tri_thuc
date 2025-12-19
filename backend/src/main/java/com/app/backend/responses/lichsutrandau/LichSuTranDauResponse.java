@@ -47,6 +47,10 @@ public class LichSuTranDauResponse {
     @JsonProperty("luat_tinh_diem")
     private String luatTinhDiem;
 
+    @JsonProperty("loai_tran_dau")
+    private String loaiTranDau;
+
+
     public static LichSuTranDauResponse fromEntity(LichSuTranDau e) {
         return LichSuTranDauResponse.builder()
                 .lichSuId(e.getId())
@@ -64,6 +68,7 @@ public class LichSuTranDauResponse {
                 .xepHang(e.getXepHang())
                 .hoanThanhLuc(e.getHoanThanhLuc())
                 .luatTinhDiem(e.getTranDau().getLuatTinhDiem())
+                .loaiTranDau(e.getTranDau().getLoaiTranDau())
                 .build();
     }
 }

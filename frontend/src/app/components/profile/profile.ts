@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
@@ -10,6 +10,10 @@ import {ResponseObject} from '../../responses/response-object';
 import {UpdateUserDTO} from '../../dtos/nguoi-dung/update-user-dto';
 import {environment} from '../../environments/environment';
 import {AddressSelector} from '../shared/address-selector/address-selector';
+import {AchievementResponse} from '../../responses/thanhtich/achievement-response';
+import {UserSummaryResponse} from '../../responses/nguoidung/user-summary-response';
+import {LichSuTranDauResponse as LichSuTranDauShort} from '../../responses/lichsutrandau/lich_su_tran_dau_response';
+import {TopicStatResponse} from '../../responses/thongke/topic-stat-response';
 
 
 @Component({
@@ -19,7 +23,7 @@ import {AddressSelector} from '../shared/address-selector/address-selector';
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
-export class Profile extends Base {
+export class Profile extends Base implements OnInit {
   @ViewChild('infoForm') infoForm!: NgForm;
   @ViewChild('passwordForm') passwordForm!: NgForm;
 
@@ -36,9 +40,33 @@ export class Profile extends Base {
   updateDto: UpdateUserDTO = new UpdateUserDTO();
   passwordModel = {oldPassword: '', newPassword: '', retypePassword: ''};
 
+  // Tab hiện tại: INFO = thông tin cá nhân, ACHIEVEMENTS = thành tích & tiến trình
+  active_tab: 'INFO' | 'ACHIEVEMENTS' | 'ANALYSIS' = 'INFO';
+
+  // Thành tích
+  achievements: AchievementResponse[] = [];
+  loading_achievements = false;
+
+  // Chỗ chứa exp/level/rank/gold & thống kê trận (lấy từ API mà bạn đã dùng ở trang home)
+  me_rank: any = null;
+
+  user?: UserResponse | null;
+
+  user_summary?: UserSummaryResponse | null;
+  recent_matches: LichSuTranDauShort[] = [];
+  loading_summary = false;
+
+  topic_stats: TopicStatResponse[] = [];
+  loading_topics = false;
+
   ngOnInit(): void {
     this.me = this.userService.getUserResponseFromLocalStorage();
     this.fetchProfile();
+    this.user = this.userService.getUserResponseFromLocalStorage();
+
+    if (this.user?.id) {
+      this.loadUserSummary(this.user.id);
+    }
   }
 
   /** Lấy thông tin hồ sơ */
@@ -73,6 +101,76 @@ export class Profile extends Base {
       },
     });
   }
+
+  /** Chuyển tab */
+  setTab(tab: 'INFO' | 'ACHIEVEMENTS' | 'ANALYSIS'): void {
+    this.active_tab = tab;
+    if (tab === 'ACHIEVEMENTS' && !this.loading_achievements && this.achievements.length === 0) {
+      this.loadAchievements();
+    }
+
+    if (tab === 'ANALYSIS' && this.topic_stats.length === 0) {
+      this.loadTopicStats();
+    }
+  }
+
+  /** Lấy danh sách thành tích của user */
+  loadAchievements(): void {
+    this.loading_achievements = true;
+
+    // Gợi ý: userService.getMyAchievements() gọi về /achievements/me
+    this.thanhTichService.getMyAchievements().subscribe({
+      next: (res: ResponseObject) => {
+        this.achievements = (res.data || []) as AchievementResponse[];
+        this.loading_achievements = false;
+      },
+      error: () => {
+        this.loading_achievements = false;
+        // Có thể show toast nhẹ nếu muốn
+        // this.toastService.show('Không thể tải thành tích', 'error');
+      }
+    });
+  }
+
+  /** Lấy exp/level/rank/gold + tổng trận, thắng/thua (từ BXH) */
+  loadUserSummary(user_id: number) {
+    this.loading_summary = true;
+
+    this.userService.getUserSummary(user_id).subscribe({
+      next: (res: ResponseObject<UserSummaryResponse>) => {
+        console.log('✅ Thống kê người dùng tải về:', res.data);
+        this.loading_summary = false;
+        this.user_summary = res.data ?? null;
+        console.log('User Summary:', this.user_summary);
+
+        // Lấy tối đa 3 trận gần nhất từ lich_su_tran_dau (nếu backend có trả)
+        const history = this.user_summary?.lich_su_tran_dau ?? [];
+        this.recent_matches = history.slice(0, 3);
+      },
+      error: (err) => {
+        this.loading_summary = false;
+        console.error('❌ Lỗi khi tải thống kê người dùng:', err);
+      }
+    });
+  }
+
+  /** Gọi API thống kê mạnh/yếu theo chủ đề */
+  private loadTopicStats(): void {
+    this.loading_topics = true;
+
+    this.userStatsService.getMyTopicStats().subscribe({
+      next: (res: ResponseObject) => {
+        this.topic_stats = (res.data || []) as TopicStatResponse[];
+        this.loading_topics = false;
+      },
+      error: () => {
+        this.loading_topics = false;
+        Swal.fire('Lỗi', 'Không thể tải thống kê theo chủ đề', 'error').then(() => {
+        });
+      }
+    });
+  }
+
 
   /** Lưu thông tin cá nhân */
   onSaveInfo(form: NgForm): void {

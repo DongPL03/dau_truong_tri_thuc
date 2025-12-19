@@ -129,7 +129,8 @@ public class BattleWsPublisher {
     /* ==================== SCORE & LEADERBOARD ==================== */
 
     public void publishScoreUpdate(Long tranDauId, Long userId, String hoTen,
-                                   boolean correct, int gained, int total, int questionIndex) {
+                                   boolean correct, int gained, int total, int questionIndex,
+                                   int comboStreak, int comboBonus, double comboMultiplier) {
         var payload = ScoreUpdateEvent.builder()
                 .type("SCORE_UPDATE")
                 .tranDauId(tranDauId)
@@ -140,9 +141,14 @@ public class BattleWsPublisher {
                 .gainedPoints(gained)
                 .totalPoints(total)
                 .questionIndex(questionIndex)
+                .comboStreak(comboStreak)
+                .comboBonus(comboBonus)
+                .comboMultiplier(comboMultiplier)
                 .build();
         safeSend(tranDauId, payload);
     }
+
+
 
     public void publishLeaderboard(Long tranDauId, List<LeaderboardUpdateEvent.Row> allPlayers) {
         var payload = LeaderboardUpdateEvent.builder()

@@ -12,11 +12,13 @@ import {SubmitAnswerDTO} from '../../../dtos/tran-dau/submitanswer-dto';
 import {BattleEvent} from '../../../services/ws-trandau.service';
 import {environment} from '../../../environments/environment';
 import {FinishedPlayer} from '../../../responses/trandau/finished-player';
+
 import {ChatMessage} from '../../../responses/nguoidung/chatmessage';
 import {finalize} from 'rxjs/operators';
 import {PickerComponent} from '@ctrl/ngx-emoji-mart';
 import {UserResponse} from '../../../responses/nguoidung/user-response';
 import {FriendSummaryResponse} from '../../../responses/banbe/friend_summary_response';
+import {AchievementResponse} from '../../../responses/thanhtich/achievement-response';
 
 @Component({
   selector: 'app-chi-tiet-phong',
@@ -101,6 +103,10 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 // nếu bạn có sẵn base url avatar thì có thể dùng lại
   readonly default_avatar = 'assets/images/default-profile-image.jpeg';
   readonly image_base_url = 'http://localhost:8088/api/v1/users/profile-images/';
+
+  currentCombo = signal<number>(0);
+
+  reward_popup_shown = false;
 
 
   constructor() {
@@ -469,20 +475,35 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       }
       case 'SCORE_UPDATE':
         const myId = this.userService.getUserId();
+
+        // 1. Kiểm tra nếu không phải mình thì return
         if (evt.user_id !== myId) {
-          // Người khác được cập nhật điểm => chỉ cập nhật leaderboard, không popup
           console.log(`📡 SCORE_UPDATE từ người khác (${evt.ho_ten}), bỏ qua popup.`);
-          // this.toastService.show(`${evt.ho_ten} đã nộp đáp án`, {type: 'info'});
           return;
         }
 
-        Swal.fire(
-          evt.correct ? '✅ Chính xác!' : '❌ Sai mất rồi',
-          `+${evt.gained_points} điểm`,
-          evt.correct ? 'success' : 'error'
-        ).then(() => {
+        // Tại đây chắc chắn là myId nên cập nhật Signal luôn
+        const combo = evt.combo_streak ?? 0;
+        this.currentCombo.set(combo);
+        // ------------------------------------
+
+        // 2. Xử lý hiển thị Popup
+        let title = evt.correct ? '✅ Chính xác!' : '❌ Sai mất rồi';
+        let text = `+${evt.gained_points} điểm`;
+
+        if (evt.correct && (evt.combo_streak ?? 0) >= 2) {
+          // Nếu có combo >=2, ưu tiên show combo
+          title = `🔥 Combo x${evt.combo_streak}`;
+          if ((evt.combo_bonus ?? 0) > 0) {
+            text = `+${evt.gained_points} điểm (bao gồm +${evt.combo_bonus} điểm combo)`;
+          }
+        }
+
+        Swal.fire(title, text, evt.correct ? 'success' : 'error').then(() => {
+          // Xử lý sau khi đóng popup (nếu cần)
         });
 
+        // 3. Cập nhật tổng điểm sau 1 chút delay (để khớp hiệu ứng UI nếu có)
         setTimeout(() => {
           this.syncState.update(s => s ? {...s, my_total_points: evt.total_points} : s);
         }, 300);
@@ -514,12 +535,14 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
         // tìm dòng của chính mình
         this.mySummaryRow = this.finalResult.leaderboard.find(p => p.user_id === myId);
+        console.log('🏆 Dòng kết quả của tôi:', this.mySummaryRow);
         this.isWinnerMe = !!(this.finalResult.winner && this.finalResult.winner.user_id === myId);
 
 
         // 🧭 Chuyển trạng thái sang summary view
         this.showSummary.set(true);
         this.clearTimer();
+        this.show_match_reward_popup();
         break;
       }
 
@@ -956,6 +979,83 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           this.inviting_ids.delete(friend.user_id);
         }
       });
+  }
+
+  private show_match_reward_popup(): void {
+    const row = this.mySummaryRow;
+    if (!row || this.reward_popup_shown) {
+      return;
+    }
+    this.reward_popup_shown = true;
+
+    const xp = row.xp_gained ?? 0;
+    const gold = row.gold_gained ?? 0;
+    const level_before = row.level_before ?? null;
+    const level_after = row.level_after ?? null;
+    const rank_before = row.rank_tier_before ?? null;
+    const rank_after = row.rank_tier_after ?? null;
+    const achievements: AchievementResponse[] = row.new_achievements || [];
+
+    const title = this.isWinnerMe
+      ? '🏆 Chiến thắng! Phần thưởng của bạn'
+      : '🎁 Phần thưởng trận đấu';
+
+    let html = `
+    <div class="reward-popup">
+      <div class="reward-main">
+        <div class="reward-block">
+          <div class="reward-label">EXP nhận được</div>
+          <div class="reward-value xp">+${xp} XP</div>
+        </div>
+        <div class="reward-block">
+          <div class="reward-label">Vàng nhận được</div>
+          <div class="reward-value gold">+${gold} 🪙</div>
+        </div>
+      </div>
+  `;
+
+    if (level_before != null && level_after != null) {
+      html += `
+      <div class="reward-extra">
+        <div class="reward-level">
+          Level: <strong>${level_before}</strong> → <strong>${level_after}</strong>
+        </div>
+      </div>
+    `;
+    }
+
+    if (rank_before && rank_after && rank_before !== rank_after) {
+      html += `
+      <div class="reward-rank">
+        Rank: <strong>${rank_before}</strong> → <span class="rank-up">${rank_after}</span>
+      </div>
+    `;
+    }
+    if (achievements.length > 0) {
+      html += `
+      <hr/>
+      <div class="reward-achievements">
+        <div class="reward-label">Thành tích mới mở khoá</div>
+        <ul class="achievement-list">
+          ${achievements
+        .map(a => `
+              <li>
+                <div class="ach-title">${a.title}</div>
+                <div class="ach-desc">${a.description}</div>
+              </li>
+            `)
+        .join('')}
+        </ul>
+      </div>
+      `;
+    }
+    html += `</div>`;
+    Swal.fire({
+      title,
+      html,
+      confirmButtonText: 'OK',
+    }).then(r => {
+    });
   }
 
 }

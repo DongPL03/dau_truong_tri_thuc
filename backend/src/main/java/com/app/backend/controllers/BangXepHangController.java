@@ -4,6 +4,7 @@ import com.app.backend.components.SecurityUtils;
 import com.app.backend.responses.PageResponse;
 import com.app.backend.responses.ResponseObject;
 import com.app.backend.responses.bangxephang.LeaderboardEntryResponse;
+import com.app.backend.responses.bangxephang.WeeklyRankRewardResponse;
 import com.app.backend.responses.user.UserSummaryResponse;
 import com.app.backend.services.bangxephang.IBangXepHangService;
 import lombok.RequiredArgsConstructor;
@@ -88,4 +89,31 @@ public class BangXepHangController {
                         .build()
         );
     }
+
+    /**
+     * 🔹 USER: Nhận thưởng xếp hạng tuần
+     */
+    @PostMapping("/claim-weekly-reward")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ResponseObject> claimWeeklyReward() throws Exception {
+        Long userId = securityUtils.getLoggedInUserId();
+
+        WeeklyRankRewardResponse data = bangXepHangService.claimWeeklyReward(userId);
+
+        String message;
+        if (data.isClaimedBefore()) {
+            message = "Bạn đã nhận thưởng xếp hạng cho tuần " + data.getWeekId() + " rồi";
+        } else {
+            message = "Nhận thưởng xếp hạng tuần thành công";
+        }
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message(message)
+                        .data(data)
+                        .build()
+        );
+    }
+
 }

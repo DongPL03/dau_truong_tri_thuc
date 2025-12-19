@@ -1,10 +1,12 @@
 package com.app.backend.services.cauhoi;
 
+import com.app.backend.components.SecurityUtils;
 import com.app.backend.dtos.CauHoiDTO;
 import com.app.backend.exceptions.DataNotFoundException;
 import com.app.backend.exceptions.PermissionDenyException;
 import com.app.backend.models.BoCauHoi;
 import com.app.backend.models.CauHoi;
+import com.app.backend.repositories.IBoCauHoiMoKhoaRepository;
 import com.app.backend.repositories.IBoCauHoiRepository;
 import com.app.backend.repositories.ICauHoiRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,8 @@ import java.util.Objects;
 public class CauHoiService implements ICauHoiService {
     private final ICauHoiRepository cauHoiRepository;
     private final IBoCauHoiRepository boCauHoiRepository;
+    private final IBoCauHoiMoKhoaRepository boCauHoiMoKhoaRepository;
+    private final SecurityUtils securityUtils;
 
 
     @Override
@@ -116,10 +120,32 @@ public class CauHoiService implements ICauHoiService {
     public CauHoi findById(Long id, Long currentUserId, boolean isAdmin) throws DataNotFoundException, PermissionDenyException {
         CauHoi cauHoi = cauHoiRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Câu hỏi không tồn tại"));
-        if (!isAdmin && !Objects.equals(cauHoi.getBoCauHoi().getCheDoHienThi(), "PUBLIC")
-                && !cauHoi.getBoCauHoi().getTaoBoi().getId().equals(currentUserId)) {
+
+        BoCauHoi boCauHoi = cauHoi.getBoCauHoi();
+        boolean isOwner = boCauHoi.getTaoBoi() != null && boCauHoi.getTaoBoi().getId().equals(currentUserId);
+        boolean isPublic = Objects.equals(boCauHoi.getCheDoHienThi(), "PUBLIC");
+
+        if (!isAdmin && !isPublic && !isOwner) {
             throw new PermissionDenyException("Bạn không có quyền xem câu hỏi này");
         }
+
+        // ✅ Nếu bộ PUBLIC nhưng cần unlock và user chưa unlock → chặn xem câu hỏi
+        // Admin và Owner bypass unlock check
+        if (!isAdmin && !isOwner && isPublic) {
+            boolean needsUnlock = Boolean.TRUE.equals(boCauHoi.getCanMoKhoa())
+                    && boCauHoi.getGiaMoKhoa() != null
+                    && boCauHoi.getGiaMoKhoa() > 0;
+
+            if (needsUnlock) {
+                boolean hasUnlocked = boCauHoiMoKhoaRepository.existsByNguoiDung_IdAndBoCauHoi_Id(currentUserId, boCauHoi.getId());
+                if (!hasUnlocked) {
+                    throw new PermissionDenyException(
+                            "Bộ câu hỏi này cần được mở khóa bằng " + boCauHoi.getGiaMoKhoa() + " vàng trước khi xem câu hỏi"
+                    );
+                }
+            }
+        }
+
         return cauHoi;
     }
 

@@ -35,6 +35,9 @@ public class TranDauResponse {
     @JsonProperty("luat_tinh_diem")
     private String luatTinhDiem;
 
+    @JsonProperty("loai_tran_dau")
+    private String loaiTranDau;
+
     @JsonProperty("trang_thai")
     private String trangThai;
 
@@ -75,6 +78,7 @@ public class TranDauResponse {
                 .gioiHanNguoiChoi(td.getGioiHanNguoiChoi())
                 .gioiHanThoiGianCauGiay(td.getGioiHanThoiGianCauGiay())
                 .luatTinhDiem(td.getLuatTinhDiem())
+                .loaiTranDau(td.getLoaiTranDau())
                 .trangThai(td.getTrangThai())
                 .chuPhongTen(td.getChuPhong() != null ? td.getChuPhong().getHoTen() : null)
                 .boCauHoiId(td.getBoCauHoi() != null ? td.getBoCauHoi().getId() : null)
@@ -95,6 +99,7 @@ public class TranDauResponse {
                 .gioiHanNguoiChoi(td.getGioiHanNguoiChoi())
                 .gioiHanThoiGianCauGiay(td.getGioiHanThoiGianCauGiay())
                 .luatTinhDiem(td.getLuatTinhDiem())
+                .loaiTranDau(td.getLoaiTranDau())
                 .trangThai(td.getTrangThai())
                 .chuPhongTen(td.getChuPhong() != null ? td.getChuPhong().getHoTen() : null)
                 .boCauHoiId(td.getBoCauHoi() != null ? td.getBoCauHoi().getId() : null)

@@ -1,0 +1,51 @@
+server:
+  port: 8088
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/dau_truong_tri_thuc?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_ROOT_PASSWORD}
+  jpa:
+    # NOTE: bật khi debug local bằng env JPA_SHOW_SQL=true
+    show-sql: ${JPA_SHOW_SQL:false}
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+      dialect: org.hibernate.dialect.MySQL8Dialect
+      format_sql: true
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    default-locale: en
+api:
+  prefix: /api/v1
+jwt:
+  expiration: 2592000 #30 days = 30 * 24 * 60 * 60
+  expiration-refresh-token: 5184000 #60 days = 60 * 24 * 60 * 60
+  secretKey: ${JWT_SECRET_KEY}
+mail:
+  host: smtp.gmail.com
+  port: 587
+  # ⚠️ Không commit credentials vào repo. Set bằng env vars.
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+app:
+  base-url: http://localhost:8088
+  email-verification:
+    ttl-hours: 24

@@ -72,12 +72,35 @@ public class BattleState {
     private Map<Long, Integer> diemNguoiChoi = new ConcurrentHashMap<>();
 
     /**
+     * userId -> chuỗi đúng liên tiếp (combo)
+     */
+    @Builder.Default
+    @JsonProperty("combo_streaks")
+    private Map<Long, Integer> comboStreaks = new ConcurrentHashMap<>();
+
+
+    /**
+     * userId -> chuỗi đúng dài nhất trong cả trận (max combo)
+     */
+    @Builder.Default
+    @JsonProperty("max_combo_streaks")
+    private Map<Long, Integer> maxComboStreaks = new ConcurrentHashMap<>();
+
+    /**
      * answers: questionIndex -> (userId -> answer)
      * Dùng ConcurrentHashMap lồng nhau + putIfAbsent để chống nộp trùng.
      */
     @Builder.Default
     @JsonProperty("answers")
     private Map<Integer, ConcurrentHashMap<Long, String>> answers = new ConcurrentHashMap<>();
+
+    /**
+     * userId -> index câu hỏi cuối cùng mà user này ĐÃ trả lời
+     * Dùng để kiểm tra xem combo có bị "đứt" vì bỏ qua câu hay không.
+     */
+    @Builder.Default
+    @JsonProperty("last_answered_index")
+    private Map<Long, Integer> lastAnsweredQuestionIndex = new ConcurrentHashMap<>();
 
     /**
      * cờ cho auto loop
@@ -114,6 +137,59 @@ public class BattleState {
         });
         return newScore.get();
     }
+
+    /**
+     * Cập nhật combo cho 1 người chơi khi HỌ TRẢ LỜI MỘT CÂU HỎI.
+     *
+     * @param userId        id người chơi
+     * @param questionIndex index câu hiện tại (0-based)
+     * @param correct       trả lời đúng hay không
+     * @return combo mới sau khi cập nhật
+     */
+    public int updateCombo(Long userId, int questionIndex, boolean correct) {
+        Integer lastIdx = lastAnsweredQuestionIndex.get(userId);
+        int currentStreak = comboStreaks.getOrDefault(userId, 0);
+
+        boolean continuous = (lastIdx != null && lastIdx == (questionIndex - 1));
+
+        if (!correct) {
+            // Sai → reset combo
+            currentStreak = 0;
+        } else {
+            // Đúng mà KHÔNG liên tiếp ngay sau câu trước → combo mới = 1
+            if (!continuous) {
+                currentStreak = 1;
+            } else {
+                currentStreak = currentStreak + 1;
+            }
+        }
+
+        lastAnsweredQuestionIndex.put(userId, questionIndex);
+        comboStreaks.put(userId, currentStreak);
+        int oldMax = maxComboStreaks.getOrDefault(userId, 0);
+        if (currentStreak > oldMax) {
+            maxComboStreaks.put(userId, currentStreak);
+        }
+
+        return currentStreak;
+    }
+
+    /**
+     * Lấy chuỗi đúng liên tiếp (combo) hiện tại của người chơi
+     */
+    public int getComboStreak(Long userId) {
+        return comboStreaks.getOrDefault(userId, 0);
+    }
+
+
+    /**
+     * Lấy chuỗi đúng dài nhất trong cả trận (max combo) của người chơi
+     */
+    public int getMaxComboStreak(Long userId) {
+        return maxComboStreaks.getOrDefault(userId, 0);
+    }
+
+
 
     /* ===================== Helper / Business APIs ===================== */
 
@@ -200,3 +276,4 @@ public class BattleState {
     }
 }
 
+/**/

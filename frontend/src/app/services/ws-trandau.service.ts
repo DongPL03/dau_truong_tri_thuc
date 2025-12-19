@@ -42,14 +42,17 @@ export type BattleEvent =
 }
   | {
   type: 'SCORE_UPDATE';
-  tran_dau_id: number; // Sửa từ tranDauId
-  user_id: number; // Sửa từ userId
-  ho_ten: string; // Sửa từ hoTen
+  tran_dau_id: number;
+  user_id: number;
+  ho_ten: string;
   correct: boolean;
-  gained_points: number; // Sửa từ gainedPoints
-  total_points: number; // Sửa từ totalPoints
-  question_index: number; // Sửa từ questionIndex
+  gained_points: number;
+  total_points: number;
+  question_index: number;
   timestamp: string;
+  combo_streak?: number;
+  combo_bonus?: number;
+  combo_multiplier?: number;
 }
   | {
   type: "LEADERBOARD_UPDATE";
@@ -82,6 +85,7 @@ export type BattleEvent =
     diem: number;
     so_cau_dung: number;
     xep_hang: number;
+    max_combo?: number;
   }>;
 }
   | {

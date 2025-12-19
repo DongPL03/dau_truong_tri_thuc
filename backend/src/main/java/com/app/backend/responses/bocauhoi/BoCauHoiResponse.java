@@ -32,6 +32,9 @@ public class BoCauHoiResponse {
     @JsonProperty("is_official")
     private Boolean isOfficial;
 
+    @JsonProperty("loai_su_dung")
+    private String loaiSuDung;
+
     @JsonProperty("ly_do_tu_choi")
     private String lyDoTuChoi;
 
@@ -49,6 +52,15 @@ public class BoCauHoiResponse {
 
     @JsonProperty("co_quyen_sua")
     private Boolean coQuyenSua;
+
+    @JsonProperty("gia_mo_khoa")
+    private Long giaMoKhoa;
+
+    @JsonProperty("da_mo_khoa")
+    private Boolean daMoKhoa;
+
+    @JsonProperty("can_mo_khoa")
+    private Boolean canMoKhoa;
 
 
     @JsonProperty("tao_luc")
@@ -70,6 +82,34 @@ public class BoCauHoiResponse {
                 .cheDoHienThi(entity.getCheDoHienThi() != null ? entity.getCheDoHienThi() : null)
                 .trangThai(entity.getTrangThai())
                 .isOfficial(entity.getIsOfficial())
+                .loaiSuDung(entity.getLoaiSuDung())
+                .lyDoTuChoi(entity.getLyDoTuChoi())
+                .chuDe(entity.getChuDe() != null ? entity.getChuDe().getTen() : null)
+                .chuDeId(entity.getChuDe() != null ? entity.getChuDe().getId() : null)
+                .nguoiTao(taoBoi != null ? taoBoi.getHoTen() : null)
+                .nguoiTaoId(taoBoi != null ? taoBoi.getId() : null)
+                .coQuyenSua(la_admin_tao)
+                // Các field mở khoá cũng cần trả về cho danh sách chung
+                .canMoKhoa(entity.getCanMoKhoa())
+                .giaMoKhoa(entity.getGiaMoKhoa())
+                // Ở danh sách chung chưa có thông tin theo user, mặc định false
+                .daMoKhoa(false)
+                .taoLuc(entity.getTaoLuc())
+                .capNhatLuc(entity.getCapNhatLuc())
+                .build();
+    }
+
+    public static BoCauHoiResponse from(BoCauHoi entity, boolean daMoKhoa) {
+        NguoiDung taoBoi = entity.getTaoBoi();
+        boolean la_admin_tao = taoBoi != null && taoBoi.getVaiTro() != null && "admin".equals(taoBoi.getVaiTro().getTenVaiTro());
+        return BoCauHoiResponse.builder()
+                .id(entity.getId())
+                .tieuDe(entity.getTieuDe())
+                .moTa(entity.getMoTa())
+                .cheDoHienThi(entity.getCheDoHienThi() != null ? entity.getCheDoHienThi() : null)
+                .trangThai(entity.getTrangThai())
+                .isOfficial(entity.getIsOfficial())
+                .loaiSuDung(entity.getLoaiSuDung())
                 .lyDoTuChoi(entity.getLyDoTuChoi())
                 .chuDe(entity.getChuDe() != null ? entity.getChuDe().getTen() : null)
                 .chuDeId(entity.getChuDe() != null ? entity.getChuDe().getId() : null)
@@ -77,6 +117,9 @@ public class BoCauHoiResponse {
                 .nguoiTaoId(taoBoi != null ? taoBoi.getId() : null)
                 .coQuyenSua(la_admin_tao)
                 .taoLuc(entity.getTaoLuc())
+                .canMoKhoa(entity.getCanMoKhoa())
+                .giaMoKhoa(entity.getGiaMoKhoa())
+                .daMoKhoa(daMoKhoa)
                 .capNhatLuc(entity.getCapNhatLuc())
                 .build();
     }

@@ -124,10 +124,28 @@
                     {{ mySummaryRow.ho_ten }}
                   </div>
                   <div class="winner-meta">
-                    <span>Xếp hạng cuối cùng: <strong>#{{ mySummaryRow.xep_hang }}</strong></span>
-                    <span>Tổng điểm: <strong>{{ mySummaryRow.diem }}</strong></span>
-                    <span>Số câu đúng: <strong>{{ mySummaryRow.so_cau_dung }}</strong></span>
+                    <span>Xếp hạng cuối cùng:
+                      <strong>#{{ mySummaryRow.xep_hang }}</strong>
+                    </span>
+                    <span>Tổng điểm:
+                      <strong>{{ mySummaryRow.diem }}</strong>
+                    </span>
+                    <span>Số câu đúng:
+                      <strong>{{ mySummaryRow.so_cau_dung }}</strong>
+                    </span>
+                    @if (mySummaryRow.max_combo != null) {
+                      <span>Chuỗi đúng dài nhất:
+                        <strong>x{{ mySummaryRow.max_combo }}</strong>
+                      </span>
+                    }
+                    @if (mySummaryRow.max_combo && mySummaryRow.max_combo >= 5) {
+                      <p class="max-combo-highlight">
+                        🔥 Bạn đã đạt combo x{{ mySummaryRow.max_combo }} trong trận đấu này!
+                      </p>
+                    }
+
                   </div>
+
                 </div>
               }
             </div>
@@ -213,6 +231,18 @@
                     <div class="label">Đếm ngược</div>
                     <div class="value countdown">
                       {{ remainingSeconds() > 0 ? remainingSeconds() + 's' : '0s' }}
+                    </div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">Combo hiện tại</div>
+                    <div class="value combo-value"
+                         [class.hot]="currentCombo() >= 3 && currentCombo() < 5"
+                         [class.insane]="currentCombo() >= 5">
+                      @if (currentCombo() >= 2) {
+                        <span>🔥 x{{ currentCombo() }}</span>
+                      } @else {
+                        <span>—</span>
+                      }
                     </div>
                   </div>
                 </div>

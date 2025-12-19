@@ -21,6 +21,8 @@ public interface ITranDauService {
     TranDau chiTietPhong(Long tranDauId) throws Exception;
 
     Page<TranDau> danhSachPhongCho(PageRequest pageRequest);
+    Page<TranDau> danhSachPhongCho(PageRequest pageRequest, String loaiTranDau);
+
 
     BattleStartResponse startBattle(Long tranDauId, Long currentUserId) throws Exception;
 

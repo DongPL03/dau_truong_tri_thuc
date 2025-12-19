@@ -23,5 +23,8 @@ public class FinishedPlayer {
 
     @JsonProperty("xep_hang")
     private Integer xepHang;
+
+    @JsonProperty("max_combo")
+    private Integer maxCombo;
 }
 

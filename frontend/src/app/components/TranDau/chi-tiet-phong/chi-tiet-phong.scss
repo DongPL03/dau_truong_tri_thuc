@@ -1199,3 +1199,72 @@
   color: #9ca3af;
   cursor: pointer;
 }
+.value.combo-value {
+  font-weight: 600;
+  transition: transform 0.15s ease, text-shadow 0.15s ease;
+
+  &.hot {
+    transform: scale(1.05);
+    text-shadow: 0 0 6px rgba(255, 140, 0, 0.7);
+  }
+
+  &.insane {
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 69, 0, 0.9);
+  }
+}
+.max-combo-highlight {
+  margin-top: 8px;
+  font-weight: 600;
+  color: #ff8c00;
+}
+.reward-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reward-main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reward-block {
+  background: #020617;
+  border-radius: 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.8);
+}
+
+.reward-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.reward-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.reward-value.xp {
+  color: #38bdf8;
+}
+
+.reward-value.gold {
+  color: #facc15;
+}
+
+.reward-extra {
+  font-size: 13px;
+  color: #e5e7eb;
+}
+
+.reward-rank .rank-up {
+  color: #f97316;
+  font-weight: 700;
+}

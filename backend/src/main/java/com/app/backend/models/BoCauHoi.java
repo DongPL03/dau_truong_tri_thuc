@@ -1,6 +1,8 @@
 package com.app.backend.models;
 
+import com.app.backend.models.constant.LoaiSuDungBoCauHoi;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Formula;
@@ -42,8 +44,19 @@ public class BoCauHoi extends BaseEntity {
     @Column(name = "trang_thai")
     private String trangThai;
 
-    @Column(name = "is_official")
+    @Column(name = "is_chinh_thuc")
     private Boolean isOfficial = false;
+
+    @Column(name = "can_mo_khoa", columnDefinition = "TINYINT(1) DEFAULT 0")
+    private Boolean canMoKhoa = false;   // false = free, true = phải unlock
+
+    @Column(name = "gia_mo_khoa")
+    @JsonProperty("gia_mo_khoa")
+    private Long giaMoKhoa = 0L;
+
+    @Column(name = "loai_su_dung", columnDefinition = "ENUM('PRACTICE_ONLY','RANKED_ONLY','BOTH') DEFAULT 'BOTH'")
+    @JsonProperty("loai_su_dung")
+    private String loaiSuDung = LoaiSuDungBoCauHoi.BOTH;
 
     @Column(name = "ly_do_tu_choi")
     private String lyDoTuChoi;

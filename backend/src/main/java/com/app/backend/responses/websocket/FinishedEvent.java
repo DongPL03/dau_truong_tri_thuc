@@ -1,5 +1,7 @@
 package com.app.backend.responses.websocket;
 
+import com.app.backend.models.constant.RankTier;
+import com.app.backend.responses.achievement.AchievementResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -54,6 +56,29 @@ public class FinishedEvent {
         private int diem;
         @JsonProperty("xep_hang")
         private int xepHang;
+        @JsonProperty("max_combo")
+        private Integer maxCombo;
+        @JsonProperty("xp_gained")
+        private Long xpGained;
+
+        @JsonProperty("gold_gained")
+        private Long goldGained;
+
+        @JsonProperty("level_before")
+        private Integer levelBefore;
+
+        @JsonProperty("level_after")
+        private Integer levelAfter;
+
+        @JsonProperty("rank_tier_before")
+        private RankTier rankTierBefore;
+
+        @JsonProperty("rank_tier_after")
+        private RankTier rankTierAfter;
+
+        @JsonProperty("new_achievements")
+        private List<AchievementResponse> newAchievements;
+
     }
 
     @Data

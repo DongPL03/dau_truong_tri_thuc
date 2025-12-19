@@ -1,31 +1,27 @@
 @use '@ctrl/ngx-emoji-mart/picker';
 
 :root {
+  /* Font Families */
+  --font-main: 'Nunito', sans-serif; /* Font chính cho toàn web: Tròn, dễ đọc */
+  --font-display: 'Orbitron', sans-serif; /* Font phụ cho Logo/Tiêu đề game: Mạnh mẽ */
+
   /* Palette: Modern Slate & Indigo */
-  --c-bg-body: #f1f5f9; /* Nền xám rất nhạt (Slate 100) */
-  --c-bg-card: #ffffff; /* Nền trắng tinh */
-  --c-bg-sidebar: #ffffff; /* Sidebar trắng */
+  --c-bg-body: #f0f2f5;
+  --c-bg-card: #ffffff;
 
-  --c-primary: #4f46e5; /* Indigo đậm hơn chút để nổi trên nền trắng */
-  --c-primary-light: #eef2ff; /* Màu nền nhạt cho các nút active */
+  --c-primary: #6C5DD3; /* Tím game chủ đạo (đồng bộ với component) */
+  --c-primary-light: #eef2ff;
 
-  --c-text-main: #0f172a; /* Chữ đen đậm (Slate 900) - Dễ đọc */
-  --c-text-secondary: #64748b; /* Chữ xám (Slate 500) */
-
-  --c-border: #e2e8f0; /* Viền xám nhạt */
-
-  /* Status Colors (Giữ nguyên nhưng nền nhạt hơn) */
-  --c-success: #10b981;
-  --c-warning: #f59e0b;
-  --c-danger: #ef4444;
-
-  --radius-md: 12px;
-  --radius-sm: 8px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --c-text-main: #11142D;
+  --c-text-secondary: #808191;
+  --c-border: #e2e8f0;
 
   --bg-color: #f0f2f5;
   --secondary-color: #2196f3;
+
+  /* Radius */
+  --radius-md: 16px; /* Tăng độ bo tròn cho mượt */
+  --radius-sm: 10px;
 }
 
 * {
@@ -34,16 +30,24 @@
 
 body {
   margin: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif; /* Font hiện đại hơn */
-  background-color: var(--bg-color); /* <-- Đặt màu nền cho toàn trang tại đây */
-  color: var(--secondary-color);
+  /* 👇 ÁP DỤNG FONT MỚI Ở ĐÂY */
+  font-family: var(--font-main);
+  background-color: var(--bg-color);
+  color: var(--c-text-main); /* Đổi màu chữ mặc định cho đỡ bị xanh lè */
   -webkit-font-smoothing: antialiased;
+}
+
+/* Các tiêu đề lớn H1, H2 muốn ngầu thì dùng font Display */
+h1, h2, .logo {
+  font-weight: 800;
+  /* Nếu muốn tiêu đề cũng tròn thì xóa dòng dưới, muốn ngầu thì giữ lại */
+  /* font-family: var(--font-display); */
 }
 
 /* Scrollbar đẹp */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -51,12 +55,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #c7c9d9; /* Màu thanh cuộn nhạt hơn cho tinh tế */
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #6C5DD3; /* Hover vào hiện màu tím chủ đạo */
 }
 
 /* Các class tiện ích dùng chung */
@@ -67,7 +71,7 @@ body {
   padding: 10px 20px;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   border: none;
   cursor: pointer;
   transition: all 0.2s;
@@ -100,10 +104,10 @@ body {
     background: rgba(255, 255, 255, 0.05);
     color: var(--c-text-secondary);
 
-    &:hover {
-      background: var(--c-primary);
-      color: white;
-    }
+    //&:hover {
+    //  background: var(--c-primary);
+    //  color: white;
+    //}
   }
 }
 

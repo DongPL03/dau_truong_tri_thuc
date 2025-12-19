@@ -1,5 +1,6 @@
 package com.app.backend.models;
 
+import com.app.backend.models.constant.LoaiTranDau;
 import com.app.backend.models.constant.LuatTinhDiem;
 import com.app.backend.models.constant.TrangThaiTranDau;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -58,9 +59,14 @@ public class TranDau {
     @Column(name = "luat_tinh_diem", columnDefinition = "ENUM('BASIC','SPEED_BONUS') DEFAULT 'SPEED_BONUS'")
     private String luatTinhDiem = LuatTinhDiem.SPEED_BONUS;
 
+    @Column(name = "loai_tran_dau", columnDefinition = "ENUM('CASUAL','RANKED') DEFAULT 'CASUAL'")
+    @JsonProperty("loai_tran_dau")
+    private String loaiTranDau = LoaiTranDau.CASUAL;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference
-    @JoinColumn(name = "winner_id")
+    @JoinColumn(name = "nguoi_chien_thang_id")
     private NguoiDung winner;
 
     @Column(name = "tao_luc", updatable = false)

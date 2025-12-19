@@ -19,6 +19,7 @@
             <th>Mã phòng</th>
             <th>Tên phòng</th>
             <th>Chủ phòng</th>
+            <th>Chế độ</th>
             <th>Chủ đề</th>
             <th>Giới hạn / hiện tại</th>
             <th>Trạng thái</th>
@@ -31,6 +32,9 @@
                 <td>{{ p.ma_phong }}</td>
                 <td>{{ p.ten_phong }}</td>
                 <td>{{ p.chu_phong_ten }}</td>
+                <td><span class="badge"
+                          [ngClass]="p.loai_tran_dau === 'RANKED' ? 'badge-ranked' : 'badge-casual'">{{ p.loai_tran_dau === 'RANKED' ? 'Ranked' : 'Casual' }}</span>
+                </td>
                 <td>{{ p.bo_cau_hoi_tieu_de || p.bo_cau_hoi_tieu_de }}</td>
                 <td>{{ p.da_tham_gia || '?' }} / {{ p.gioi_han_nguoi_choi }}</td>
                 <td>{{ p.trang_thai }}</td>

@@ -7,6 +7,7 @@ import {ResponseObject} from '../responses/response-object';
 import {PageResponse} from '../responses/page-response';
 import {LeaderboardEntryResponse} from '../responses/bangxephang/leaderboard-entry-response';
 import {UserSummaryResponse} from '../responses/nguoidung/user-summary-response';
+import {WeeklyRankRewardResponse} from '../responses/bangxephang/weekly-rank-reward-response';
 
 @Injectable({providedIn: 'root'})
 export class LeaderboardService {
@@ -53,6 +54,13 @@ export class LeaderboardService {
     return this.http.post<ResponseObject<any>>(
       `${environment.apiBaseUrl}/leaderboard/admin/recalc-rank`,
       {},
+      {headers: this.httpUtil.createAuthHeaders()}
+    );
+  }
+
+  claimWeeklyRankReward() {
+    return this.http.post<ResponseObject<WeeklyRankRewardResponse>>(
+      this.api + '/claim-weekly-reward',
       {headers: this.httpUtil.createAuthHeaders()}
     );
   }

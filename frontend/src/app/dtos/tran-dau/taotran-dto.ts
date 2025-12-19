@@ -6,6 +6,8 @@ export class TaoTranDauDTO {
   gioi_han_nguoi_choi: number;
   gioi_han_thoi_gian_cau_giay: number;
   luat_tinh_diem: 'BASIC' | 'SPEED_BONUS';
+  loai_tran_dau: 'CASUAL' | 'RANKED';
+
 
   constructor(data: Partial<TaoTranDauDTO>) {
     this.ten_phong = data.ten_phong ?? '';
@@ -15,5 +17,6 @@ export class TaoTranDauDTO {
     this.gioi_han_nguoi_choi = data.gioi_han_nguoi_choi ?? 10;
     this.gioi_han_thoi_gian_cau_giay = data.gioi_han_thoi_gian_cau_giay ?? 30;
     this.luat_tinh_diem = data.luat_tinh_diem ?? 'BASIC';
+    this.loai_tran_dau = data.loai_tran_dau ?? 'CASUAL';
   }
 }

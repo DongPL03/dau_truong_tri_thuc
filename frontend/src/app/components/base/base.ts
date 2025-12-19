@@ -19,6 +19,8 @@ import {NotificationWsService} from '../../services/notification-ws.service';
 import {ToastNotificationService} from '../../services/toast-notification.service';
 import {ChatService} from '../../services/chat.service';
 import {ChatWsService} from '../../services/chat-ws.service';
+import {ThanhtichService} from '../../services/thanhtich.service';
+import {UserStatsService} from '../../services/user-stats.service';
 
 export class Base {
   router: Router = inject(Router);
@@ -39,6 +41,8 @@ export class Base {
   notificationService: NotificationService = inject(NotificationService);
   notificationWsService: NotificationWsService = inject(NotificationWsService);
   toastService: ToastNotificationService = inject(ToastNotificationService);
+  thanhTichService: ThanhtichService = inject(ThanhtichService);
+  userStatsService: UserStatsService = inject(UserStatsService);
   protected chatService: ChatService = inject(ChatService);
   protected chatWsService: ChatWsService = inject(ChatWsService);
   document: Document = inject(DOCUMENT);

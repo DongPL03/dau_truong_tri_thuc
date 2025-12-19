@@ -33,6 +33,9 @@ public class LichSuTranDau {
     @JoinColumn(name = "nguoi_dung_id", nullable = false)
     private NguoiDung nguoiDung;
 
+    @Column(name = "combo_toi_da")
+    private Integer maxCombo;
+
     @Column(name = "tong_diem", nullable = false)
     private Integer tongDiem;
 

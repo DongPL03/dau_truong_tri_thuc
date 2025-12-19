@@ -5,10 +5,13 @@ import {ThamGiaTranDauDTO} from '../../../dtos/tran-dau/thamgiatrandau-dto';
 import Swal from 'sweetalert2';
 import {ResponseObject} from '../../../responses/response-object';
 import {PageResponse} from '../../../responses/page-response';
+import {NgClass} from '@angular/common';
 
 @Component({
   selector: 'app-phong-cho',
-  imports: [],
+  imports: [
+    NgClass
+  ],
   templateUrl: './phong-cho.html',
   styleUrl: './phong-cho.scss',
   standalone: true
@@ -16,22 +19,30 @@ import {PageResponse} from '../../../responses/page-response';
 export class PhongCho extends Base implements OnInit, OnDestroy {
   loading = false;
   page = 0;
-  size = 10;
+  size = 4;
   totalPages = 0;
   items: TranDauResponse[] = [];
+  filter_mode: 'ALL' | 'CASUAL' | 'RANKED' = 'ALL';
 
 
   ngOnInit(): void {
-    this.load();
+    this.loadBattles();
   }
 
   ngOnDestroy(): void {
   }
 
+  setFilter(mode: 'ALL' | 'CASUAL' | 'RANKED') {
+    if (this.filter_mode === mode) return;
+    this.filter_mode = mode;
+    this.page = 0;
+    this.loadBattles();
+  }
 
-  load() {
+  loadBattles() {
     this.loading = true;
-    this.tranDauService.getPendingBattles(this.page, this.size).subscribe({
+    const loai = this.filter_mode === 'ALL' ? undefined : this.filter_mode;
+    this.tranDauService.getPendingBattles(this.page, this.size, loai).subscribe({
       next: (res: ResponseObject<PageResponse<TranDauResponse>>) => {
         const data = res.data!;
         this.items = data.items || [];
@@ -51,7 +62,7 @@ export class PhongCho extends Base implements OnInit, OnDestroy {
   changePage(p: number) {
     if (p < 0 || p >= this.totalPages) return;
     this.page = p;
-    this.load();
+    this.loadBattles();
   }
 
 

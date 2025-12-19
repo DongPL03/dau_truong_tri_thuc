@@ -11,8 +11,15 @@ export interface UserSummaryResponse {
   so_tran_thua: number;
 
   ti_le_thang: number; // %
-  rank_tier: string;
+  tong_xp: number;
+  level: number;
+  rank_tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND' | 'MASTER';
 
-  xep_hang: number
+  xp_in_current_level: number;
+  xp_next_level: number;
+  level_progress_percent: number;
+
+  tien_vang: number;
+  xep_hang: number;
   lich_su_tran_dau?: LichSuTranDauResponse[];
 }

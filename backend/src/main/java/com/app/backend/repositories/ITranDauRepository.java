@@ -13,6 +13,12 @@ import java.util.List;
 
 public interface ITranDauRepository extends JpaRepository<TranDau, Long> {
     Page<TranDau> findByTrangThai(String trangThai, Pageable pageable);
+    Page<TranDau> findByTrangThaiAndLoaiTranDau(
+            String trangThai,
+            String loaiTranDau,
+            Pageable pageable
+    );
+
 
     @Override
     long count();

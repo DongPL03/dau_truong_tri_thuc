@@ -1,64 +1,61 @@
 <header class="global-navbar">
-  <!-- 🧠 Logo -->
-  <div class="logo">ĐẤU TRƯỜNG TRI THỨC</div>
+  <div class="logo">
+    <span class="logo-primary">ĐẤU TRƯỜNG</span>
+    <span class="logo-accent">TRI THỨC</span>
+  </div>
 
-  <!-- 🔗 Navigation -->
   <nav class="main-nav">
     <a routerLink="/home" routerLinkActive="active" class="nav-item">
-      <i class="fas fa-home"></i> Trang Chủ
+      <i class="fas fa-home"></i> <span>Trang Chủ</span>
     </a>
     <a routerLink="/tran-dau/pending" routerLinkActive="active" class="nav-item">
-      <i class="fas fa-bolt"></i> Đấu Trường
+      <i class="fas fa-bolt"></i> <span>Đấu Trường</span>
     </a>
     <a routerLink="/bo-cau-hoi/danh-sach-bo-cau-hoi" routerLinkActive="active" class="nav-item">
-      <i class="fas fa-book-open"></i> Quản Lý Câu hỏi
+      <i class="fas fa-book-open"></i> <span>Kho Câu Hỏi</span>
     </a>
     <a routerLink="/bang-xep-hang" routerLinkActive="active" class="nav-item">
-      <i class="fas fa-trophy"></i> BXH
+      <i class="fas fa-trophy"></i> <span>BXH</span>
     </a>
     <a routerLink="/chat" routerLinkActive="active" class="nav-item">
-      <i class="fas fa-comments"></i> Chat
+      <i class="fas fa-comments"></i> <span>Chat</span>
     </a>
     @if (user?.vai_tro?.ten_vai_tro === 'admin') {
-      <a routerLink="/admin" routerLinkActive="active" class="nav-item">
-        <i class="fas fa-user-shield"></i> Trang Quản Trị
+      <a routerLink="/admin" routerLinkActive="active" class="nav-item admin-item">
+        <i class="fas fa-user-shield"></i> <span>Admin</span>
       </a>
     }
-
   </nav>
 
-  <!-- 👤 Thông tin người dùng -->
   <div class="user-profile-actions">
 
-    <!-- 🔔 Thông báo -->
-    <!-- 🔔 Thông báo -->
+    <app-notification-bell></app-notification-bell>
 
-
-      <!-- Dropdown thông báo -->
-      <!-- 🔔 Thông báo -->
-      <app-notification-bell></app-notification-bell>
-
-    <!-- 👤 Avatar + menu người dùng -->
     <div class="user-dropdown" (click)="$event.stopPropagation()">
-      <button class="avatar-btn" (click)="toggleUserMenu()">
-        <img
-          [src]="avatarUrl || 'assets/images/default-profile-image.jpeg'"
-          alt="avatar"
-          class="nav-avatar"
-        />
-        <span class="user-display-name">
-          {{ user?.ho_ten || user?.ten_dang_nhap || 'Người dùng' }}
-        </span>
-        <i class="fa-solid fa-chevron-down"></i>
+      <button class="avatar-btn" (click)="toggleUserMenu()" [class.active-btn]="userMenuOpen">
+        <div class="avatar-wrapper">
+          <img
+            [src]="avatarUrl || 'assets/images/default-profile-image.jpeg'"
+            alt="avatar"
+            class="nav-avatar"
+          />
+        </div>
+        <div class="user-info">
+          <span class="user-display-name">
+            {{ user?.ho_ten || user?.ten_dang_nhap || 'Game thủ' }}
+          </span>
+          <i class="fa-solid fa-chevron-down arrow-icon" [class.rotate]="userMenuOpen"></i>
+        </div>
       </button>
 
-      <!-- Dropdown menu người dùng -->
       <ul class="user-menu" [class.show]="userMenuOpen">
         <li (click)="goProfile()">
-          <i class="fa-regular fa-user"></i> Hồ sơ cá nhân
+          <div class="menu-icon"><i class="fa-regular fa-user"></i></div>
+          <span>Hồ sơ cá nhân</span>
         </li>
-        <li (click)="logout()">
-          <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        <li class="logout-item" (click)="logout()">
+          <div class="menu-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
+          <span>Đăng xuất</span>
         </li>
       </ul>
     </div>

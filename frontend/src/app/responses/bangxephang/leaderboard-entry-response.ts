@@ -10,5 +10,6 @@ export interface LeaderboardEntryResponse {
 
   ti_le_thang: number; // % thắng, backend trả double
   xep_hang: number;
-  rank_tier: string;
+  level: number;
+  rank_tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND' | 'MASTER';
 }

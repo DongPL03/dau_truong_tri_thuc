@@ -1,93 +1,152 @@
 @if (!loading) {
-  <div class="quiz-detail-container">
-    <header class="quiz-header">
-      <div class="header-info">
-        <h1>{{ bo?.tieu_de }}</h1>
-        <p class="meta">
-          <b>Chủ đề:</b> {{ bo?.chu_de }} |
-          <b>Trạng thái:</b> {{ bo?.trang_thai }} |
-          <b>Chế độ:</b> {{ bo?.che_do_hien_thi }}
-        </p>
-      </div>
-      <div class="header-actions">
-        <a (click)="navigateToDetaiList()" class="btn btn-gray">
-          <i class="fas fa-arrow-left"></i> Quay Lại
-        </a>
-        <button class="btn btn-green" (click)="goCreateQuestion()">
-          <i class="fas fa-plus"></i> Thêm Câu Hỏi
-        </button>
-      </div>
-    </header>
-    @if (bo?.che_do_hien_thi === 'PUBLIC' && bo?.trang_thai === 'CHO_DUYET') {
-      <div class="alert alert-info mt-3">
-        Bộ câu hỏi này đang <b>chờ admin duyệt</b> để hiển thị công khai.
-        Bạn vẫn có thể <b>thêm / chỉnh sửa câu hỏi</b> trước khi được duyệt.
-      </div>
-    }
-
-    <section class="quiz-description">
-      <p><b>Mô tả:</b> {{ bo?.mo_ta || 'Không có mô tả' }}</p>
-    </section>
-
-    <section class="question-list">
-      <h2><i class="fas fa-list"></i> Danh sách câu hỏi ({{ questions.length }})</h2>
-      @if (questions.length > 0) {
-        @for (q of questions; track q.id) {
-          <div class="question-card">
-            <div class="question-header">
-              <h3>{{ q.noi_dung }}</h3>
-              <span class="badge" [class.easy]="q.do_kho === 'DE'"
-                    [class.medium]="q.do_kho === 'TRUNG_BINH'"
-                    [class.hard]="q.do_kho === 'KHO'">
-                @if (q.do_kho === 'DE') {
-                  Dễ
-                } @else if (q.do_kho === 'TRUNG_BINH') {
-                  Trung bình
-                } @else if (q.do_kho === 'KHO') {
-                  Khó
-                }
-            </span>
-            </div>
-            @if (q.loai_noi_dung === 'HINH_ANH' && q.duong_dan_tep) {
-              <img [src]="getMediaUrl(q)" alt="Ảnh minh họa"/>
-            }
-            @if (q.loai_noi_dung === 'AM_THANH' && q.duong_dan_tep) {
-              <audio controls [src]="getMediaUrl(q)"></audio>
-            }
-
-
-            <ul class="options">
-              <li [class.correct]="q.dap_an_dung === 'A'">A. {{ q.lua_chon_a }}</li>
-              <li [class.correct]="q.dap_an_dung === 'B'">B. {{ q.lua_chon_b }}</li>
-              <li [class.correct]="q.dap_an_dung === 'C'">C. {{ q.lua_chon_c }}</li>
-              <li [class.correct]="q.dap_an_dung === 'D'">D. {{ q.lua_chon_d }}</li>
-            </ul>
-
-            @if (q.giai_thich) {
-              <div class="explanation">
-                <i class="fas fa-info-circle"></i>
-                {{ q.giai_thich }}
-              </div>
-            }
-            <div class="question-actions">
-              <button class="btn-edit"
-                      (click)="navigateToEdit(q.id)">
-                <i class="fas fa-edit"></i> Chỉnh sửa
-              </button>
-              <button class="btn-delete" (click)="onDeleteQuestion(q.id)">
-                <i class="fas fa-trash"></i> Xóa
-              </button>
-            </div>
-          </div>
+<div class="quiz-detail-container">
+  <header class="quiz-header">
+    <div class="header-info">
+      <h1>{{ bo?.tieu_de || 'Bộ câu hỏi' }}</h1>
+      <p class="meta">
+        @if (bo) {
+        <b>Chủ đề:</b> {{ bo.chu_de }} |
+        <b>Trạng thái:</b> {{ bo.trang_thai }} |
+        <b>Chế độ:</b> {{ bo.che_do_hien_thi }}
         }
-      } @else {
-        <div class="empty-state">
-          <i class="fas fa-folder-open"></i>
-          <p>Chưa có câu hỏi nào trong bộ này.</p>
-        </div>
-      } </section>
+      </p>
+    </div>
+    <div class="header-actions">
+      <a (click)="navigateToDetaiList()" class="btn btn-gray">
+        <i class="fas fa-arrow-left"></i> Quay Lại
+      </a>
+      @if (!isLocked && (isOwner() || isAdmin())) {
+      <button class="btn btn-green" (click)="goCreateQuestion()">
+        <i class="fas fa-plus"></i> Thêm Câu Hỏi
+      </button>
+      }
+    </div>
+  </header>
+
+  <!-- UI Locked: Hiển thị khi bộ cần unlock nhưng chưa unlock -->
+  @if (isLocked && !isOwner() && !isAdmin()) {
+  <div class="locked-container">
+    <div class="locked-icon">
+      <i class="fas fa-lock"></i>
+    </div>
+    <h2>Bộ câu hỏi này cần được mở khóa</h2>
+    <p class="locked-message">{{ unlockError || 'Bạn cần mở khóa bộ câu hỏi này để xem chi tiết' }}</p>
+    @if (bo) {
+    <div class="locked-info">
+      <p><strong>Giá mở khóa:</strong> {{ bo.gia_mo_khoa || 0 }} vàng
+      </p>
+      <p class="locked-description">{{ bo.mo_ta || 'Không có mô tả' }}
+      </p>
+    </div>
+    }
+    <button class="btn btn-primary unlock-btn"
+      (click)="handleUnlock()" [disabled]="unlocking">
+      <i class="fas"
+        [ngClass]="unlocking ? 'fa-spinner fa-spin' : 'fa-unlock'"></i>
+      {{ unlocking ? 'Đang mở khóa...' : 'Mở khóa ngay' }}
+    </button>
   </div>
+  } @else {
+  @if (bo?.che_do_hien_thi === 'PUBLIC' && bo?.trang_thai ===
+  'CHO_DUYET') {
+  <div class="alert alert-info mt-3">
+    Bộ câu hỏi này đang <b>chờ admin duyệt</b> để hiển thị công khai.
+    Bạn vẫn có thể <b>thêm / chỉnh sửa câu hỏi</b> trước khi được
+    duyệt.
+  </div>
+  }
+
+  <section class="quiz-description">
+    <p><b>Mô tả:</b> {{ bo?.mo_ta || 'Không có mô tả' }}</p>
+  </section>
+
+  <section class="question-list">
+    <h2><i class="fas fa-list"></i> Danh sách câu hỏi ({{
+      questions.length }})</h2>
+    @if (questions.length > 0) {
+    @for (q of questions; track q.id) {
+    <div class="question-card">
+      <div class="question-header">
+        <h3>{{ q.noi_dung }}</h3>
+        <span class="badge" [class.easy]="q.do_kho === 'DE'"
+          [class.medium]="q.do_kho === 'TRUNG_BINH'"
+          [class.hard]="q.do_kho === 'KHO'">
+          @if (q.do_kho === 'DE') {
+          Dễ
+          } @else if (q.do_kho === 'TRUNG_BINH') {
+          Trung bình
+          } @else if (q.do_kho === 'KHO') {
+          Khó
+          }
+        </span>
+      </div>
+      @if (q.loai_noi_dung === 'HINH_ANH' && q.duong_dan_tep) {
+      <img [src]="getMediaUrl(q)" alt="Ảnh minh họa" />
+      }
+      @if (q.loai_noi_dung === 'AM_THANH' && q.duong_dan_tep) {
+      <audio controls [src]="getMediaUrl(q)"></audio>
+      }
+
+
+      <ul class="options">
+        <li
+          [class.correct]="canViewAnswers() && q.dap_an_dung === 'A'">
+          A. {{ q.lua_chon_a }}</li>
+        <li
+          [class.correct]="canViewAnswers() && q.dap_an_dung === 'B'">
+          B. {{ q.lua_chon_b }}</li>
+        <li
+          [class.correct]="canViewAnswers() && q.dap_an_dung === 'C'">
+          C. {{ q.lua_chon_c }}</li>
+        <li
+          [class.correct]="canViewAnswers() && q.dap_an_dung === 'D'">
+          D. {{ q.lua_chon_d }}</li>
+      </ul>
+
+      @if (q.giai_thich && canViewAnswers()) {
+      <div class="explanation">
+        <i class="fas fa-info-circle"></i>
+        {{ q.giai_thich }}
+      </div>
+      }
+      <div class="question-actions">
+        @if (isOwner() || isAdmin()) {
+        <button class="btn-edit" (click)="navigateToEdit(q.id)">
+          <i class="fas fa-edit"></i> Chỉnh sửa
+        </button>
+        <button class="btn-delete" (click)="onDeleteQuestion(q.id)">
+          <i class="fas fa-trash"></i> Xóa
+        </button>
+        }
+      </div>
+    </div>
+    }
+    } @else {
+    <div class="empty-state">
+      <i class="fas fa-folder-open"></i>
+      <p>Chưa có câu hỏi nào trong bộ này.</p>
+    </div>
+    }
+  </section>
+  @if (isPreview && !canViewAllQuestions()) {
+  <div class="locked-container">
+    <div class="locked-icon">
+      <i class="fas fa-lock"></i>
+    </div>
+    <h2>Bạn đang xem thử 3 câu đầu</h2>
+    <p class="locked-message">Mở khóa để xem toàn bộ bộ câu hỏi này.
+    </p>
+    <button class="btn btn-primary unlock-btn"
+      (click)="handleUnlock()" [disabled]="unlocking">
+      <i class="fas"
+        [ngClass]="unlocking ? 'fa-spinner fa-spin' : 'fa-unlock'"></i>
+      {{ unlocking ? 'Đang mở khóa...' : 'Mở khóa để xem toàn bộ' }}
+    </button>
+  </div>
+  }
+  }
+</div>
 
 } @else {
-  <div class="loading">Đang tải dữ liệu...</div>
+<div class="loading">Đang tải dữ liệu...</div>
 }

@@ -33,17 +33,22 @@ export class TrandauService {
    */
   getPendingBattles(
     page: number = 0,
-    size: number = 5
+    size: number = 5,
+    loai_tran_dau?: 'CASUAL' | 'RANKED'
   ): Observable<ResponseObject<PageResponse<TranDauResponse>>> {
-    const params = {page, size};
+    const params: any = {page, size};
+    if (loai_tran_dau) {
+      params.loai_tran_dau = loai_tran_dau;
+    }
     return this.http.get<ResponseObject<PageResponse<TranDauResponse>>>(
       `${this.api}/pending`,
       {
         headers: this.httpUtil.createAuthHeaders(),
-        params,
+        params
       }
     );
   }
+
 
   /**
    * 🔹 Chi tiết 1 trận đấu

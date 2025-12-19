@@ -1,62 +1,113 @@
 @if (!loading) {
-  <div class="page-container">
-    <header class="page-header">
-      <h1>🕹️ Phòng Đang Chờ</h1>
-      <button class="btn-create" (click)="goToCreateRoom()">
-        <i class="fas fa-plus"></i> Tạo trận đấu
+  <div class="arena-container">
+
+    <header class="arena-header">
+      <div class="header-content">
+        <h1>⚔️ Sảnh Đấu Trường</h1>
+        <p>Chọn phòng để tham chiến hoặc tạo thử thách riêng của bạn!</p>
+      </div>
+      <button class="btn-3d btn-create" (click)="goToCreateRoom()">
+        <i class="fas fa-plus-circle"></i> Tạo Trận Đấu
       </button>
     </header>
 
+    <div class="filter-section">
+      <div class="filter-tabs">
+        <button class="tab-item" [class.active]="filter_mode === 'ALL'" (click)="setFilter('ALL')">
+          <i class="fas fa-globe"></i> Tất cả
+        </button>
+        <button class="tab-item" [class.active]="filter_mode === 'CASUAL'" (click)="setFilter('CASUAL')">
+          <i class="fas fa-coffee"></i> Giải trí
+        </button>
+        <button class="tab-item" [class.active]="filter_mode === 'RANKED'" (click)="setFilter('RANKED')">
+          <i class="fas fa-crown"></i> Xếp hạng
+        </button>
+      </div>
 
-    <div class="grid">
-      @if (items.length > 0) {
+      <div class="result-count">
+        Tìm thấy <b>{{ items.length }}</b> phòng
+      </div>
+    </div>
 
+    @if (items.length > 0) {
+      <div class="room-grid">
         @for (r of items; track r.id) {
-          <div class="room-card">
-            <div class="room-head">
-              <span class="badge" [class.pub]="r.cong_khai"
-                    [class.pri]="!r.cong_khai">{{ r.cong_khai ? 'PUBLIC' : 'PRIVATE' }}</span>
-              <h3>{{ r.ten_phong || ('Phòng #' + r.id) }}</h3>
-              <p class="sub">Bộ câu hỏi: <b>{{ r.bo_cau_hoi_tieu_de }}</b></p>
+          <div class="room-card" [ngClass]="r.loai_tran_dau === 'RANKED' ? 'card-ranked' : 'card-casual'">
+
+            <div class="card-badges">
+                <span class="badge" [class.badge-public]="r.cong_khai" [class.badge-private]="!r.cong_khai">
+                    {{ r.cong_khai ? 'PUBLIC' : 'PRIVATE' }}
+                </span>
+              <span class="badge-mode">
+                    @if (r.loai_tran_dau === 'RANKED') {
+                      👑 Ranked
+                    } @else {
+                      ☕ Casual
+                    }
+                </span>
             </div>
-            <div class="room-body">
-              <div>Chủ phòng: <b>{{ r.chu_phong_ten }}</b></div>
-              <div>Giới hạn người chơi: {{ r.gioi_han_nguoi_choi }}</div>
-              <div>Thời gian mỗi câu: {{ r.gioi_han_thoi_gian_cau_giay }}s</div>
-              <div>Luật tính điểm: {{ r.luat_tinh_diem }}</div>
+
+            <div class="card-main">
+              <h3 class="room-name" [title]="r.ten_phong">{{ r.ten_phong || ('Phòng #' + r.id) }}</h3>
+              <p class="quiz-name"><i class="fas fa-book"></i> {{ r.bo_cau_hoi_tieu_de }}</p>
             </div>
-            <div class="room-actions">
-              <button (click)="tryJoin(r)">Vào phòng</button>
+
+            <div class="card-stats">
+              <div class="stat-row" title="Chủ phòng">
+                <i class="fas fa-user-astronaut"></i> <span>{{ r.chu_phong_ten }}</span>
+              </div>
+              <div class="stat-row" title="Số người">
+                <i class="fas fa-users"></i> <span>{{ r.gioi_han_nguoi_choi }} người</span>
+              </div>
+              <div class="stat-row" title="Thời gian">
+                <i class="fas fa-clock"></i> <span>{{ r.gioi_han_thoi_gian_cau_giay }}s/câu</span>
+              </div>
+              <div class="stat-row" title="Luật chơi">
+                <i class="fas fa-gavel"></i> <span>{{ r.luat_tinh_diem }}</span>
+              </div>
             </div>
+
+            <button class="btn-join" (click)="tryJoin(r)">
+              VÀO PHÒNG NGAY
+            </button>
           </div>
         }
-      } @else {
-        <div class="empty-state">Không có phòng chờ.</div>
-      } </div>
-
+      </div>
+    } @else {
+      <div class="empty-state">
+        <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" alt="Empty">
+        <h3>Chưa có phòng nào được tạo!</h3>
+        <p>Hãy là người đầu tiên tạo phòng và mời bạn bè nhé.</p>
+        <button class="btn-ghost" (click)="goToCreateRoom()">Tạo phòng ngay</button>
+      </div>
+    }
 
     @if (totalPages > 1) {
-      <div class="pagination">
-        <!-- Nút Previous -->
-        <a (click)="changePage(page - 1)" [class.disabled]="page === 0">&laquo;</a>
+      <div class="pagination-container">
+        <button class="page-btn" (click)="changePage(page - 1)" [disabled]="page === 0">
+          <i class="fas fa-chevron-left"></i>
+        </button>
 
-        <!-- Dải trang động -->
         @for (p of getVisiblePages(); track $index) {
           @if (p >= 0) {
-            <a [class.active]="p === page" (click)="changePage(p)">
+            <button class="page-btn" [class.active]="p === page" (click)="changePage(p)">
               {{ p + 1 }}
-            </a>
+            </button>
           } @else {
-            <span class="ellipsis">...</span>
+            <span class="dots">...</span>
           }
         }
 
-        <!-- Nút Next -->
-        <a (click)="changePage(page + 1)" [class.disabled]="page === totalPages - 1">&raquo;</a>
+        <button class="page-btn" (click)="changePage(page + 1)" [disabled]="page === totalPages - 1">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     }
 
   </div>
 } @else {
-  <div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Đang tải…</div>
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu đấu trường...</p>
+  </div>
 }

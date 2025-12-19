@@ -3,6 +3,7 @@ package com.app.backend.responses.trandau;
 
 import com.app.backend.models.NguoiDung;
 import com.app.backend.models.TranDau;
+import com.app.backend.responses.achievement.AchievementResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -52,6 +53,12 @@ public class BattleFinishResponse {
     @JsonProperty("bang_xep_hang")
     private List<PlayerScore> bangXepHang;
 
+    @JsonProperty("reward")
+    private MatchRewardResponse reward;
+
+    @JsonProperty("new_achievements")
+    private List<AchievementResponse> newAchievements;
+
     @Data
     @Builder
     @AllArgsConstructor
@@ -76,7 +83,9 @@ public class BattleFinishResponse {
      */
     public static BattleFinishResponse from(TranDau tranDau,
                                             Map<Long, Integer> scores,
-                                            List<NguoiDung> allUsers) {
+                                            List<NguoiDung> allUsers,
+                                            MatchRewardResponse reward,
+                                            List<AchievementResponse> myNewAchievements) {
 
         // 1️⃣ Chuẩn bị map userId → họ tên
         Map<Long, String> nameMap = (allUsers != null)
@@ -121,6 +130,8 @@ public class BattleFinishResponse {
                 .winnerId(winnerId)
                 .winnerTen(winnerTen)
                 .bangXepHang(rankList)
+                .reward(reward)
+                .newAchievements(myNewAchievements)
                 .build();
     }
 }

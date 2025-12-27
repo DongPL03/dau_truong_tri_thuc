@@ -1,0 +1,171 @@
+@if (!loading) {
+  <div class="inventory-container">
+    <header class="inventory-header">
+      <div class="header-content">
+        <h1>📚 Quản lý Khóa học</h1>
+        <p>Xem, tạo, sửa, xóa khóa học (Admin).</p>
+      </div>
+      <button class="btn-hero-3d" (click)="navigateToCreate()">
+        <span class="btn-icon"><i class="fas fa-plus"></i></span>
+        <span class="btn-text">Tạo Khóa Học Mới</span>
+      </button>
+    </header>
+
+    <div class="inventory-layout">
+      <aside class="control-panel">
+        <div class="panel-header">
+          <i class="fas fa-sliders-h"></i> Bộ Lọc
+        </div>
+
+        <div class="filter-group">
+          <div class="search-hud">
+            <i class="fas fa-search"></i>
+            <input [(ngModel)]="keyword" (keyup.enter)="applyFilter()" placeholder="Tìm khóa học..." />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Sắp xếp</label>
+          <div class="toggle-row">
+            <label class="toggle-btn" [class.active]="sortOrder === 'NEWEST'">
+              <input type="radio" name="sort" value="NEWEST" [(ngModel)]="sortOrder" (change)="applyFilter()" hidden />
+              Mới nhất
+            </label>
+            <label class="toggle-btn" [class.active]="sortOrder === 'OLDEST'">
+              <input type="radio" name="sort" value="OLDEST" [(ngModel)]="sortOrder" (change)="applyFilter()" hidden />
+              Cũ nhất
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Chủ đề</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="chuDeId" (change)="applyFilter()" class="custom-select">
+              <option [value]="0">📚 Tất cả chủ đề</option>
+              @for (cd of chuDes; track cd.id) {
+                <option [value]="cd.id">{{ cd.ten }}</option>
+              }
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Trạng thái</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="trangThai" (change)="applyFilter()" class="custom-select">
+              @for (opt of trangThaiOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn-glass primary" (click)="applyFilter()">
+            <i class="fas fa-filter"></i> Áp dụng
+          </button>
+          <button class="btn-glass secondary" (click)="clearFilter()">
+            <i class="fas fa-redo"></i> Xóa lọc
+          </button>
+        </div>
+      </aside>
+
+      <main class="card-grid-area">
+        @if (items.length > 0) {
+          <div class="card-grid">
+            @for (khoaHoc of items; track khoaHoc.id) {
+              <div class="skill-card" [ngClass]="{
+                'status-published': khoaHoc.trang_thai === 'PUBLISHED',
+                'status-draft': khoaHoc.trang_thai === 'DRAFT',
+                'status-archived': khoaHoc.trang_thai === 'ARCHIVED'
+              }">
+                <div class="card-top">
+                  <div class="icon-box">
+                    <i class="fas fa-graduation-cap"></i>
+                  </div>
+                  <div class="badges-stack">
+                    <span class="badge-pill status-badge">
+                      @if (khoaHoc.trang_thai === 'PUBLISHED') {
+                        <i class="fas fa-check-circle"></i> Đã xuất bản
+                      } @else if (khoaHoc.trang_thai === 'DRAFT') {
+                        <i class="fas fa-edit"></i> Bản nháp
+                      } @else if (khoaHoc.trang_thai === 'ARCHIVED') {
+                        <i class="fas fa-archive"></i> Đã lưu trữ
+                      }
+                    </span>
+                    @if (khoaHoc.so_bo_cau_hoi && khoaHoc.so_bo_cau_hoi > 0) {
+                      <span class="badge-pill count-badge">
+                        <i class="fas fa-book"></i> {{ khoaHoc.so_bo_cau_hoi }} bộ
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <span class="category-tag">{{ khoaHoc.chu_de || 'General' }}</span>
+                  <h3 class="card-title">{{ khoaHoc.tieu_de }}</h3>
+                  <div class="card-meta">
+                    <span class="meta-item"><i class="fas fa-user-astronaut"></i> {{ khoaHoc.nguoi_tao || 'Ẩn danh' }}</span>
+                  </div>
+                  <p class="card-desc">{{ khoaHoc.mo_ta || 'Chưa có mô tả cho khóa học này.' }}</p>
+                </div>
+
+                <div class="card-actions">
+                  <button class="action-btn btn-view" (click)="navigateToDetail(khoaHoc.id)" title="Xem chi tiết">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn btn-edit" (click)="navigateToEdit(khoaHoc.id)" title="Chỉnh sửa">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <button class="action-btn btn-delete" (click)="onDelete(khoaHoc.id)" title="Xóa">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (totalPages > 1) {
+            <div class="pagination-wrapper">
+              <button class="page-btn nav-prev" (click)="changePage(page - 1)" [disabled]="page === 0">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <div class="page-numbers">
+                @for (p of getVisiblePages(); track $index) {
+                  @if (p >= 0) {
+                    <button class="page-btn" [class.active]="p === page" (click)="changePage(p)">
+                      {{ p + 1 }}
+                    </button>
+                  } @else {
+                    <span class="dots">...</span>
+                  }
+                }
+              </div>
+
+              <button class="page-btn nav-next" (click)="changePage(page + 1)" [disabled]="page === totalPages - 1">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          }
+        } @else {
+          <div class="empty-state-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" alt="Empty" />
+            <h3>Chưa có khóa học nào!</h3>
+            <p>Chưa tìm thấy khóa học nào phù hợp.</p>
+          </div>
+        }
+      </main>
+    </div>
+  </div>
+} @else {
+  <div class="loading-screen">
+    <div class="spinner-box">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+  </div>
+}

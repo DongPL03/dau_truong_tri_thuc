@@ -1,175 +1,333 @@
 @if (!loading) {
-  <div class="page-container">
-    <header class="page-header">
-      <h1>📘 Quản Lý Bộ Câu Hỏi</h1>
-      <div class="header-actions">
-        <button class="btn-primary" (click)="goToCreateQuiz()">
-          <i class="fas fa-plus"></i> Tạo Bộ Câu Hỏi Mới
-        </button>
+  <div class="inventory-container">
+
+    <header class="inventory-header">
+      <div class="header-content">
+        <h1>🎒 Kho Tàng Tri Thức</h1>
+        <p>Quản lý các bộ câu hỏi, luyện tập và chia sẻ kiến thức.</p>
       </div>
+      <button class="btn-hero-3d" (click)="goToCreateQuiz()">
+        <span class="btn-icon"><i class="fas fa-plus"></i></span>
+        <span class="btn-text">Tạo Bộ Câu Hỏi Mới</span>
+      </button>
     </header>
 
-    <div class="quiz-management-layout">
-      <aside class="filter-sidebar">
-        <div class="search-box">
-          <input [(ngModel)]="keyword"
-                 (keyup.enter)="applyFilter()"
-                 placeholder="Tìm kiếm theo tiêu đề..."
-                 class="search-input"/>
-          <i class="fas fa-search"></i>
-        </div>
-        <div class="filter-group">
-          <h3>Sắp xếp theo</h3>
-          <label><input type="radio" name="sort" value="NEWEST" [(ngModel)]="sortOrder"/> Mới nhất</label>
-          <label><input type="radio" name="sort" value="OLDEST" [(ngModel)]="sortOrder"/> Cũ nhất</label>
-        </div>
-        <div class="filter-group">
-          <h3>Chế Độ Hiển Thị</h3>
-          <label><input type="radio" name="vis" value="" [(ngModel)]="cheDoHienThi"/> Tất cả</label>
-          <label><input type="radio" name="vis" value="PUBLIC" [(ngModel)]="cheDoHienThi"/> Công khai</label>
-          <label><input type="radio" name="vis" value="PRIVATE" [(ngModel)]="cheDoHienThi"/> Riêng tư</label>
-        </div>
-        <!-- ✅ Trong <aside class="filter-sidebar"> -->
-        <div class="filter-group">
-          <h3>Chủ Đề</h3>
-          <select [(ngModel)]="chuDeId" class="filter-select">
-            <option [value]="0">Tất cả</option>
-            @for (cd of chuDes; track cd.id) {
-              <option [value]="cd.id">{{ cd.ten }}</option>
-            }
-          </select>
+    <div class="inventory-layout">
+
+      <aside class="control-panel">
+        <div class="panel-header">
+          <i class="fas fa-sliders-h"></i> Bộ Lọc
         </div>
 
         <div class="filter-group">
-          <h3>Trạng Thái Duyệt</h3>
-          <select [(ngModel)]="trangThai" class="filter-select">
-            @for (opt of trangThaiOptions; track opt.value) {
-              <option [value]="opt.value">{{ opt.label }}</option>
-            }
-          </select>
+          <div class="search-hud">
+            <i class="fas fa-search"></i>
+            <input [(ngModel)]="keyword" (keyup.enter)="applyFilter()"
+                   placeholder="Tìm kiếm bộ câu hỏi..."/>
+          </div>
         </div>
 
-        <button class="btn-secondary apply-filter" (click)="applyFilter()">Áp Dụng Lọc</button>
-        <button class="btn-secondary apply-filter" style="margin-top:10px;background:#888;" (click)="clearFilter()">Xóa
-          lọc
-        </button>
+        <div class="filter-group">
+          <label class="group-label">Sắp xếp</label>
+          <div class="toggle-row">
+            <label class="toggle-btn"
+                   [class.active]="sortOrder === 'NEWEST'">
+              <input type="radio" name="sort" value="NEWEST"
+                     [(ngModel)]="sortOrder" hidden>
+              Mới nhất
+            </label>
+            <label class="toggle-btn"
+                   [class.active]="sortOrder === 'OLDEST'">
+              <input type="radio" name="sort" value="OLDEST"
+                     [(ngModel)]="sortOrder" hidden>
+              Cũ nhất
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Chế độ</label>
+          <div class="toggle-col">
+            <label class="radio-card"
+                   [class.active]="cheDoHienThi === ''">
+              <input type="radio" name="vis" value=""
+                     [(ngModel)]="cheDoHienThi" hidden>
+              <i class="fas fa-layer-group"></i> Tất cả
+            </label>
+            <label class="radio-card"
+                   [class.active]="cheDoHienThi === 'PUBLIC'">
+              <input type="radio" name="vis" value="PUBLIC"
+                     [(ngModel)]="cheDoHienThi" hidden>
+              <i class="fas fa-globe-asia"></i> Công khai
+            </label>
+            <label class="radio-card"
+                   [class.active]="cheDoHienThi === 'PRIVATE'">
+              <input type="radio" name="vis" value="PRIVATE"
+                     [(ngModel)]="cheDoHienThi" hidden>
+              <i class="fas fa-lock"></i> Riêng tư
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Chủ đề</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="chuDeId" class="custom-select">
+              <option [value]="0">📚 Tất cả chủ đề</option>
+              @for (cd of chuDes; track cd.id) {
+                <option [value]="cd.id">{{ cd.ten }}</option>
+              }
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Trạng thái duyệt</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="trangThai" class="custom-select">
+              @for (opt of trangThaiOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Giá mở khóa</label>
+          <div class="toggle-col">
+            <label class="radio-card"
+                   [class.active]="priceFilter === 'ALL'">
+              <input type="radio" name="price" value="ALL"
+                     [(ngModel)]="priceFilter" hidden>
+              <i class="fas fa-coins"></i> Tất cả
+            </label>
+            <label class="radio-card"
+                   [class.active]="priceFilter === 'FREE'">
+              <input type="radio" name="price" value="FREE"
+                     [(ngModel)]="priceFilter" hidden>
+              <i class="fas fa-gift"></i> Miễn phí
+            </label>
+            <label class="radio-card"
+                   [class.active]="priceFilter === 'PAID'">
+              <input type="radio" name="price" value="PAID"
+                     [(ngModel)]="priceFilter" hidden>
+              <i class="fas fa-key"></i> Mất phí
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn-glass primary" (click)="applyFilter()">
+            <i class="fas fa-filter"></i> Áp dụng
+          </button>
+          <button class="btn-glass secondary" (click)="clearFilter()">
+            <i class="fas fa-redo"></i> Xóa lọc
+          </button>
+        </div>
       </aside>
 
-      <main class="quiz-list-area">
-        @if (items.length > 0) {
-
-          @for (quiz of items; track quiz) {
-            <div class="quiz-card"
-                 [class.public]="quiz.che_do_hien_thi === 'PUBLIC'"
-                 [class.private]="quiz.che_do_hien_thi === 'PRIVATE'">
-              <div class="quiz-info">
-                <div class="quiz-header-row">
-                  <span class="quiz-category">{{ quiz.chu_de || 'Chưa có chủ đề' }}</span>
-                  <h3>
-                    <!-- highlight từ khóa -->
-                    <span [innerHTML]="highlightKeyword(quiz.tieu_de)"></span>
-                  </h3>
-                  <span class="badge"
-                        [ngClass]="{
-                                    'badge-green': quiz.trang_thai === 'DA_DUYET',
-                                    'badge-yellow': quiz.trang_thai === 'CHO_DUYET',
-                                    'badge-red': quiz.trang_thai === 'TU_CHOI'
-                                  }">
-                        @if (quiz.trang_thai === 'DA_DUYET') {
-                          Đã duyệt
-                        } @else if (quiz.trang_thai === 'CHO_DUYET') {
-                          Chờ duyệt
-                        } @else if (quiz.trang_thai === 'TU_CHOI') {
-                          Từ chối
-                        }
-                  </span>
-                </div>
-                <h3>{{ quiz.tieu_de }}</h3>
-                <p class="quiz-meta">
-                  👤 <b>{{ quiz.nguoi_tao || 'Ẩn danh' }}</b> &nbsp;|&nbsp;
-                  👁️ {{ quiz.che_do_hien_thi === 'PUBLIC' ? 'Công khai' : 'Riêng tư' }}
-                </p>
-                <p class="quiz-desc">{{ quiz.mo_ta || 'Không có mô tả' }}</p>
-              </div>
-              <div class="quiz-actions">
-                <button class="btn-action view" (click)="navigateDetail(quiz.id)"
-                        [attr.title]="'Xem chi tiết bộ câu hỏi này'">
-                  <i class="fas fa-list"></i> Xem
-                </button>
-                <!-- Sửa -->
-                <button
-                  class="btn-action edit"
-                  [ngClass]="{ 'disabled': !canEdit(quiz), 'editable': canEdit(quiz) }"
-                  (click)="canEdit(quiz) ? navigateEdit(quiz.id) : showAccessDeniedAlert('chỉnh sửa')"
-                  [attr.title]="canEdit(quiz) ? 'Chỉnh sửa bộ câu hỏi' : 'Bạn không thể chỉnh sửa bộ này'"
-                >
-                  <i class="fas" [ngClass]="canEdit(quiz) ? 'fa-edit' : 'fa-lock'"></i>
-                  {{ canEdit(quiz) ? 'Sửa' : 'Khoá' }}
-                </button>
-
-                <!-- Xóa -->
-                <button
-                  class="btn-action delete"
-                  [ngClass]="{ 'disabled': !canDelete(quiz), 'editable': canDelete(quiz) }"
-                  (click)="canDelete(quiz) ? confirmDelete(quiz.id) : showAccessDeniedAlert('xóa')"
-                  [attr.title]="canDelete(quiz) ? 'Xóa bộ câu hỏi' : 'Bạn không thể xóa bộ này'"
-                >
-                  <i class="fas" [ngClass]="canDelete(quiz) ? 'fa-trash' : 'fa-lock'"></i>
-                  {{ canDelete(quiz) ? 'Xóa' : 'Khoá' }}
-                </button>
-
-                <!-- Luyện / Mở khoá -->
-                <button
-                  class="btn-action practice"
-                  [attr.title]="quiz.can_mo_khoa && !quiz.da_mo_khoa ? 'Mở khoá bộ câu hỏi này' : 'Luyện bộ câu hỏi này'"
-                  [disabled]="unlocking_id === quiz.id"
-                  (click)="handlePracticeClick(quiz)"
-                >
-                  <i class="fas" [ngClass]="unlocking_id === quiz.id ? 'fa-spinner fa-spin' : 'fa-brain'"></i>
-                  @if (quiz.can_mo_khoa && !quiz.da_mo_khoa) {
-                    Mở khoá ({{ quiz.gia_mo_khoa || 0 }} vàng)
-                  } @else {
-                    Luyện
-                  }
-                </button>
-              </div>
+      <main class="card-grid-area">
+        @if (myQuizzes.length > 0) {
+          <section class="quiz-section">
+            <div class="section-header-arrow">
+              <span class="section-title">Bộ câu hỏi của tôi</span>
+              <span class="arrow-head"></span>
             </div>
-          }
-        } @else {
-          <div class="empty-state">
-            <i class="fas fa-folder-open"></i>
-            <p>Không có bộ câu hỏi nào.</p>
+            <div class="card-grid">
+              @for (quiz of myQuizzes; track quiz.id) {
+                <div class="skill-card" [ngClass]="{
+                     'status-approved': quiz.trang_thai === 'DA_DUYET',
+                     'status-pending': quiz.trang_thai === 'CHO_DUYET',
+                     'status-rejected': quiz.trang_thai === 'TU_CHOI'
+                   }">
+                  <ng-container
+                    *ngTemplateOutlet="quizCard; context: { $implicit: quiz }"></ng-container>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        @if (standaloneQuizzes.length > 0) {
+          <section class="quiz-section">
+            <div class="section-header-arrow secondary">
+              <span class="section-title">Bộ câu hỏi riêng lẻ</span>
+              <span class="arrow-head"></span>
+            </div>
+            <div class="card-grid">
+              @for (quiz of standaloneQuizzes; track quiz.id) {
+                <div class="skill-card" [ngClass]="{
+                     'status-approved': quiz.trang_thai === 'DA_DUYET',
+                     'status-pending': quiz.trang_thai === 'CHO_DUYET',
+                     'status-rejected': quiz.trang_thai === 'TU_CHOI'
+                   }">
+                  <ng-container
+                    *ngTemplateOutlet="quizCard; context: { $implicit: quiz }"></ng-container>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        @if (courseQuizzes.length > 0) {
+          <section class="quiz-section">
+            <div class="section-header-arrow tertiary">
+              <span class="section-title">Bộ câu hỏi thuộc khóa học</span>
+              <span class="arrow-head"></span>
+            </div>
+            <div class="card-grid">
+              @for (quiz of courseQuizzes; track quiz.id) {
+                <div class="skill-card" [ngClass]="{
+                     'status-approved': quiz.trang_thai === 'DA_DUYET',
+                     'status-pending': quiz.trang_thai === 'CHO_DUYET',
+                     'status-rejected': quiz.trang_thai === 'TU_CHOI'
+                   }">
+                  <ng-container
+                    *ngTemplateOutlet="quizCard; context: { $implicit: quiz }"></ng-container>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        @if (myQuizzes.length === 0 && standaloneQuizzes.length === 0 &&
+        courseQuizzes.length === 0) {
+          <div class="empty-state-card">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png"
+              alt="Empty">
+            <h3>Kho tàng trống rỗng!</h3>
+            <p>Chưa tìm thấy bộ câu hỏi nào phù hợp.</p>
           </div>
         }
 
-        @if (totalPages > 1) {
-          <div class="pagination">
-            <!-- Nút Previous -->
-            <a (click)="changePage(page - 1)" [class.disabled]="page === 0">&laquo;</a>
-
-            <!-- Dải trang động -->
-            @for (p of getVisiblePages(); track $index) {
-              @if (p >= 0) {
-                <a [class.active]="p === page" (click)="changePage(p)">
-                  {{ p + 1 }}
-                </a>
-              } @else {
-                <span class="ellipsis">...</span>
+        <ng-template #quizCard let-quiz>
+          <div class="card-top">
+            <div class="icon-box">
+              <i class="fas fa-book"></i>
+            </div>
+            <div class="badges-stack">
+            <span class="badge-pill status-badge">
+              @if (quiz.trang_thai === 'DA_DUYET') {
+                <i class="fas fa-check-circle"></i> Đã duyệt
+              } @else if (quiz.trang_thai === 'CHO_DUYET') {
+                <i class="fas fa-clock"></i> Chờ duyệt
+              } @else if (quiz.trang_thai === 'TU_CHOI') {
+                <i class="fas fa-ban"></i> Từ chối
               }
-            }
+            </span>
+              <span class="badge-pill visibility-badge"
+                    [class.is-private]="quiz.che_do_hien_thi === 'PRIVATE'">
+              @if (quiz.che_do_hien_thi === 'PUBLIC') {
+                <i class="fas fa-globe"></i> Public
+              } @else {
+                <i class="fas fa-lock"></i> Private
+              }
+            </span>
+            </div>
+          </div>
 
-            <!-- Nút Next -->
-            <a (click)="changePage(page + 1)" [class.disabled]="page === totalPages - 1">&raquo;</a>
+          <div class="card-body">
+          <span class="category-tag">
+            {{ quiz.chu_de || 'General' }}
+            @if (quiz.thuoc_khoa_hoc && quiz.khoa_hoc_ten) {
+              · <i class="fas fa-graduation-cap"></i> {{
+                quiz.khoa_hoc_ten
+              }}
+            }
+          </span>
+            <h3 class="card-title"
+                [innerHTML]="highlightKeyword(quiz.tieu_de)"></h3>
+            <div class="card-meta">
+            <span class="meta-item"><i
+              class="fas fa-user-astronaut"></i> {{
+                quiz.nguoi_tao || 'Ẩn danh'
+              }}</span>
+            </div>
+            <p class="card-desc">
+              {{ quiz.mo_ta || 'Chưa có mô tả cho bộ câu hỏi này.' }}
+            </p>
+          </div>
+
+          <div class="card-actions">
+            <button class="action-btn btn-view"
+                    (click)="navigateDetail(quiz.id)" title="Xem chi tiết">
+              <i class="fas fa-eye"></i>
+            </button>
+
+            <button class="action-btn btn-edit"
+                    [class.disabled]="!canEdit(quiz)"
+                    (click)="canEdit(quiz) ? navigateEdit(quiz.id) : showAccessDeniedAlert('chỉnh sửa')"
+                    title="Chỉnh sửa">
+              <i class="fas"
+                 [ngClass]="canEdit(quiz) ? 'fa-pen' : 'fa-lock'"></i>
+            </button>
+
+            <button class="action-btn btn-delete"
+                    [class.disabled]="!canDelete(quiz)"
+                    (click)="canDelete(quiz) ? confirmDelete(quiz.id) : showAccessDeniedAlert('xóa')"
+                    title="Xóa">
+              <i class="fas"
+                 [ngClass]="canDelete(quiz) ? 'fa-trash' : 'fa-lock'"></i>
+            </button>
+
+            <button class="action-btn btn-play"
+                    [disabled]="unlocking_id === quiz.id"
+                    (click)="handlePracticeClick(quiz)">
+              @if (unlocking_id === quiz.id) {
+                <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+                @if (quiz.can_mo_khoa && !quiz.da_mo_khoa) {
+                  <span class="unlock-text"><i class="fas fa-key"></i> {{
+                      quiz.gia_mo_khoa
+                    }}G</span>
+                } @else {
+                  <span class="play-text"><i class="fas fa-play"></i>
+              Luyện</span>
+                }
+              }
+            </button>
+          </div>
+        </ng-template>
+
+        @if (totalPages > 1) {
+          <div class="pagination-wrapper">
+            <button class="page-btn nav-prev"
+                    (click)="changePage(page - 1)" [disabled]="page === 0">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="page-numbers">
+              @for (p of getVisiblePages(); track $index) {
+                @if (p >= 0) {
+                  <button class="page-btn" [class.active]="p === page"
+                          (click)="changePage(p)">
+                    {{ p + 1 }}
+                  </button>
+                } @else {
+                  <span class="dots">...</span>
+                }
+              }
+            </div>
+
+            <button class="page-btn nav-next"
+                    (click)="changePage(page + 1)"
+                    [disabled]="page === totalPages - 1">
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
         }
 
       </main>
     </div>
   </div>
-
 } @else {
-  <div class="empty-state">
-    <i class="fas fa-spinner fa-spin"></i>
-    <p>Đang tải dữ liệu...</p>
+  <div class="loading-screen">
+    <div class="spinner-box">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
   </div>
 }

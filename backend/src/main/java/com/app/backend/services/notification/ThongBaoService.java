@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -177,6 +178,39 @@ public class ThongBaoService implements IThongBaoService {
                 noiDung,
                 metadataJson
         );
+    }
+
+    /**
+     * Gửi thông báo cho tất cả người dùng trong hệ thống (broadcast)
+     */
+    @Override
+    @Transactional
+    public void broadcastNotification(Long nguoiGuiId, String loai, String noiDung, String metadataJson) {
+        NguoiDung nguoiGui = nguoiDungRepository.getReferenceById(nguoiGuiId);
+        
+        // Lấy tất cả người dùng đang hoạt động (không bị xóa, không bị khóa)
+        List<NguoiDung> allUsers = nguoiDungRepository.findAll().stream()
+                .filter(u -> !u.isXoa() && u.isActive())
+                .toList();
+
+        // Tạo thông báo cho từng user
+        for (NguoiDung user : allUsers) {
+            ThongBao tb = ThongBao.builder()
+                    .nguoiGui(nguoiGui)
+                    .nguoiNhan(user)
+                    .loai(loai)
+                    .noiDung(noiDung)
+                    .metadata(metadataJson)
+                    .daDoc(false)
+                    .taoLuc(Instant.now())
+                    .build();
+
+            ThongBao saved = thongBaoRepository.save(tb);
+
+            // 🔔 Bắn realtime qua WebSocket
+            NotificationResponse payload = NotificationResponse.fromEntity(saved);
+            notificationWsPublisher.publishToUser(user.getId(), payload);
+        }
     }
 
     /**

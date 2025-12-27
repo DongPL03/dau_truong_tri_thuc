@@ -1,188 +1,154 @@
-<div class="user-friend-page">
+<div class="social-page">
+  <div class="bg-decor-1"></div>
+  <div class="bg-decor-2"></div>
 
-  <h2 class="page-title">Kết bạn & danh sách bạn bè</h2>
-  <p class="page-subtitle">
-    Quản lý bạn bè, lời mời kết bạn đến và các lời mời bạn đã gửi.
-  </p>
+  <div class="social-container">
 
-  <!-- Thanh tabs -->
-  <div class="tabs">
-    <button
-      class="tab-btn"
-      [class.active]="active_tab === 'friends'"
-      (click)="setTab('friends')">
-      Bạn bè
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="active_tab === 'incoming'"
-      (click)="setTab('incoming')">
-      Lời mời đến
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="active_tab === 'outgoing'"
-      (click)="setTab('outgoing')">
-      Lời mời đã gửi
-    </button>
-  </div>
+    <header class="social-header animate-fade-down">
+      <div class="header-left">
+        <div class="icon-box">🤝</div>
+        <div class="text-group">
+          <h1>Sảnh Kết Nối</h1>
+          <p>Tìm kiếm đồng đội, mở rộng vòng tròn tri thức</p>
+        </div>
+      </div>
 
-  <!-- Ô gửi lời mời nhanh -->
-  <section class="card quick-add">
-    <div class="quick-add-title">Gửi lời mời nhanh theo User ID</div>
-    <div class="quick-add-row">
-      <input
-        type="number"
-        min="1"
-        class="input"
-        [(ngModel)]="new_friend_id"
-        placeholder="Nhập user ID..."
-      />
-      <button
-        class="btn-primary"
-        [disabled]="sending_request"
-        (click)="sendFriendRequest()">
-        {{ sending_request ? 'Đang gửi...' : 'Gửi lời mời' }}
+      <div class="add-friend-bar">
+        <div class="input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="number"
+                 [(ngModel)]="new_friend_id"
+                 placeholder="Nhập ID người chơi để kết bạn..."
+                 (keyup.enter)="sendFriendRequest()">
+        </div>
+        <button class="btn-add" [disabled]="sending_request" (click)="sendFriendRequest()">
+          @if (sending_request) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-user-plus"></i> Gửi lời mời
+          }
+        </button>
+      </div>
+    </header>
+
+    <div class="nav-tabs animate-fade-up">
+      <button class="tab-pill" [class.active]="active_tab === 'friends'" (click)="setTab('friends')">
+        Bạn bè <span class="count">{{ friends.length }}</span>
+      </button>
+      <button class="tab-pill" [class.active]="active_tab === 'incoming'" (click)="setTab('incoming')">
+        Lời mời đến
+        @if (incoming_requests.length > 0) {
+          <span class="badge-red">{{ incoming_requests.length }}</span>
+        }
+      </button>
+      <button class="tab-pill" [class.active]="active_tab === 'outgoing'" (click)="setTab('outgoing')">
+        Đã gửi <span class="count">{{ outgoing_requests.length }}</span>
       </button>
     </div>
-    <div class="quick-add-hint">
-      (Tạm thời dùng theo user_id. Sau này có trang tìm kiếm người dùng / profile, mình sẽ gắn nút "Kết bạn" trực tiếp.)
-    </div>
-  </section>
 
-  <!-- TAB: Bạn bè -->
-  @if (active_tab === 'friends') {
-    <section class="card">
-      <h3>Danh sách bạn bè</h3>
+    <div class="content-area animate-scale-up">
 
-      @if (loading_friends) {
-        <div class="loading">Đang tải danh sách bạn bè...</div>
+      @if (loading_friends || loading_incoming || loading_outgoing) {
+        <div class="loading-state">
+          <div class="spinner-3d"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
       } @else {
-        @if (friends.length === 0) {
-          <div class="empty">
-            Bạn chưa có người bạn nào. Hãy thử gửi lời mời kết bạn.
-          </div>
-        } @else {
-          <table class="table">
-            <thead>
-            <tr>
-              <th>Họ tên</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
+
+        @if (active_tab === 'friends') {
+          @if (friends.length === 0) {
+            <div class="empty-state">
+              <img src="assets/images/empty-friends.png" onerror="this.style.display='none'">
+              <p>Danh sách bạn bè đang trống. Hãy kết thêm bạn mới nhé!</p>
+            </div>
+          } @else {
+            <div class="grid-layout">
               @for (f of friends; track f.user_id) {
-                <tr>
-                  <td>
-                    {{ f.ho_ten }}
-                  </td>
-                  <td>
-                    <span class="badge"
-                          [class.badge-online]="f.trang_thai === 'ONLINE'"
-                          [class.badge-offline]="f.trang_thai !== 'ONLINE'">
-                      {{ f.trang_thai === 'ONLINE' ? 'Đang online' : 'Offline' }}
-                    </span>
-                  </td>
-                  <td>
-                    <button class="btn-danger" (click)="unfriend(f)">
-                      Huỷ kết bạn
+                <div class="user-card friend-card">
+                  <div class="status-dot" [class.online]="f.trang_thai === 'ONLINE'"></div>
+
+                  <div class="card-avatar">
+                    <img [src]="getAvatar(f.avatar_url, f.ho_ten)">
+                  </div>
+
+                  <div class="card-info">
+                    <h3>{{ f.ho_ten }}</h3>
+                    <div class="sub-info">
+                      <span class="uid">ID: {{ f.user_id }}</span>
+                      <span class="status-text" [class.on]="f.trang_thai === 'ONLINE'">
+                        {{ f.trang_thai === 'ONLINE' ? 'Online' : 'Offline' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="card-actions">
+                    <button class="btn-icon chat" title="Nhắn tin" (click)="navigateChatWithFriend(f)">
+                      <i class="fas fa-comment-dots"></i>
                     </button>
-                  </td>
-                </tr>
+                    <button class="btn-icon remove" (click)="unfriend(f)" title="Hủy kết bạn">
+                      <i class="fas fa-user-minus"></i>
+                    </button>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          }
         }
-      }
-    </section>
-  }
 
-  <!-- TAB: Lời mời đến -->
-  @if (active_tab === 'incoming') {
-    <section class="card">
-      <h3>Lời mời kết bạn đến</h3>
-
-      @if (loading_incoming) {
-        <div class="loading">Đang tải lời mời đến...</div>
-      } @else {
-        @if (incoming_requests.length === 0) {
-          <div class="empty">
-            Hiện bạn không có lời mời kết bạn nào.
-          </div>
-        } @else {
-          <table class="table">
-            <thead>
-            <tr>
-              <th>Người gửi</th>
-              <th>Thời gian</th>
-              <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
+        @if (active_tab === 'incoming') {
+          @if (incoming_requests.length === 0) {
+            <div class="empty-state">
+              <p>Không có lời mời kết bạn nào.</p>
+            </div>
+          } @else {
+            <div class="grid-layout">
               @for (req of incoming_requests; track req.request_id) {
-                <tr>
-                  <td>{{ req.nguoi_gui_ten }}</td>
-                  <td>{{ req.tao_luc | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>
-                    <button class="btn-primary" (click)="acceptRequest(req)">
-                      Chấp nhận
-                    </button>
-                    <button class="btn-secondary" (click)="declineRequest(req)">
-                      Từ chối
-                    </button>
-                  </td>
-                </tr>
+                <div class="user-card request-card">
+                  <div class="card-avatar">
+                    <img [src]="getAvatar(null, req.nguoi_gui_ten)"></div>
+                  <div class="card-info">
+                    <h3>{{ req.nguoi_gui_ten }}</h3>
+                    <span class="time-ago">Gửi lúc: {{ req.tao_luc | date:'dd/MM HH:mm' }}</span>
+                  </div>
+                  <div class="action-row">
+                    <button class="btn-pill accept" (click)="acceptRequest(req)">Chấp nhận</button>
+                    <button class="btn-pill decline" (click)="declineRequest(req)">Xóa</button>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          }
         }
-      }
-    </section>
-  }
 
-  <!-- TAB: Lời mời đã gửi -->
-  @if (active_tab === 'outgoing') {
-    <section class="card">
-      <h3>Lời mời kết bạn đã gửi</h3>
-
-      @if (loading_outgoing) {
-        <div class="loading">Đang tải lời mời đã gửi...</div>
-      } @else {
-        @if (outgoing_requests.length === 0) {
-          <div class="empty">
-            Bạn chưa gửi lời mời kết bạn nào.
-          </div>
-        } @else {
-          <table class="table">
-            <thead>
-            <tr>
-              <th>Người nhận</th>
-              <th>Thời gian</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
+        @if (active_tab === 'outgoing') {
+          @if (outgoing_requests.length === 0) {
+            <div class="empty-state">
+              <p>Bạn chưa gửi lời mời nào.</p>
+            </div>
+          } @else {
+            <div class="grid-layout">
               @for (req of outgoing_requests; track req.request_id) {
-                <tr>
-                  <td>{{ req.nguoi_nhan_ten }}</td>
-                  <td>{{ req.tao_luc }}</td>
-                  <td>{{ req.trang_thai }}</td>
-                  <td>
-                    @if (req.trang_thai === 'PENDING') {
-                      <button class="btn-secondary" (click)="cancelRequest(req)">
-                        Huỷ lời mời
-                      </button>
-                    }
-                  </td>
-                </tr>
+                <div class="user-card sent-card">
+                  <div class="card-avatar grayscale">
+                    <img [src]="getAvatar(null, req.nguoi_nhan_ten)">
+                  </div>
+                  <div class="card-info">
+                    <h3>{{ req.nguoi_nhan_ten }}</h3>
+                    <span class="time-ago">Đã gửi: {{ req.tao_luc | date:'dd/MM HH:mm' }}</span>
+                    <span class="status-badge pending">Đang chờ...</span>
+                  </div>
+                  <div class="card-actions">
+                    <button class="btn-text cancel" (click)="cancelRequest(req)">
+                      <i class="fas fa-times"></i> Hủy lời mời
+                    </button>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          }
         }
-      }
-    </section>
-  }
 
+      }
+    </div>
+  </div>
 </div>

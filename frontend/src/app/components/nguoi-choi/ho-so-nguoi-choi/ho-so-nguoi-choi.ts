@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
 import {Base} from '../../base/base';
 import {UserSummaryResponse} from '../../../responses/nguoidung/user-summary-response';
 import {LichSuTranDauResponse} from '../../../responses/trandau/lichsutrandau';
@@ -44,13 +43,15 @@ export class HoSoNguoiChoi extends Base implements OnInit {
     this.loading_summary = true;
     this.userService.getUserSummary(this.user_id).subscribe({
       next: (res: ResponseObject<UserSummaryResponse>) => {
-        this.loading_summary = false;
         this.summary = res.data ?? null;
-      },
-      error: err => {
+        if (this.summary) {
+          // Tính lại tỉ lệ thắng cho chắc chắn
+          const total = this.summary.tong_tran || 0;
+          this.summary.ti_le_thang = total > 0 ? (this.summary.so_tran_thang / total) : 0;
+        }
         this.loading_summary = false;
-        this.handleApiError(err);
-      }
+      },
+      error: () => this.loading_summary = false
     });
   }
 
@@ -59,16 +60,13 @@ export class HoSoNguoiChoi extends Base implements OnInit {
     this.tranDauService.getUserHistory(this.user_id, page, this.history_limit)
       .subscribe({
         next: (res: ResponseObject<PageResponse<LichSuTranDauResponse>>) => {
-          this.loading_history = false;
           const data = res.data!;
           this.history_items = data.items ?? [];
           this.history_page = data.currentPage ?? 0;
           this.history_total_pages = data.totalPages ?? 0;
-        },
-        error: err => {
           this.loading_history = false;
-          this.handleApiError(err);
-        }
+        },
+        error: () => this.loading_history = false
       });
   }
 
@@ -84,7 +82,21 @@ export class HoSoNguoiChoi extends Base implements OnInit {
     return !!me && me.id === this.user_id;
   }
 
-  private handleApiError(err: any) {
-    console.error('API Error:', err);
+  getAvatar(user: UserSummaryResponse): string {
+    if (user.avatar_url) return `http://localhost:8088/api/v1/users/profile-images/${user.avatar_url}`;
+    return `https://ui-avatars.com/api/?name=${user.ho_ten}&background=random&color=fff&size=128`;
+  }
+
+  mapTierLabel(tier: string | null | undefined): string {
+    const t = (tier || '').toUpperCase();
+    switch (t) {
+      case 'MASTER': return 'Cao thủ';
+      case 'DIAMOND': return 'Kim cương';
+      case 'PLATINUM': return 'Bạch kim';
+      case 'GOLD': return 'Vàng';
+      case 'SILVER': return 'Bạc';
+      case 'BRONZE': return 'Đồng';
+      default: return 'Tập sự';
+    }
   }
 }

@@ -1,0 +1,66 @@
+<div class="recommendation-page">
+  <h1>Gợi ý học tập cho bạn</h1>
+
+  <div *ngIf="loading" class="loading">
+    Đang tải gợi ý...
+  </div>
+
+  <div class="recommendation-grid" *ngIf="!loading">
+    <section class="card-section">
+      <h2>📚 Khóa học nên tập trung</h2>
+      <p class="section-subtitle">
+        Dựa trên các câu hỏi bạn còn sai và tiến độ khóa học hiện tại.
+      </p>
+
+      <ng-container *ngIf="courses.length > 0; else noCourse">
+        <div class="card-list">
+          <div class="rec-card" *ngFor="let c of courses">
+            <div class="rec-header">
+              <h3>{{ c.khoa_hoc.tieu_de }}</h3>
+              <span class="badge-topic" *ngIf="c.khoa_hoc.chu_de">
+                {{ c.khoa_hoc.chu_de }}
+              </span>
+            </div>
+            <p class="reason">{{ c.ly_do }}</p>
+            <button class="btn-primary" (click)="goToCourse(c)">Xem chi tiết khóa học</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noCourse>
+        <p class="empty-text">Hiện tại chưa có gợi ý khóa học cụ thể. Hãy luyện tập thêm để hệ thống hiểu rõ điểm mạnh/yếu của bạn.</p>
+      </ng-template>
+    </section>
+
+    <section class="card-section">
+      <h2>🧠 Bộ câu hỏi nên ôn lại</h2>
+      <p class="section-subtitle">
+        Các bộ câu hỏi mà bạn còn nhiều câu sai, nên luyện lại trước khi chuyển sang nội dung mới.
+      </p>
+
+      <ng-container *ngIf="boCauHoi.length > 0; else noBo">
+        <div class="card-list">
+          <div class="rec-card" *ngFor="let b of boCauHoi">
+            <div class="rec-header">
+              <h3>{{ b.tieu_de }}</h3>
+              <span class="badge-topic" *ngIf="b.chu_de_ten">
+                {{ b.chu_de_ten }}
+              </span>
+            </div>
+            <p class="memo-count">
+              Còn <strong>{{ b.so_cau_sai }}</strong> câu hỏi sai trong bộ này.
+            </p>
+            <p class="reason">{{ b.ly_do }}</p>
+            <button class="btn-secondary" (click)="goToBoCauHoi(b)">Xem chi tiết bộ câu hỏi</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #noBo>
+        <p class="empty-text">Tuyệt vời! Bạn không còn bộ câu hỏi nào tồn đọng nhiều câu sai.</p>
+      </ng-template>
+    </section>
+  </div>
+</div>
+
+

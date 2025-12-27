@@ -4,6 +4,7 @@ import com.app.backend.responses.ResponseObject;
 import com.app.backend.responses.thongke.AdminSummaryStatsResponse;
 import com.app.backend.responses.thongke.DateCountResponse;
 import com.app.backend.responses.thongke.TopBoCauHoiStatsResponse;
+import com.app.backend.responses.thongke.TopPlayerStatsResponse;
 import com.app.backend.services.thongke.IThongKeAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,25 @@ public class ThongKeAdminController {
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Lấy top bộ câu hỏi được sử dụng nhiều nhất thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
+    /**
+     * 🔹 Top người chơi (theo điểm tích lũy)
+     */
+    @GetMapping("/top-players")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getTopPlayers(
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<TopPlayerStatsResponse> data = thongKeAdminService.getTopPlayers(limit);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy top người chơi thành công")
                         .data(data)
                         .build()
         );

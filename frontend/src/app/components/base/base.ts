@@ -1,26 +1,27 @@
-import {inject} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {DOCUMENT, Location} from '@angular/common';
-import {UserService} from '../../services/user.service';
-import {TokenService} from '../../services/token.service';
-import {TrandauService} from '../../services/trandau.service';
-import {BocauhoiService} from '../../services/bocauhoi.service';
-import {HttpUtilService} from '../../services/http.util.service';
-import {ChudeService} from '../../services/chude.service';
-import {CauHoiService} from '../../services/cauhoi.service';
-import {WsTrandauService} from '../../services/ws-trandau.service';
-import {LuyenTapService} from '../../services/luyentap.service';
-import {LeaderboardService} from '../../services/leaderboard.service';
-import {AdminService} from '../../services/admin.service';
-import {AdminStatsService} from '../../services/admin-stats.service';
-import {FriendService} from '../../services/friend.service';
-import {NotificationService} from '../../services/notification.service';
-import {NotificationWsService} from '../../services/notification-ws.service';
-import {ToastNotificationService} from '../../services/toast-notification.service';
-import {ChatService} from '../../services/chat.service';
-import {ChatWsService} from '../../services/chat-ws.service';
-import {ThanhtichService} from '../../services/thanhtich.service';
-import {UserStatsService} from '../../services/user-stats.service';
+import { DOCUMENT, Location } from '@angular/common';
+import { inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AdminStatsService } from '../../services/admin-stats.service';
+import { AdminService } from '../../services/admin.service';
+import { BocauhoiService } from '../../services/bocauhoi.service';
+import { CauHoiService } from '../../services/cauhoi.service';
+import { ChatWsService } from '../../services/chat-ws.service';
+import { ChatService } from '../../services/chat.service';
+import { ChudeService } from '../../services/chude.service';
+import { FriendService } from '../../services/friend.service';
+import { HttpUtilService } from '../../services/http.util.service';
+import { KhoahocService } from '../../services/khoahoc.service';
+import { LeaderboardService } from '../../services/leaderboard.service';
+import { LuyenTapService } from '../../services/luyentap.service';
+import { NotificationWsService } from '../../services/notification-ws.service';
+import { NotificationService } from '../../services/notification.service';
+import { ThanhtichService } from '../../services/thanhtich.service';
+import { ToastNotificationService } from '../../services/toast-notification.service';
+import { TokenService } from '../../services/token.service';
+import { TrandauService } from '../../services/trandau.service';
+import { UserStatsService } from '../../services/user-stats.service';
+import { UserService } from '../../services/user.service';
+import { WsTrandauService } from '../../services/ws-trandau.service';
 
 export class Base {
   router: Router = inject(Router);
@@ -45,6 +46,7 @@ export class Base {
   userStatsService: UserStatsService = inject(UserStatsService);
   protected chatService: ChatService = inject(ChatService);
   protected chatWsService: ChatWsService = inject(ChatWsService);
+  khoaHocService: KhoahocService = inject(KhoahocService);
   document: Document = inject(DOCUMENT);
   location: Location = inject(Location);
 }

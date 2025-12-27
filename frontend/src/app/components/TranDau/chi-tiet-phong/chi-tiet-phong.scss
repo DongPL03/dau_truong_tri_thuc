@@ -84,7 +84,7 @@
     border: 1px dashed #cbd5e1;
     color: var(--text-secondary);
     background: var(--bg-sub);
-    font-family: monospace;
+    font-family: inherit;
   }
 
   .meta {
@@ -336,8 +336,7 @@
 }
 
 .play .countdown {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-  "Liberation Mono", "Courier New", monospace;
+  font-family: inherit;
   font-size: 1.1rem;
 }
 
@@ -1199,6 +1198,7 @@
   color: #9ca3af;
   cursor: pointer;
 }
+
 .value.combo-value {
   font-weight: 600;
   transition: transform 0.15s ease, text-shadow 0.15s ease;
@@ -1213,11 +1213,13 @@
     text-shadow: 0 0 10px rgba(255, 69, 0, 0.9);
   }
 }
+
 .max-combo-highlight {
   margin-top: 8px;
   font-weight: 600;
   color: #ff8c00;
 }
+
 .reward-popup {
   display: flex;
   flex-direction: column;
@@ -1268,3 +1270,299 @@
   color: #f97316;
   font-weight: 700;
 }
+
+/* --- SUMMARY SCREEN (PODIUM STYLE) --- */
+.summary-screen {
+  background: #ffffff; /* Nền trắng sạch sẽ như ảnh gốc của bạn */
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-header h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #6C5DD3;
+  margin: 0 0 5px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.summary-header p {
+  color: #808191;
+  margin: 0 0 40px 0;
+}
+
+/* PODIUM LAYOUT */
+.podium-stage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 15px;
+  margin-bottom: 40px;
+  height: 350px; /* Chiều cao cố định để căn đáy */
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.podium-item:hover {
+  transform: translateY(-5px);
+}
+
+/* Avatar */
+.avatar-box {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.avatar-box .avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-box .badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  background: #333;
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* Info Text */
+.p-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.p-score {
+  font-weight: 800;
+  color: #6C5DD3;
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+/* Podium Bars (Chiều cao khác nhau) */
+.podium-bar {
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+}
+
+/* --- RANK STYLES --- */
+
+/* Rank 1 */
+.rank-1 {
+  order: 2;
+  z-index: 2;
+}
+
+/* Đứng giữa */
+.rank-1 .avatar-box .avatar {
+  width: 100px;
+  height: 100px;
+  border-color: #FFD700;
+}
+
+.rank-1 .avatar-box .badge {
+  background: #FFD700;
+  color: #B45309;
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.rank-1 .podium-bar {
+  height: 160px; /* Cao nhất */
+  background: linear-gradient(180deg, #FFD700 0%, #F59E0B 100%);
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+}
+
+.crown-icon {
+  font-size: 3rem;
+  position: absolute;
+  top: -50px;
+  animation: float 2s infinite ease-in-out;
+}
+
+/* Rank 2 */
+.rank-2 {
+  order: 1;
+}
+
+/* Bên trái */
+.rank-2 .avatar-box .avatar {
+  border-color: #C0C0C0;
+}
+
+.rank-2 .avatar-box .badge {
+  background: #C0C0C0;
+  color: #4B5563;
+}
+
+.rank-2 .podium-bar {
+  height: 110px;
+  background: linear-gradient(180deg, #E5E7EB 0%, #9CA3AF 100%);
+}
+
+/* Rank 3 */
+.rank-3 {
+  order: 3;
+}
+
+/* Bên phải */
+.rank-3 .avatar-box .avatar {
+  border-color: #CD7F32;
+}
+
+.rank-3 .avatar-box .badge {
+  background: #CD7F32;
+  color: #78350F;
+}
+
+.rank-3 .podium-bar {
+  height: 70px;
+  background: linear-gradient(180deg, #FDBA74 0%, #EA580C 100%);
+}
+
+/* Empty slots */
+.podium-item.empty {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+/* --- REST LIST (Hạng 4+) --- */
+.rest-list {
+  background: #F9FAFB;
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 30px;
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: 0.2s;
+}
+
+.list-item:hover {
+  transform: translateX(5px);
+}
+
+.list-item.me {
+  border: 2px solid #6C5DD3;
+  background: #F3F0FF;
+}
+
+.rank-num {
+  font-weight: 800;
+  color: #808191;
+  width: 40px;
+  text-align: center;
+}
+
+.list-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.list-name {
+  flex: 1;
+  font-weight: 700;
+  color: #333;
+}
+
+.list-score {
+  font-weight: 700;
+  color: #6C5DD3;
+}
+
+/* --- FOOTER ACTIONS --- */
+.summary-footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.btn-action {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+  border: none;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action.primary {
+  background: #6C5DD3;
+  color: white;
+}
+
+.btn-action.secondary {
+  background: #E4E5EE;
+  color: #333;
+}
+
+.btn-action.outline {
+  background: transparent;
+  border: 2px solid #E4E5EE;
+  color: #808191;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+

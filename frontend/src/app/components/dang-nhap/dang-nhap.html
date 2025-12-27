@@ -17,7 +17,7 @@
           required
           (input)="loginForm.form.markAsTouched()"
         />
-        @if(loginForm.submitted && !usernameOrEmail){
+        @if (loginForm.submitted && !usernameOrEmail) {
           <p class="text-danger">Vui lòng nhập tên đăng nhập hoặc email</p>
         }
       </div>
@@ -41,7 +41,7 @@
           (click)="togglePassword()"
           title="Hiện mật khẩu"
         ></i>
-        @if(loginForm.submitted && password.length < 6){
+        @if (loginForm.submitted && password.length < 6) {
           <p class="text-danger">Mật khẩu phải có ít nhất 6 ký tự</p>
         }
       </div>
@@ -51,12 +51,12 @@
           Quên mật khẩu?
         </a>
         <label class="remember-me">
-          <input type="checkbox" [(ngModel)]="rememberMe" name="remember" /> Ghi nhớ
+          <input type="checkbox" [(ngModel)]="rememberMe" name="remember"/> Ghi nhớ
         </label>
       </div>
 
       <button
-        type="button"
+        type="submit"
         class="btn-primary-auth"
         (click)="login()"
         [disabled]="loginForm.invalid"

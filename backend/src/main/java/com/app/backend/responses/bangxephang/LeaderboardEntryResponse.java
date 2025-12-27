@@ -42,6 +42,9 @@ public class LeaderboardEntryResponse {
     @JsonProperty("rank_tier")
     private RankTier rankTier;
 
+    @JsonProperty("xep_hang")
+    private Integer xepHang;
+
 
     public static LeaderboardEntryResponse from(BangXepHang bxh, BangXepHangService bangXepHangService) {
         var user = bxh.getNguoiDung();
@@ -62,7 +65,9 @@ public class LeaderboardEntryResponse {
                 .soTranThang(soThang)
                 .soTranThua(bxh.getSoTranThua())
                 .tiLeThang(winRate)
+                .level(bxh.getLevel())
                 .rankTier(tier)
+                .xepHang(bxh.getXepHang())
                 .build();
     }
 }

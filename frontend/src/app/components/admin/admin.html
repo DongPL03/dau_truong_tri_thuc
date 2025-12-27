@@ -1,75 +1,78 @@
-<div class="app-container">
+<div class="admin-layout">
 
-  <aside class="app-sidebar">
+  <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo">
-        <i class="fas fa-cube"></i>
+      <div class="logo-box">
+        <i class="fas fa-layer-group"></i>
       </div>
-      <span class="brand-name">Quiz<span class="highlight">Admin</span></span>
+      <div class="brand-text">
+        Quiz<span class="highlight">Admin</span>
+      </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <div class="nav-section">Tổng quan</div>
-      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
-        <i class="fas fa-th-large"></i>
-        <span>Dashboard</span>
+    <div class="sidebar-menu custom-scrollbar">
+      <div class="menu-label">TỔNG QUAN</div>
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="menu-item">
+        <span class="icon"><i class="fas fa-th-large"></i></span>
+        <span class="text">Dashboard</span>
       </a>
 
-      <div class="nav-section">Quản lý hệ thống</div>
-      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
-        <i class="fas fa-user-friends"></i>
-        <span>Người dùng</span>
+      <div class="menu-label">QUẢN LÝ HỆ THỐNG</div>
+      <a routerLink="/admin/users" routerLinkActive="active" class="menu-item">
+        <span class="icon"><i class="fas fa-users"></i></span>
+        <span class="text">Người dùng</span>
       </a>
-      <a routerLink="/admin/bo-cau-hoi" routerLinkActive="active" class="nav-item">
-        <i class="fas fa-book-open"></i>
-        <span>Bộ câu hỏi</span>
+      <a routerLink="/admin/bo-cau-hoi" routerLinkActive="active" class="menu-item">
+        <span class="icon"><i class="fas fa-book-open"></i></span>
+        <span class="text">Bộ câu hỏi</span>
       </a>
-      <a routerLink="/admin/tran-dau" routerLinkActive="active" class="nav-item">
-        <i class="fas fa-trophy"></i>
-        <span>Trận đấu</span>
+      <a routerLink="/admin/tran-dau" routerLinkActive="active" class="menu-item">
+        <span class="icon"><i class="fas fa-trophy"></i></span>
+        <span class="text">Trận đấu</span>
       </a>
-      <a routerLink="/admin/thong-ke" routerLinkActive="aactive" class="nav-item">
-        <i class="fas fa-chart-line"></i>
-        <span>Thống kê / BXH</span>
+      <a routerLink="/admin/khoa-hoc" routerLinkActive="active" class="menu-item">
+        <span class="icon"><i class="fas fa-graduation-cap"></i></span>
+        <span class="text">Khóa học</span>
       </a>
 
-      <div class="nav-spacer"></div>
-      <a (click)="logout()" class="nav-item danger-item">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Đăng xuất</span>
+      <div class="spacer"></div>
+
+      <div class="menu-label">TÀI KHOẢN</div>
+      <a (click)="logout()" class="menu-item logout">
+        <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+        <span class="text">Đăng xuất</span>
       </a>
-    </nav>
+    </div>
   </aside>
 
-  <div class="app-main">
+  <div class="main-wrapper">
 
-    <header class="app-header">
-      <div class="header-left">
-        <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-        <div class="search-wrapper">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Tìm kiếm dữ liệu..."/>
-        </div>
+    <header class="top-header">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Tìm kiếm (Ctrl + K)...">
       </div>
 
-      <div class="header-right">
-        <button class="icon-btn notification">
+      <div class="header-controls">
+        <button class="btn-icon notification">
           <i class="far fa-bell"></i>
-          <span class="badge-dot"></span>
+          <span class="dot"></span>
         </button>
 
-        <div class="user-profile">
-          <div class="user-text">
+        <div class="profile-dropdown">
+          <div class="info">
             <span class="name">{{ displayName || 'Admin' }}</span>
-            <span class="role">Super Admin</span>
           </div>
-          <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff" alt="Avatar">
+          @if (user){
+          <img [src]="getAvatar()" alt="Avatar">
+          }
         </div>
       </div>
     </header>
 
-    <main class="app-content">
+    <main class="page-content">
       <router-outlet></router-outlet>
     </main>
+
   </div>
 </div>

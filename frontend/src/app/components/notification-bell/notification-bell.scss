@@ -1,201 +1,514 @@
-.notif-wrapper {
-  position: relative;
+:host {
+  --primary: #6C5DD3;
+  --red: #EF4444;
+  --bg-white: #FFFFFF;
+  --text-main: #1F2937;
+  --text-sub: #6B7280;
+  --border: #E5E7EB;
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  /* Type Colors */
+  --gold: #F59E0B; /* Vàng */
+  --battle: #8B5CF6; /* Tím */
+  --friend: #10B981; /* Xanh lá */
+  --system: #3B82F6; /* Xanh dương */
 }
 
-.notif-btn {
+.notification-wrapper {
   position: relative;
-  background: transparent;
-  border: none;
+  display: inline-block;
+}
+
+/* 🔔 BELL BUTTON */
+.btn-bell {
+  background: white;
+  border: 1px solid #F3F4F6;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   cursor: pointer;
-  color: #e5e7eb;
-  font-size: 1.1rem;
-
-  .icon {
-    font-size: 1.2rem;
-  }
-
-  .badge {
-    position: absolute;
-    top: -4px;
-    right: -6px;
-    background: #ef4444;
-    color: #fff;
-    border-radius: 999px;
-    padding: 0 4px;
-    font-size: 0.7rem;
-    min-width: 16px;
-    text-align: center;
-  }
-}
-
-.notif-dropdown {
-  position: absolute;
-  right: 0;
-  margin-top: 0.5rem;
-  width: 320px;
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.6);
-  z-index: 40;
-  max-height: 420px;
+  position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #64748B;
+  transition: 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background: #F3F0FF;
+    color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  &.has-new {
+    i {
+      animation: swing 2s infinite ease-in-out;
+      transform-origin: top center;
+    }
+  }
 }
 
-.notif-header {
+.badge-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--red);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+}
+
+/* 📜 DROPDOWN PANEL */
+.dropdown-panel {
+  position: absolute;
+  top: 55px;
+  right: -10px;
+  width: 360px;
+  background: var(--bg-white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  z-index: 1000;
+  overflow: hidden;
+  transform-origin: top right;
+
+  &::before { /* Mũi tên */
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+  }
+}
+
+.panel-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #1e293b;
-  font-size: 0.85rem;
 
-  .link {
-    background: none;
-    border: none;
-    color: #38bdf8;
-    cursor: pointer;
-    font-size: 0.8rem;
-
-    &:disabled {
-      color: #64748b;
-      cursor: default;
-    }
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-main);
   }
 }
 
-.notif-empty,
-.notif-loading-more {
-  padding: 0.75rem;
-  font-size: 0.85rem;
-  color: #9ca3af;
+.btn-link {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: #9CA3AF;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    color: var(--primary);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
 }
 
-.notif-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* LIST BODY */
+.panel-body {
+  max-height: 400px;
   overflow-y: auto;
-  max-height: 340px;
+  background: #FAFAFA;
 }
 
 .notif-item {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
+  display: flex;
+  gap: 15px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #F3F4F6;
   cursor: pointer;
-  border-bottom: 1px solid #0f172a;
+  transition: 0.2s;
+  position: relative;
+  background: white;
+
+  &:hover {
+    background: #F9FAFB;
+  }
 
   &.unread {
-    background: rgba(56, 189, 248, 0.08);
-  }
-
-  &:hover {
-    background: rgba(148, 163, 184, 0.12);
-  }
-
-  .notif-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2px;
-
-    strong {
-      font-weight: 600;
+    background: #F0F9FF; /* Xanh nhạt */
+    .notif-text {
+      color: #111827;
     }
 
-    .notif-type {
-      font-size: 0.75rem;
-      color: #9ca3af;
+    &:hover {
+      background: #E0F2FE;
     }
-  }
-
-  .notif-body {
-    color: #e5e7eb;
-  }
-
-  .notif-time {
-    margin-top: 2px;
-    font-size: 0.7rem;
-    color: #9ca3af;
   }
 }
 
-.load-more {
+/* Icon Type Styles */
+.notif-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  color: white;
+
+  &.gold {
+    background: linear-gradient(135deg, #F59E0B, #FCD34D);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+  }
+
+  &.battle {
+    background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+    box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+  }
+
+  &.friend {
+    background: linear-gradient(135deg, #10B981, #34D399);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  }
+
+  &.system {
+    background: linear-gradient(135deg, #3B82F6, #60A5FA);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.notif-content {
+  flex: 1;
+}
+
+.notif-text {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #4B5563;
+
+  .actor {
+    font-weight: 700;
+    color: #1F2937;
+  }
+}
+
+.notif-time {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+.extra-info.gold {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #D97706;
+  background: #FEF3C7;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.dot-unread {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.btn-load-more {
   width: 100%;
   border: none;
-  background: #0f172a;
-  color: #e5e7eb;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8rem;
+  background: white;
+  padding: 10px;
+  color: var(--primary);
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
 
   &:hover {
-    background: #020617;
+    background: #F3F0FF;
   }
 }
 
-.notif-header-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+.empty-state, .loading-state {
+  text-align: center;
+  padding: 40px 20px;
+
+  img {
+    width: 80px;
+    opacity: 0.5;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: var(--text-sub);
+    font-size: 0.9rem;
+  }
 }
 
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #E5E7EB;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 🔥 BATTLE TOAST STYLES */
 .battle-invite-toast {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 320px;
-  background: #020617;
-  color: #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  padding: 12px 14px;
-  z-index: 1100;
-  border: 1px solid #10b981;
+  bottom: 30px;
+  right: 30px;
+  z-index: 2000;
+  width: 380px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  border: 1px solid var(--primary);
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-.toast-title {
-  font-weight: 600;
-  font-size: 0.95rem;
+.toast-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary), #8B5CF6);
+  border-radius: 50%;
+  opacity: 0.1;
 }
 
-.toast-body {
-  font-size: 0.9rem;
+.swords-icon {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 2rem;
+  color: var(--primary);
 }
 
-.toast-body .room-code {
-  font-weight: 700;
-  color: #22c55e;
-  margin-left: 4px;
+.toast-content {
+  padding: 20px 20px 10px;
+  position: relative;
+  z-index: 2;
+
+  h4 {
+    margin: 0 0 5px;
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+
+  .room-code {
+    font-weight: 800;
+    color: #10B981;
+    background: #ECFDF5;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
 }
 
 .toast-actions {
   display: flex;
+  gap: 10px;
+  padding: 10px 20px 20px;
   justify-content: flex-end;
-  gap: 8px;
 }
 
-.toast-actions .btn-ghost,
-.toast-actions .btn-primary {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  border: none;
-  cursor: pointer;
-}
-
-.toast-actions .btn-ghost {
-  background: transparent;
-  color: #9ca3af;
-}
-
-.toast-actions .btn-primary {
-  background: #22c55e;
-  color: #020617;
+.btn-reject {
+  background: white;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
+  padding: 8px 16px;
+  border-radius: 20px;
   font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #F3F4F6;
+    color: #111827;
+  }
 }
+
+.btn-accept {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(108, 93, 211, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.toast-progress {
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), #8B5CF6);
+  width: 100%;
+  animation: progress 15s linear forwards;
+}
+
+/* Animations */
+@keyframes swing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(15deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-fade-down {
+  animation: fadeDown 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animate-pop {
+  animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Tìm class này trong file SCSS và sửa lại */
+.notif-dropdown {
+  position: absolute;
+  right: -10px; /* Canh lề phải */
+  top: 50px; /* Cách nút chuông một đoạn (khoảng chiều cao nút + margin) */
+  width: 360px; /* Rộng hơn chút cho đẹp */
+  background: #ffffff; /* Dùng nền trắng thay vì đen để giống bản thiết kế mới */
+  border: 1px solid #e2e8f0;
+  border-radius: 16px; /* Bo tròn mềm mại */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); /* Bóng đổ xịn hơn */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* Mũi tên trỏ lên (Optional - cho đẹp) */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+
+/* Các phần khác giữ nguyên hoặc chỉnh màu text lại cho nền trắng */
+.notif-header {
+  background: #fff;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-item {
+  background: #fff;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-item:hover {
+  background: #f8fafc;
+}
+
+.notif-item.unread {
+  background: #f0f9ff;
+}
+
+/* Màu xanh nhạt cho tin chưa đọc */
+

@@ -24,6 +24,12 @@ public interface ITranDauRepository extends JpaRepository<TranDau, Long> {
     long count();
 
     long countByTrangThai(String trangThai);
+    
+    /**
+     * Đếm số trận được tạo từ thời điểm nhất định (hôm nay)
+     */
+    @Query("SELECT COUNT(td) FROM TranDau td WHERE td.taoLuc >= :from")
+    long countCreatedToday(@Param("from") Instant from);
 
     /**
      * Đếm số trận theo ngày (dùng cột taoLuc / created time của trận)

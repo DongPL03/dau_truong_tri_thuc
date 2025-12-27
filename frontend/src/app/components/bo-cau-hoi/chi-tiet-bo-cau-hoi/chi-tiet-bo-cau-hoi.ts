@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import Swal from 'sweetalert2';
 import { BoCauHoiResponse } from '../../../responses/bocauhoi/bocauhoi-response';
 import { CauHoiResponse } from '../../../responses/cauhoi/cauhoi-response';
@@ -26,6 +27,7 @@ export class BoCauHoiDetail extends Base implements OnInit {
   isPreview = false;
   readonly imageBaseUrl = 'http://localhost:8088/api/v1/cauHoi/media/';
   currentUserId: number = 0;
+  totalQuestions = 0;
 
   ngOnInit(): void {
     this.boCauHoiId = Number(this.route.snapshot.paramMap.get('id'));
@@ -40,30 +42,23 @@ export class BoCauHoiDetail extends Base implements OnInit {
     this.isPreview = false;
 
     // Gọi song song 2 API
-    this.bocauHoiService.getById(this.boCauHoiId).subscribe({
-      next: (res: ResponseObject<BoCauHoiResponse>) => {
-        this.bo = res.data;
-        console.log(this.bo);
-      },
-      error: (err) => {
-        const msg = err?.error?.message || '';
-        if (msg.includes('mở khóa') || msg.includes('unlock')) {
-          // Bộ cần unlock nhưng chưa unlock
-          this.isLocked = true;
-          this.unlockError = msg;
-          // Vẫn load thông tin cơ bản để hiển thị preview
-          this.loadBasicInfo();
-        } else {
-          this.bo = null;
-        }
-        this.loading = false;
-      },
-    });
+    forkJoin({
+      boCauHoi: this.bocauHoiService.getById(this.boCauHoiId),
+      danhSachCau: this.cauHoiService.getByBoCauHoi(this.boCauHoiId),
+    }).subscribe({
+      next: (result) => {
+        // 1. Xử lý thông tin bộ câu hỏi trước
+        const resBo = result.boCauHoi as ResponseObject<BoCauHoiResponse>;
+        this.bo = resBo.data;
+        console.log('Bộ câu hỏi đã load:', this.bo);
 
-    this.cauHoiService.getByBoCauHoi(this.boCauHoiId).subscribe({
-      next: (res: ResponseObject<PageResponse<CauHoiResponse>>) => {
-        const allQuestions = res.data?.items ?? [];
-        // Nếu không được xem toàn bộ câu hỏi → chỉ cho xem preview 3 câu
+        // 2. Xử lý danh sách câu hỏi sau khi đã có this.bo
+        const resCau = result.danhSachCau as ResponseObject<PageResponse<CauHoiResponse>>;
+        const allQuestions = resCau.data?.items ?? [];
+        this.totalQuestions = allQuestions.length;
+
+        console.log('Check quyền:', this.canViewAllQuestions()); // Lúc này this.bo đã có dữ liệu
+
         if (!this.canViewAllQuestions()) {
           this.questions = allQuestions.slice(0, 3);
           this.isPreview = allQuestions.length > this.questions.length;
@@ -73,14 +68,14 @@ export class BoCauHoiDetail extends Base implements OnInit {
         this.loading = false;
       },
       error: (err) => {
+        // Xử lý lỗi chung
+        this.loading = false;
         const msg = err?.error?.message || '';
         if (msg.includes('mở khóa') || msg.includes('unlock')) {
-          // Bộ cần unlock nhưng chưa unlock → không load câu hỏi
           this.isLocked = true;
           this.unlockError = msg;
-          this.questions = [];
         }
-        this.loading = false;
+        console.error(err);
       },
     });
   }
@@ -206,5 +201,12 @@ export class BoCauHoiDetail extends Base implements OnInit {
 
   navigateToDetaiList() {
     this.router.navigateByUrl('/bo-cau-hoi/danh-sach-bo-cau-hoi').then((r) => {});
+  }
+
+  goToCourse(): void {
+    if (!this.bo?.khoa_hoc_id) {
+      return;
+    }
+    this.router.navigate(['/khoa-hoc', this.bo.khoa_hoc_id]).then((r) => {});
   }
 }

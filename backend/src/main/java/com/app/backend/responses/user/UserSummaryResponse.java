@@ -86,6 +86,7 @@ public class UserSummaryResponse {
         return UserSummaryResponse.builder()
                 .userId(user.getId())
                 .hoTen(user.getHoTen())
+                .avatarUrl(user.getAvatarUrl())
                 .tongDiem(tongDiem)
                 .tongTran(bxh.getTongTran())
                 .soTranThang(bxh.getSoTranThang())

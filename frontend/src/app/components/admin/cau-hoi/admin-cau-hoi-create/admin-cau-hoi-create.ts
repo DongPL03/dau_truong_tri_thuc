@@ -24,18 +24,24 @@ export class AdminCauHoiCreate extends Base implements OnInit {
   submitting = false;
   hovering = false;
 
+  readonly luaChonList: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+
   ngOnInit(): void {
-    // ⭐ Ở admin route mình vẫn dùng param 'id' giống user
     this.boCauHoiId = Number(this.route.snapshot.paramMap.get('id'));
-    console.log('Bộ câu hỏi ID từ route:', this.boCauHoiId);
     this.model.bo_cau_hoi_id = this.boCauHoiId;
+    this.model.loai_noi_dung = 'VAN_BAN'; // Default
+    this.model.dap_an_dung = 'A'; // Default selection
+    this.model.do_kho = 'DE'; // Default difficulty
   }
 
-  onLoaiNoiDungChange(): void {
-    if (this.model.loai_noi_dung === 'VAN_BAN') {
-      this.selectedFile = undefined;
+  setMediaType(type: 'VAN_BAN' | 'HINH_ANH' | 'AM_THANH' | 'VIDEO'): void {
+    this.model.loai_noi_dung = type;
+    if (type === 'VAN_BAN') {
+      this.removeSelectedFile(false).then(() => {
+      });
+    } else {
       this.previewUrl = undefined;
-      this.model.duong_dan_tep = '';
+      this.selectedFile = undefined;
     }
   }
 
@@ -55,14 +61,13 @@ export class AdminCauHoiCreate extends Base implements OnInit {
 
   onSubmit(form: NgForm): void {
     if (this.submitting) return;
-
     if (form.invalid) {
-      Swal.fire('Cảnh báo', 'Vui lòng điền đủ thông tin bắt buộc', 'warning');
+      Swal.fire('Thiếu thông tin', 'Vui lòng điền nội dung và các đáp án', 'warning').then(r => {
+      });
       return;
     }
 
     this.submitting = true;
-
     this.cauHoiService.create(this.model).subscribe({
       next: (res: ResponseObject) => {
         const created = res.data;
@@ -104,50 +109,77 @@ export class AdminCauHoiCreate extends Base implements OnInit {
           });
         } else {
           // Không có file media
-          this.submitting = false;
-          Swal.fire('Thành công', 'Đã thêm câu hỏi!', 'success').then(() => {
-            this.router.navigate(['/admin/bo-cau-hoi', this.boCauHoiId]);
-          });
+          this.handleSuccess(form);
         }
       },
-      error: (err) => {
-        this.submitting = false;
-        Swal.fire('Lỗi', err.error?.message || 'Không thể tạo câu hỏi', 'error');
+      error: (err) => this.handleError(err)
+    });
+  }
+
+  async removeSelectedFile(confirm: boolean = true): Promise<void> {
+    if (confirm) {
+      const result = await Swal.fire({
+        title: 'Xác nhận xoá tệp?',
+        text: 'Bạn có chắc muốn xoá tệp này khỏi câu hỏi?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xoá',
+        cancelButtonText: 'Huỷ',
+        background: '#fff',
+        color: '#333'
+      });
+
+      if (result.isConfirmed) {
+        this.previewUrl = '';
+        this.selectedFile = undefined;
+        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (input) input.value = '';
+        await Swal.fire({
+          icon: 'success',
+          title: 'Đã xoá!',
+          text: 'Tệp đã được xoá thành công.',
+          timer: 1200,
+          showConfirmButton: false
+        });
+      }
+    } else {
+      this.previewUrl = '';
+      this.selectedFile = undefined;
+    }
+  }
+
+  handleSuccess(form: NgForm) {
+    this.submitting = false;
+    Swal.fire({
+      icon: 'success',
+      title: 'Thành công',
+      text: 'Đã thêm câu hỏi mới!',
+      showCancelButton: true,
+      confirmButtonText: 'Thêm tiếp',
+      cancelButtonText: 'Quay lại danh sách'
+    }).then((res) => {
+      if (res.isConfirmed) {
+        form.resetForm();
+        this.model.loai_noi_dung = 'VAN_BAN'; // Reset về default
+        this.model.dap_an_dung = 'A';
+        this.model.do_kho = 'DE';
+        this.model.bo_cau_hoi_id = this.boCauHoiId; // Set lại ID
+        this.removeSelectedFile(false).then(r => {
+        });
+      } else {
+        this.cancel();
       }
     });
+  }
+
+  handleError(err: any) {
+    this.submitting = false;
+    Swal.fire('Lỗi', err.error?.message || 'Có lỗi xảy ra', 'error');
   }
 
   cancel(): void {
     this.router.navigate(['/admin/bo-cau-hoi', this.boCauHoiId]);
   }
-
-  async removeSelectedFile(): Promise<void> {
-    const result = await Swal.fire({
-      title: 'Xác nhận xoá tệp?',
-      text: 'Bạn có chắc muốn xoá tệp này khỏi câu hỏi?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Xoá',
-      cancelButtonText: 'Huỷ',
-      background: '#fff',
-      color: '#333'
-    });
-
-    if (result.isConfirmed) {
-      this.previewUrl = '';
-      this.selectedFile = undefined;
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (input) input.value = '';
-      await Swal.fire({
-        icon: 'success',
-        title: 'Đã xoá!',
-        text: 'Tệp đã được xoá thành công.',
-        timer: 1200,
-        showConfirmButton: false
-      });
-    }
-  }
-
 }

@@ -1,152 +1,177 @@
-<div class="admin-user-detail-container">
+<div class="user-detail-page animate-fade-down">
 
   <button class="btn-back" (click)="goBack()">
-    ← Quay lại danh sách
+    <i class="fas fa-arrow-left"></i> Quay lại danh sách
   </button>
 
-  <h2>Chi tiết người dùng (Admin)</h2>
-
   @if (loading) {
-    <div class="loading">
+    <div class="loading-state">
+      <div class="spinner"></div>
       Đang tải dữ liệu...
     </div>
-  } @else {
-    @if (user) {
-      <section class="card">
-        <h3>Thông tin tài khoản</h3>
-        <div class="info-grid">
-          <div>
-            <span class="label">ID:</span>
-            <span>{{ user.id }}</span>
-          </div>
-          <div>
-            <span class="label">Tên hiển thị:</span>
-            <span>{{ user.ho_ten || '-' }}</span>
-          </div>
-          <div>
-            <span class="label">Username:</span>
-            <span>{{ user.ten_dang_nhap || '-' }}</span>
-          </div>
-          <div>
-            <span class="label">Email:</span>
-            <span>{{ user.email || '-' }}</span>
-          </div>
-          <div>
-            <span class="label">Vai trò:</span>
-            <span>{{ user.vai_tro?.ten_vai_tro || '-' }}</span>
-          </div>
+  } @else if (user) {
 
-          @if (user) {
-            <div>
-              <span class="label">Trạng thái:</span>
-              <span>
-      @if (user.is_xoa === 1) {
-        Đã vô hiệu hoá
-      } @else if (!user.is_active) {
-        Đã bị khoá
-      } @else {
-        Đang hoạt động
-      }
-    </span>
+    <div class="detail-grid">
+
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="avatar-wrapper">
+            <img
+              [src]="user.avatar_url ? 'http://localhost:8088/api/v1/users/profile-images/' + user.avatar_url : 'assets/images/default-avatar.png'"
+              alt="Avatar">
+            <span class="status-dot" [ngClass]="user.is_active ? 'active' : 'inactive'"></span>
+          </div>
+          <h2 class="user-name">{{ user.ho_ten || user.ten_dang_nhap }}</h2>
+          <p class="user-email">{{ user.email }}</p>
+          <div class="badges">
+            <span class="role-badge">{{ user.vai_tro?.ten_vai_tro }}</span>
+            <span class="id-badge">ID: #{{ user.id }}</span>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          @if (!isCurrentUser) {
+            <button class="btn-action reset" (click)="resetPassword()">
+              <i class="fas fa-key"></i> Reset Mật Khẩu
+            </button>
+
+            @if (user.is_xoa !== 1) {
+              @if (user.is_active) {
+                <button class="btn-action block" (click)="blockOrEnable(false)">
+                  <i class="fas fa-lock"></i> Khóa Tài Khoản
+                </button>
+              } @else {
+                <button class="btn-action unblock" (click)="blockOrEnable(true)">
+                  <i class="fas fa-unlock"></i> Mở Khóa
+                </button>
+              }
+
+              @if (user.vai_tro?.ten_vai_tro === 'USER') {
+                <button class="btn-action role" (click)="changeRole('admin')">
+                  <i class="fas fa-user-shield"></i> Nâng Admin
+                </button>
+              } @else {
+                <button class="btn-action role-down" (click)="changeRole('user')">
+                  <i class="fas fa-user"></i> Hạ xuống User
+                </button>
+              }
+            } @else {
+              <button class="btn-action restore" (click)="restore()">
+                <i class="fas fa-trash-restore"></i> Khôi phục
+              </button>
+            }
+          } @else {
+            <div class="self-alert">
+              <i class="fas fa-info-circle"></i> Đây là tài khoản của bạn
             </div>
           }
         </div>
-      </section>
-    }
 
-    @if (summary) {
-      <section class="card">
-        <h3>Tổng quan & thống kê</h3>
-
-        <div class="stats-grid">
-          <div class="stat">
-            <div class="label">Tổng điểm</div>
-            <div class="value">{{ summary.tong_diem || '-' }}</div>
+        <div class="info-list">
+          <div class="info-item">
+            <span class="lbl">Username</span>
+            <span class="val">{{ user.ten_hien_thi }}</span>
           </div>
-          <div class="stat">
-            <div class="label">Số trận đã chơi</div>
-            <div class="value">{{ summary.tong_tran || '-' }}</div>
+          <div class="info-item">
+            <span class="lbl">Ngày tham gia</span>
+            <span class="val">{{ user.tao_luc | date:'dd/MM/yyyy' }}</span>
           </div>
-          <div class="stat">
-            <div class="label">Số trận thắng</div>
-            <div class="value">{{ summary.so_tran_thang || '-' }}</div>
-          </div>
-          <div class="stat">
-            <div class="label">Số trận thua</div>
-            <div class="value">{{ summary.so_tran_thua || '-' }}</div>
-          </div>
-          <div class="stat">
-            <div class="label">Tỉ lệ thắng (%)</div>
-            <div class="value">{{ summary.ti_le_thang || '-' }}</div>
-          </div>
-          <div class="stat">
-            <div class="label">Hạng hiện tại</div>
-            <div class="value">{{ summary.xep_hang || '-' }}</div>
+          <div class="info-item">
+            <span class="lbl">Trạng thái</span>
+            <span class="val status-text" [class.red]="!user.is_active || user.is_xoa">
+              {{ user.is_xoa ? 'Đã xóa' : (user.is_active ? 'Hoạt động' : 'Bị khóa') }}
+            </span>
           </div>
         </div>
+      </div>
 
-        <div class="raw-json">
-          <h4>Dữ liệu đầy đủ (debug)</h4>
-          <pre>{{ summary | json }}</pre>
-        </div>
-      </section>
-    } @else {
-      <section class="card">
-        <p>Không có dữ liệu tổng quan cho người dùng này.</p>
-      </section>
-    }
+      <div class="detail-content">
 
-    <section class="card">
-      <h3>Lịch sử trận đấu gần đây</h3>
-
-      @if (battleHistory.length > 0) {
-        <div>
-          <table class="history-table">
-            <thead>
-            <tr>
-              <th>ID Trận</th>
-              <th>Phòng</th>
-              <th>Chủ đề</th>
-              <th>Thời gian</th>
-              <th>Kết quả</th>
-              <th>Điểm</th>
-              <th>Xếp hạng</th>
-            </tr>
-            </thead>
-            <tbody>
-
-              @for (h of battleHistory; track h.tran_dau_id) {
-                <tr>
-                  <td>{{ h.tran_dau_id }}</td>
-                  <td>{{ h.ten_phong || '-' }}</td>
-                  <td>{{ h.bo_cau_hoi_tieu_de || '-' }}</td>
-                  <td>
-                    <div>
-                      <span class="label-sm">Kết thúc:</span>
-                      {{ h.hoan_thanh_luc | date: 'dd/MM/yyyy HH:mm' }}
-                    </div>
-                  </td>
-                  <td>
-                    {{ h.tong_diem || '-' }}
-                    <div class="label-sm">
-                      {{ h.so_cau_dung || '?' }} câu đúng
-                    </div>
-                  </td>
-                  <td>
-                    {{ h.xep_hang || '-' }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+        <div class="tabs-nav">
+          <button class="tab-btn active">Tổng quan & Lịch sử</button>
         </div>
 
-      } @else if (!loading) {
-        <div class="empty">
-          Không có trận đấu nào trong lịch sử.
+        <div class="tab-body animate-fade-up">
+
+          <div class="summary-stats">
+            <div class="stat-box purple">
+              <div class="icon"><i class="fas fa-star"></i></div>
+              <div class="info">
+                <span class="lbl">Tổng điểm</span>
+                <span class="val">{{ summary?.tong_diem | number }}</span>
+              </div>
+            </div>
+            <div class="stat-box blue">
+              <div class="icon"><i class="fas fa-gamepad"></i></div>
+              <div class="info">
+                <span class="lbl">Số trận</span>
+                <span class="val">{{ summary?.tong_tran | number }}</span>
+              </div>
+            </div>
+            <div class="stat-box green">
+              <div class="icon"><i class="fas fa-trophy"></i></div>
+              <div class="info">
+                <span class="lbl">Thắng</span>
+                <span class="val">{{ summary?.so_tran_thang | number }}</span>
+              </div>
+            </div>
+            <div class="stat-box orange">
+              <div class="icon"><i class="fas fa-chart-line"></i></div>
+              <div class="info">
+                <span class="lbl">Tỉ lệ thắng</span>
+                <span class="val">{{ summary?.ti_le_thang | percent:'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="history-section">
+            <h3><i class="fas fa-history"></i> Lịch sử đấu gần đây</h3>
+
+            @if (battleHistory.length === 0) {
+              <div class="empty-history">Chưa có lịch sử đấu nào.</div>
+            } @else {
+              <div class="table-responsive custom-scrollbar">
+                <table class="history-table">
+                  <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Phòng / Chủ đề</th>
+                    <th>Kết quả</th>
+                    <th>Điểm</th>
+                    <th>Xếp hạng</th>
+                    <th>Thời gian</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                    @for (h of battleHistory; track h.tran_dau_id) {
+                      <tr>
+                        <td>#{{ h.tran_dau_id }}</td>
+                        <td>
+                          <div class="room-info">
+                            <span class="room-name">{{ h.ten_phong }}</span>
+                            <span class="quiz-name">{{ h.bo_cau_hoi_tieu_de }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="result-badge"
+                                [ngClass]="h.xep_hang === 1 ? 'win' : (h.xep_hang <= 3 ? 'top' : 'lose')">
+                            {{ h.xep_hang === 1 ? 'VICTORY' : (h.xep_hang <= 3 ? 'TOP ' + h.xep_hang : 'LOSE') }}
+                          </span>
+                        </td>
+                        <td class="font-bold">{{ h.tong_diem }} pts</td>
+                        <td>Rank {{ h.xep_hang }}</td>
+                        <td class="text-muted">{{ h.hoan_thanh_luc | date:'dd/MM HH:mm' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+
         </div>
-      }
-    </section>
+      </div>
+
+    </div>
   }
-
 </div>

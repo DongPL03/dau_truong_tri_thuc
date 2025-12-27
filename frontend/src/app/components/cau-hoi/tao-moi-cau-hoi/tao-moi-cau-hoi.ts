@@ -22,8 +22,13 @@ export class CauHoiCreate extends Base implements OnInit {
   selectedFile?: File;
   previewUrl?: string;
   submitting = false;
-  hovering = false;
+  readonly luaChonList: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
+  constructor() {
+    super();
+    this.model.do_kho = 'TRUNG_BINH';
+    this.model.loai_noi_dung = 'VAN_BAN';
+  }
 
   ngOnInit() {
     this.boCauHoiId = Number(this.route.snapshot.paramMap.get('id'));
@@ -42,6 +47,14 @@ export class CauHoiCreate extends Base implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
+
+    // Validate size (ví dụ 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      Swal.fire('Lỗi', 'File quá lớn (Max 10MB)', 'error');
+      return;
+    }
+
+    this.selectedFile = file;
     const reader = new FileReader();
     reader.onload = () => this.previewUrl = reader.result as string;
     reader.readAsDataURL(file);
@@ -59,10 +72,19 @@ export class CauHoiCreate extends Base implements OnInit {
     this.cauHoiService.create(this.model).subscribe({
       next: (res: ResponseObject) => {
         const created = res.data;
-        if (!created?.id) {
-          this.submitting = false;
-          Swal.fire('Lỗi', 'Không tạo được câu hỏi', 'error').then(r => {
+        if (!this.model.noi_dung || !this.model.dap_an_dung) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Thiếu thông tin',
+            text: 'Vui lòng nhập nội dung câu hỏi và chọn đáp án đúng!',
+            confirmButtonColor: '#FF754C'
           });
+          return;
+        }
+
+        // Validate media
+        if (this.model.loai_noi_dung !== 'VAN_BAN' && !this.selectedFile) {
+          Swal.fire('Thiếu file', `Vui lòng tải lên ${this.model.loai_noi_dung === 'HINH_ANH' ? 'hình ảnh' : 'âm thanh'}`, 'warning');
           return;
         }
         if (this.selectedFile && this.model.loai_noi_dung !== 'VAN_BAN') {

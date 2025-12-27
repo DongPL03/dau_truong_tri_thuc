@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ITranDauService {
     TranDau taoPhong(TaoTranDauDTO dto, Long currentUserId) throws Exception;
@@ -56,5 +57,45 @@ public interface ITranDauService {
 
     void inviteFriendToBattle(Long tranDauId, Long currentUserId, Long targetUserId)
             throws Exception;
+
+    // ===================== ADMIN METHODS =====================
+
+    /**
+     * Lấy thống kê trận đấu cho admin dashboard
+     */
+    Map<String, Object> getAdminBattleStats();
+
+    /**
+     * Lấy lịch sử trận đấu với filter nâng cao
+     */
+    Page<LichSuTranDauResponse> getAdminHistoryFiltered(
+            int page, int limit, String keyword, String loaiTranDau,
+            Long boCauHoiId, String fromDate, String toDate
+    );
+
+    /**
+     * Admin đóng/hủy phòng đang chờ
+     */
+    void adminCloseRoom(Long tranDauId) throws Exception;
+
+    /**
+     * Admin kick người chơi khỏi phòng
+     */
+    void adminKickPlayer(Long tranDauId, Long userId) throws Exception;
+
+    /**
+     * Admin xóa lịch sử trận đấu
+     */
+    void adminDeleteHistory(Long lichSuId) throws Exception;
+
+    /**
+     * Admin lấy chi tiết phòng đang chờ
+     */
+    Map<String, Object> adminGetRoomDetail(Long tranDauId) throws Exception;
+
+    /**
+     * Export lịch sử trận đấu ra CSV
+     */
+    byte[] exportHistoryCsv(String keyword, String loaiTranDau, Long boCauHoiId, String fromDate, String toDate);
 
 }

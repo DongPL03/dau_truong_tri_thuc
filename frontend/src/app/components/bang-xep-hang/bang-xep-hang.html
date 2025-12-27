@@ -1,276 +1,255 @@
-<div class="page">
-  <div class="page-container">
-    <header class="page-header">
-      <div>
-        <h1>Bảng xếp hạng</h1>
-        <p class="page-subtitle">
-          Xếp hạng toàn hệ thống theo tổng điểm tích lũy (chống farm điểm cùng bộ).
-        </p>
+<div class="leaderboard-page">
+  <div class="bg-decor-1"></div>
+  <div class="bg-decor-2"></div>
+
+  <div class="lb-container">
+
+    <header class="lb-header animate-fade-down">
+      <div class="header-content">
+        <div class="trophy-box">
+          <span class="emoji-trophy">🏆</span>
+        </div>
+        <div class="text-group">
+          <h1>ĐẤU TRƯỜNG DANH VỌNG</h1>
+          <p>Vinh danh những huyền thoại tri thức</p>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="pill-group">
+          <button class="pill-btn" [class.active]="time_range === 'ALL'" (click)="setTimeRange('ALL')">
+            Toàn thời gian
+          </button>
+          <button class="pill-btn" [class.active]="time_range === 'MONTH'" (click)="setTimeRange('MONTH')">
+            Tháng này
+          </button>
+          <button class="pill-btn" [class.active]="time_range === 'WEEK'" (click)="setTimeRange('WEEK')">
+            Tuần này
+          </button>
+        </div>
+
+        <div class="filter-select-wrapper">
+          <select [(ngModel)]="selected_chu_de_id" (change)="loadPage(0)" class="glass-select">
+            <option [ngValue]="undefined">🌐 Tất cả chủ đề</option>
+            @for (c of chu_de_options; track c.id) {
+              <option [ngValue]="c.id">{{ c.ten }}</option>
+            }
+          </select>
+        </div>
       </div>
     </header>
 
     @if (loading) {
-      <div class="loading">
-        Đang tải bảng xếp hạng...
+      <div class="loading-state">
+        <div class="spinner-3d"></div>
+        <p>Đang tổng hợp dữ liệu...</p>
       </div>
     } @else {
-      @if (items.length > 0) {
-        <div class="filters-advanced">
-          <div class="filter-block">
-            <label>Khoảng thời gian</label>
-            <select [(ngModel)]="time_range" (ngModelChange)="loadPage(0)">
-              <option value="ALL">Tất cả</option>
-              <option value="WEEK">7 ngày gần nhất</option>
-              <option value="MONTH">30 ngày gần nhất</option>
-            </select>
-          </div>
 
-          <div class="filter-block">
-            <label>Chủ đề</label>
-            <select [(ngModel)]="selected_chu_de_id" (ngModelChange)="loadPage(0)">
-              <option [ngValue]="undefined">Tất cả</option>
-
-              @for (c of chu_de_options; track c.id) {
-                <option [ngValue]="c.id">
-                  {{ c.ten }}
-                </option>
-              }
-            </select>
-          </div>
-          <div class="filter-block">
-            <label>
-              <input type="checkbox" [(ngModel)]="friend_only" disabled>
-              Chỉ hiển thị bạn bè (coming soon)
-            </label>
-          </div>
+      @if (items.length === 0) {
+        <div class="empty-state animate-fade-up">
+          <img src="assets/images/empty-rank.png" alt="Empty" onerror="this.style.display='none'">
+          <h3>Chưa có dữ liệu xếp hạng</h3>
+          <p>Hãy là người đầu tiên ghi danh trên bảng vàng!</p>
         </div>
-        <div class="table-wrapper">
-          <table class="ranking-table">
-            <thead>
-            <tr>
-              <th>Hạng</th>
-              <th>Người chơi</th>
-              <th>Điểm</th>
-              <th>Trận</th>
-              <th>Thắng / Thua</th>
-              <th>Tỉ lệ thắng</th>
-            </tr>
-            </thead>
-
-            <tbody>
-              @for (item of filteredItems(); track item.user_id) {
-                <tr (click)="openUserModal(item)"
-                    class="row-clickable">
-                  <td>
-                  <span class="rank-badge" [ngClass]="{'top': isTop(item.xep_hang)}">
-                    {{ item.xep_hang }}
-                  </span>
-                  </td>
-                  <td>
-                    <div class="player-cell">
-
-                      @if (item.anh_dai_dien) {
-                        <div class="avatar">
-                          <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + item.anh_dai_dien"
-                               alt="avatar">
-                        </div>
-                      } @else {
-                        <div class="avatar placeholder">
-                          {{ item.ho_ten ? item.ho_ten.charAt(0) : 'U' }}
-                        </div>
-                      }
-
-                      <div class="info">
-                        <div class="name">{{ item.ho_ten }}</div>
-                        <div class="user-id">ID: {{ item.user_id }}</div>
-                        <div class="tier-badge" [ngClass]="item.rank_tier.toLowerCase()">
-                          {{ mapTierLabel(item.rank_tier) }}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="score">
-                      {{ item.tong_diem | number:'1.0-0' }}
-                    </div>
-                  </td>
-                  <td>
-                    {{ item.tong_tran }}
-                  </td>
-                  <td>
-                    <span class="win">{{ item.so_tran_thang }}</span>
-                    <span>/</span>
-                    <span class="lose">{{ item.so_tran_thua }}</span>
-                  </td>
-                  <td>
-                    {{ item.ti_le_thang | number:'1.0-1' }}%
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        @if (totalPages > 1) {
-          <div class="pagination">
-            <button class="btn" (click)="goToPage(page - 1)" [disabled]="page <= 0">
-              ‹ Trước
-            </button>
-            <span class="page-info">
-              Trang {{ page + 1 }} / {{ totalPages }}
-            </span>
-            <button class="btn" (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">
-              Sau ›
-            </button>
-          </div>
-        }
-
       } @else {
-        <div class="empty">
-          Chưa có dữ liệu bảng xếp hạng.
-        </div>
-      }
-    }
 
-    @if (show_user_modal) {
-      <div class="user-modal-backdrop">
-        <div class="user-modal">
-          <header class="user-modal-header">
-            <h2>Thông tin người chơi</h2>
-            <button class="close-btn" (click)="closeUserModal()">×</button>
-          </header>
+        <div class="podium-section animate-scale-up">
 
-          @if (user_summary) {
-            <section class="user-summary">
-              <div class="user-summary-left">
-                <div class="avatar">
-                  @if (user_summary.avatar_url) {
-                    <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + user_summary.avatar_url"
-                         alt="avatar">
-                  } @else {
-                    <div class="avatar-placeholder">
-                      {{ user_summary.ho_ten || 'U' }}
-                    </div>
-                  }
+          @if (items[1]) {
+            <div class="podium-col rank-2" (click)="openUserModal(items[1])">
+              <div class="player-info">
+                <div class="avatar-frame silver-frame">
+                  <img [src]="getAvatar(items[1])" alt="Rank 2">
+                  <div class="tier-pill silver">{{ mapTierLabel(items[1].rank_tier) }}</div>
                 </div>
-                <div class="info">
-                  <div class="name">{{ user_summary.ho_ten }}</div>
-                  <div class="id">ID: {{ user_summary.user_id }}</div>
-                </div>
+                <div class="p-name">{{ items[1].ho_ten }}</div>
+                <div class="p-score">{{ items[1].tong_diem | number }} <span>PTS</span></div>
               </div>
-
-              <div class="user-summary-right">
-                <div class="stat-item">
-                  <div class="label">Tổng điểm</div>
-                  <div class="value">{{ user_summary.tong_diem }}</div>
-                </div>
-                <div class="stat-item">
-                  <div class="label">Trận</div>
-                  <div class="value">{{ user_summary.tong_tran }}</div>
-                </div>
-                <div class="stat-item">
-                  <div class="label">Thắng / Thua</div>
-                  <div class="value">
-                    {{ user_summary.so_tran_thang }} / {{ user_summary.so_tran_thua }}
-                  </div>
-                </div>
-                <div class="stat-item">
-                  <div class="label">Tỉ lệ thắng</div>
-                  <div class="value">
-                    {{ user_summary.ti_le_thang | number:'1.0-1' }}%
-                  </div>
-                </div>
-                <div class="stat-item">
-                  <div class="label">Hạng</div>
-                  <div class="value"><span class="tier-badge"
-                                           [ngClass]="user_summary.rank_tier">{{ mapTierLabel(user_summary.rank_tier || '') }}</span>
-                  </div>
-                </div>
+              <div class="podium-block silver-block">
+                <span class="rank-num">2</span>
               </div>
-            </section>
-          } @else {
-            <div class="user-summary-loading">
-              Đang tải thông tin người chơi...
             </div>
           }
 
-          <section class="user-actions">
-            <button class="btn" disabled>
-              + Kết bạn (sẽ làm sau)
-            </button>
-
-            @if (user_summary?.user_id === me?.id) {
-              <button class="btn-outline"
-                      [routerLink]="['/profile']">
-                Xem profile của tôi
-              </button>
-            } @else {
-              <button class="btn-outline"
-                      [routerLink]="['/nguoi-choi', user_summary?.user_id]">
-                Xem profile chi tiết
-              </button>
-            }
-          </section>
-
-          <section class="user-history">
-            <h3>Lịch sử trận đấu gần đây</h3>
-
-            @if (user_history_loading) {
-              <div class="user-history-loading">
-                Đang tải lịch sử...
-              </div>
-            } @else {
-              @if (user_history_items.length > 0) {
-                <table class="history-table">
-                  <thead>
-                  <tr>
-                    <th>Phòng</th>
-                    <th>Bộ câu hỏi</th>
-                    <th>Điểm</th>
-                    <th>Đúng</th>
-                    <th>Hạng</th>
-                    <th>Thời gian</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-
-                    @for (h of user_history_items; track $index) {
-                      <tr>
-                        <td>{{ h.ten_phong }}</td>
-                        <td>{{ h.bo_cau_hoi_tieu_de }}</td>
-                        <td>{{ h.tong_diem }}</td>
-                        <td>{{ h.so_cau_dung }}</td>
-                        <td>{{ h.xep_hang }}</td>
-                        <td>{{ h.hoan_thanh_luc | date:'dd/MM HH:mm' }}</td>
-                      </tr>
-                    }
-
-                  </tbody>
-                </table>
-
-                @if (user_history_total_pages > 1) {
-                  <div class="user-history-pagination">
-                    <button (click)="changeUserHistoryPage(user_history_page - 1)"
-                            [disabled]="user_history_page <= 0">
-                      ‹
-                    </button>
-                    <span>Trang {{ user_history_page + 1 }}/{{ user_history_total_pages }}</span>
-                    <button (click)="changeUserHistoryPage(user_history_page + 1)"
-                            [disabled]="user_history_page + 1 >= user_history_total_pages">
-                      ›
-                    </button>
-                  </div>
-                }
-
-              } @else {
-                <div class="user-history-empty">
-                  Người chơi này chưa có trận đấu nào.
+          @if (items[0]) {
+            <div class="podium-col rank-1" (click)="openUserModal(items[0])">
+              <div class="crown-vfx">👑</div>
+              <div class="player-info">
+                <div class="avatar-frame gold-frame">
+                  <img [src]="getAvatar(items[0])" alt="Rank 1">
+                  <div class="tier-pill gold">{{ mapTierLabel(items[0].rank_tier) }}</div>
                 </div>
-              }
-            }
-          </section>
+                <div class="p-name big">{{ items[0].ho_ten }}</div>
+                <div class="p-score big">{{ items[0].tong_diem | number }} <span>PTS</span></div>
+              </div>
+              <div class="podium-block gold-block">
+                <div class="shine"></div>
+                <span class="rank-num">1</span>
+              </div>
+            </div>
+          }
+
+          @if (items[2]) {
+            <div class="podium-col rank-3" (click)="openUserModal(items[2])">
+              <div class="player-info">
+                <div class="avatar-frame bronze-frame">
+                  <img [src]="getAvatar(items[2])" alt="Rank 3">
+                  <div class="tier-pill bronze">{{ mapTierLabel(items[2].rank_tier) }}</div>
+                </div>
+                <div class="p-name">{{ items[2].ho_ten }}</div>
+                <div class="p-score">{{ items[2].tong_diem | number }} <span>PTS</span></div>
+              </div>
+              <div class="podium-block bronze-block">
+                <span class="rank-num">3</span>
+              </div>
+            </div>
+          }
         </div>
-      </div>
+
+        <div class="ranking-list animate-fade-up">
+          <div class="list-header">
+            <div class="col-rank">#</div>
+            <div class="col-info">Chiến binh</div>
+            <div class="col-stat center">Trận đấu</div>
+            <div class="col-stat center">Thắng/Thua</div>
+            <div class="col-score end">Điểm số</div>
+          </div>
+
+          @for (item of items; track item.user_id) {
+            <div class="rank-card" (click)="openUserModal(item)" [class.me]="item.user_id === me?.id">
+              <div class="col-rank">
+                <span class="rank-chip">#{{ item.xep_hang }}</span>
+              </div>
+
+              <div class="col-info">
+                <img [src]="getAvatar(item)" class="list-avatar" alt="Avatar">
+                <div class="u-meta">
+                  <span class="u-name">{{ item.ho_ten }}</span>
+                  <span class="u-tier">{{ mapTierLabel(item.rank_tier) }}</span>
+                </div>
+              </div>
+
+              <div class="col-stat center font-bold">{{ item.tong_tran }}</div>
+
+              <div class="col-stat center">
+                <span class="c-win">{{ item.so_tran_thang }}</span> / <span
+                class="c-lose">{{ item.so_tran_thua }}</span>
+              </div>
+
+              <div class="col-score end">
+                {{ item.tong_diem | number }}
+              </div>
+            </div>
+          }
+
+          @if (totalPages > 1) {
+            <div class="pagination-glass">
+              <button (click)="goToPage(page - 1)" [disabled]="page <= 0">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
+              <button (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          }
+        </div>
+      }
     }
   </div>
+
+  @if (show_user_modal) {
+    <div class="modal-backdrop fade-in" (click)="closeUserModal()">
+      <div class="modal-glass scale-in" (click)="$event.stopPropagation()">
+
+        <button class="btn-close" (click)="closeUserModal()">
+          <i class="fas fa-times"></i>
+        </button>
+
+        @if (user_loading) {
+          <div class="modal-loading">
+            <div class="spinner-3d"></div>
+            <p>Đang tải thông tin...</p>
+          </div>
+        } @else if (user_summary) {
+
+          <div class="modal-hero">
+            <div class="hero-avatar-wrapper">
+              <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + user_summary.avatar_url"
+                   class="hero-avatar">
+              <div class="level-badge">Lv.{{ user_summary.level }}</div>
+            </div>
+            <div class="hero-info">
+              <h2>{{ user_summary.ho_ten }}</h2>
+              <span class="hero-tier" [ngClass]="(user_summary.rank_tier || '').toLowerCase()">
+                {{ mapTierLabel(user_summary.rank_tier) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="icon-stat">🏆</div>
+              <div class="stat-content">
+                <small>Tổng điểm</small>
+                <strong class="text-primary">{{ user_summary.tong_diem | number }}</strong>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="icon-stat">⚔️</div>
+              <div class="stat-content">
+                <small>Thắng/Thua</small>
+                <strong><span class="text-green">{{ user_summary.so_tran_thang }}</span>/<span
+                  class="text-red">{{ user_summary.so_tran_thua }}</span></strong>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="icon-stat">🔥</div>
+              <div class="stat-content">
+                <small>Tỉ lệ thắng</small>
+                <strong>{{ user_summary.ti_le_thang | percent:'1.0-0' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="history-section">
+            <h3><i class="fas fa-history"></i> Lịch sử đấu gần đây</h3>
+            <div class="history-list">
+              @if (user_history_loading) {
+                <div class="mini-spinner"></div>
+              } @else if (user_history_items.length === 0) {
+                <div class="empty-history">Chưa có trận đấu nào.</div>
+              } @else {
+                @for (h of user_history_items; track $index) {
+                  <div class="history-row">
+                    <div class="h-icon" [class.win]="h.xep_hang === 1">
+                      {{ h.xep_hang === 1 ? '👑' : '#' + h.xep_hang }}
+                    </div>
+                    <div class="h-info">
+                      <div class="h-room">{{ h.ten_phong }}</div>
+                      <div class="h-time">{{ h.hoan_thanh_luc | date:'dd/MM HH:mm' }}</div>
+                    </div>
+                    <div class="h-stats">
+                      <span class="h-score">+{{ h.tong_diem }} pts</span>
+                      <span class="h-correct"><i class="fas fa-check"></i> {{ h.so_cau_dung }}</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            @if (user_summary.user_id !== me?.id) {
+              <button class="btn-full-profile" [routerLink]="['/nguoi-choi', user_summary.user_id]">
+                Xem hồ sơ chi tiết <i class="fas fa-arrow-right"></i>
+              </button>
+            }
+          </div>
+
+        }
+      </div>
+    </div>
+  }
 </div>

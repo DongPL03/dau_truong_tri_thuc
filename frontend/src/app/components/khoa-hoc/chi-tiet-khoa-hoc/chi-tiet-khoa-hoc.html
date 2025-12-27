@@ -1,0 +1,280 @@
+@if (!loading && detail) {
+<div class="course-detail-container">
+  <!-- Header -->
+  <div class="course-header">
+    <button class="btn-back"
+      (click)="router.navigate(['/khoa-hoc']);">
+      <i class="fas fa-arrow-left"></i> Quay lại
+    </button>
+    <div class="header-content">
+      <h1>{{ detail.khoa_hoc.tieu_de }}</h1>
+      <p class="course-meta">
+        <span><i class="fas fa-book"></i> {{
+          detail.khoa_hoc.chu_de
+          }}</span>
+        <span><i class="fas fa-user"></i> {{
+          detail.khoa_hoc.nguoi_tao
+          }}</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Course Info Card -->
+  <div class="info-card">
+    <div class="course-description">
+      <p>{{
+        detail.khoa_hoc.mo_ta || 'Chưa có mô tả cho khóa học
+        này.'
+        }}</p>
+    </div>
+
+    @if (detail.tien_do) {
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">Tiến độ hoàn thành</span>
+        <span class="progress-percentage">{{
+          getCompletionPercentage()
+          }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill"
+          [style.width.%]="getCompletionPercentage()"></div>
+      </div>
+      <div class="progress-stats">
+        <span>{{ detail.tien_do.so_bo_da_hoan_thanh }} / {{
+          detail.tien_do.tong_so_bo
+          }} bộ câu hỏi</span>
+      </div>
+    </div>
+    }
+
+    <!-- Unlock Course Section -->
+    @if (detail.khoa_hoc.gia_mo_khoa && detail.khoa_hoc.gia_mo_khoa >
+    0 && !detail.da_mo_khoa_khoa_hoc) {
+    <div class="unlock-course-section">
+      <div class="unlock-course-content">
+        <i class="fas fa-lock unlock-icon"></i>
+        <div class="unlock-text">
+          <h3>Mở khóa khóa học</h3>
+          <p>Trả <strong>{{ detail.khoa_hoc.gia_mo_khoa }}</strong>
+            vàng để mở khóa khóa học này và bắt đầu học tập</p>
+        </div>
+        <button class="btn-unlock-course"
+          [disabled]="unlockingKhoaHoc" (click)="unlockKhoaHoc()">
+          @if (unlockingKhoaHoc) {
+          <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+          } @else {
+          <i class="fas fa-unlock"></i> Mở khóa khóa học ({{
+          detail.khoa_hoc.gia_mo_khoa }} vàng)
+          }
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Course Path -->
+  <div class="course-path-section">
+    <h2 class="section-title">
+      <i class="fas fa-route"></i> Lộ trình học tập
+    </h2>
+
+    <div class="path-container">
+      @for (boCauHoi of boCauHoiList; track boCauHoi.id; let i =
+      $index) {
+      <div class="path-item" [ngClass]="getStatusClass(boCauHoi)">
+        <!-- Connector Line -->
+        @if (i < boCauHoiList.length - 1) { <div
+          class="path-connector" [ngClass]="{
+                'completed': boCauHoi.da_mo_khoa && boCauHoi.trang_thai === 'HOAN_THANH',
+                'in-progress': boCauHoi.da_mo_khoa && boCauHoi.trang_thai === 'DANG_HOC',
+                'locked': !boCauHoi.da_mo_khoa
+              }">
+      </div>
+      }
+
+      <!-- Step Number -->
+      <div class="step-number">{{ boCauHoi.thu_tu }}</div>
+
+      <!-- Content Card -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon">
+            <i class="fas" [ngClass]="getStatusIcon(boCauHoi)"></i>
+          </div>
+          <div class="step-info">
+            <h3>{{ boCauHoi.tieu_de }}</h3>
+            <div class="step-meta">
+              <span><i class="fas fa-question-circle"></i>
+                {{ boCauHoi.so_cau_hoi }} câu
+                hỏi</span>
+              @if (boCauHoi.diem_toi_thieu > 0) {
+              <span><i class="fas fa-trophy"></i> Điểm
+                tối thiểu: {{
+                boCauHoi.diem_toi_thieu
+                }}</span>
+              }
+              @if (boCauHoi.so_cau_sai && boCauHoi.so_cau_sai > 0) {
+              <span class="wrong-questions-badge"><i
+                  class="fas fa-exclamation-triangle"></i>
+                {{ boCauHoi.so_cau_sai }} câu sai cần ôn lại</span>
+              }
+            </div>
+          </div>
+          <div class="step-status">
+            <span class="status-badge"
+              [ngClass]="getStatusClass(boCauHoi)">
+              {{ getStatusText(boCauHoi) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          @if (boCauHoi.da_mo_khoa) {
+          @if (boCauHoi.so_cau_sai && boCauHoi.so_cau_sai > 0) {
+          <button class="btn btn-warning"
+            (click)="navigateToPracticeFromMemo(boCauHoi.bo_cau_hoi_id)">
+            <i class="fas fa-redo"></i> Luyện tập lại câu sai ({{
+            boCauHoi.so_cau_sai }})
+          </button>
+          }
+          <button class="btn btn-primary"
+            (click)="navigateToPractice(boCauHoi.bo_cau_hoi_id)">
+            <i class="fas fa-play"></i> Bắt đầu luyện tập
+          </button>
+          <button class="btn btn-secondary"
+            (click)="navigateToBoCauHoiDetail(boCauHoi.bo_cau_hoi_id)">
+            <i class="fas fa-eye"></i> Xem chi tiết
+          </button>
+          } @else {
+          @if (canUnlock(boCauHoi)) {
+          <button class="btn btn-unlock"
+            (click)="unlockBoCauHoi(boCauHoi)"
+            [disabled]="unlocking[boCauHoi.bo_cau_hoi_id]">
+            <i class="fas"
+              [ngClass]="unlocking[boCauHoi.bo_cau_hoi_id] ? 'fa-spinner fa-spin' : 'fa-unlock'"></i>
+            {{ unlocking[boCauHoi.bo_cau_hoi_id] ? 'Đang mở khóa...' :
+            (boCauHoi.gia_mo_khoa > 0 ? 'Mở khóa (' +
+            boCauHoi.gia_mo_khoa + ' vàng)' : 'Mở khóa miễn phí') }}
+          </button>
+          } @else {
+          <div class="locked-message">
+            <i class="fas fa-lock"></i>
+            <span>Hoàn thành bộ câu hỏi trước để mở
+              khóa</span>
+          </div>
+          }
+          }
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Phân tích học tập -->
+  <div class="course-analysis-section">
+    <h2 class="section-title">
+      <i class="fas fa-chart-line"></i> Phân tích học tập
+    </h2>
+
+    <div class="analysis-actions">
+      <button class="btn btn-primary" (click)="runPhanTich()"
+        [disabled]="loadingPhanTich">
+        @if (loadingPhanTich) {
+        <i class="fas fa-spinner fa-spin"></i> Đang phân tích...
+        } @else if (phanTich) {
+        <i class="fas fa-sync-alt"></i> Cập nhật phân tích
+        } @else {
+        <i class="fas fa-magic"></i> Phân tích ngay
+        }
+      </button>
+    </div>
+
+    @if (phanTich && !loadingPhanTich) {
+    <div class="analysis-content">
+      <div class="analysis-columns">
+        <div class="analysis-column">
+          <h3><i class="fas fa-thumbs-up"></i> Điểm mạnh</h3>
+          @if (phanTich.diem_manh.length) {
+          <ul>
+            @for (item of phanTich.diem_manh; track item) {
+            <li>{{ item }}</li>
+            }
+          </ul>
+          } @else {
+          <p>Chưa xác định rõ điểm mạnh. Hãy luyện tập thêm để hệ
+            thống phân tích chính xác hơn.</p>
+          }
+
+          <h4>Chủ đề mạnh</h4>
+          @if (phanTich.chu_de_manh.length) {
+          <ul>
+            @for (cd of phanTich.chu_de_manh; track cd.id) {
+            <li>
+              <strong>{{ cd.ten }}</strong> - tỉ lệ đúng {{
+              cd.ti_le_dung | number : '1.0-1' }}%
+            </li>
+            }
+          </ul>
+          } @else {
+          <p>Chưa có chủ đề nào được đánh giá là mạnh.</p>
+          }
+        </div>
+
+        <div class="analysis-column">
+          <h3><i class="fas fa-exclamation-circle"></i> Điểm yếu</h3>
+          @if (phanTich.diem_yeu.length) {
+          <ul>
+            @for (item of phanTich.diem_yeu; track item) {
+            <li>{{ item }}</li>
+            }
+          </ul>
+          } @else {
+          <p>Chưa xác định rõ điểm yếu. Hãy luyện tập và trả lời sai
+            nhiều câu ở một chủ đề để hệ thống ghi nhận.</p>
+          }
+
+          <h4>Chủ đề yếu</h4>
+          @if (phanTich.chu_de_yeu.length) {
+          <ul>
+            @for (cd of phanTich.chu_de_yeu; track cd.id) {
+            <li>
+              <strong>{{ cd.ten }}</strong> - tỉ lệ đúng {{
+              cd.ti_le_dung | number : '1.0-1' }}%
+            </li>
+            }
+          </ul>
+          } @else {
+          <p>Chưa có chủ đề nào bị đánh giá là yếu.</p>
+          }
+        </div>
+      </div>
+
+      @if (phanTich.giai_phap){
+        <div class="analysis-suggestion">
+          <h3><i class="fas fa-lightbulb"></i> Gợi ý ôn tập</h3>
+          <pre>{{ phanTich.giai_phap }}</pre>
+        </div>
+      }
+
+    </div>
+    } @else if (!phanTich && !loadingPhanTich) {
+    <p class="analysis-empty">
+      Chưa có phân tích cho khóa học này. Hãy bấm nút <strong>Phân
+        tích ngay</strong> sau khi bạn đã luyện
+      tập đủ các bộ câu hỏi.
+    </p>
+    }
+  </div>
+</div>
+</div>
+} @else if (loading) {
+<div class="loading-container">
+  <div class="spinner"></div>
+  <p>Đang tải dữ liệu...</p>
+</div>
+} @else {
+<div class="error-container">
+  <p>Không tìm thấy khóa học</p>
+</div>
+}

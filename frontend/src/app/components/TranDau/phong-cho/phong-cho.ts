@@ -19,7 +19,7 @@ import {NgClass} from '@angular/common';
 export class PhongCho extends Base implements OnInit, OnDestroy {
   loading = false;
   page = 0;
-  size = 4;
+  size = 8;
   totalPages = 0;
   items: TranDauResponse[] = [];
   filter_mode: 'ALL' | 'CASUAL' | 'RANKED' = 'ALL';

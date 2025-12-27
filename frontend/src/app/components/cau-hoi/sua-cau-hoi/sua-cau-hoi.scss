@@ -1,119 +1,606 @@
-.page-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
+:host {
+  /* LIGHT THEME VARS */
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --text-main: #1E293B;
+  --text-sub: #64748B;
+  --border-color: #E2E8F0;
+
+  --primary: #6C5DD3;
+  --blue: #3B82F6; /* Màu cho trang Edit */
+
+  --orange: #FF754C;
+  --green: #22C55E;
+  --green-light: #DCFCE7;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.page-header {
+.create-q-wrapper {
+  background-color: var(--bg-page);
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text-main);
+}
+
+.loading-overlay {
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sub);
+  gap: 15px;
+
+  .spinner {
+    font-size: 2rem;
+    color: var(--primary);
+  }
+}
+
+/* HEADER */
+.q-header {
+  max-width: 1200px;
+  margin: 0 auto 30px auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-icon-edit {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #60A5FA, #3B82F6); /* Màu xanh Edit */
+  color: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 8px 15px rgba(59, 130, 246, 0.3);
+  transform: rotate(5deg);
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #333;
+}
+
+.header-text p {
+  margin: 4px 0 0 0;
+  color: var(--text-sub);
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+.btn-back {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-sub);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+
+  &:hover {
+    background: #F1F5F9;
+    color: #333;
+  }
+}
+
+/* FORM LAYOUT */
+.q-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.q-form {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .q-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  height: fit-content;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.card-title {
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.text-purple {
+  color: var(--primary);
+}
+
+.text-green {
+  color: var(--green);
+}
+
+.badge-info {
+  font-size: 0.75rem;
+  background: #E0F2FE;
+  color: #0284C7;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-left: auto;
+  font-weight: 600;
+}
+
+/* TABS & INPUTS */
+.type-tabs {
+  display: flex;
+  background: #F1F5F9;
+  padding: 5px;
+  border-radius: 12px;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.2s;
+
+  &:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  &.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-weight: 800;
+  }
+}
+
+.input-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.req {
+  color: #EF4444;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: #F8FAFC;
+  font-size: 1rem;
+  color: #333;
+  transition: 0.2s;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-input:focus, .form-select:focus {
+  background: white;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108, 93, 211, 0.1);
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.arrow-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-sub);
+  pointer-events: none;
+}
+
+.form-select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* MEDIA */
+.media-upload-area {
+  margin-top: 20px;
+  border: 2px dashed #CBD5E1;
+  border-radius: 16px;
+  background: #F8FAFC;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  position: relative;
+
+  &:hover {
+    border-color: var(--primary);
+    background: #F3F0FF;
+  }
+
+  &.has-file {
+    border-style: solid;
+    border-color: var(--border-color);
+    background: white;
+    padding: 15px;
+  }
+}
+
+.upload-placeholder {
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  padding: 30px 0;
+}
+
+.icon-cloud {
+  font-size: 2.5rem;
+  color: #94A3B8;
+  margin-bottom: 10px;
+}
+
+.sub-text {
+  font-size: 0.85rem;
+  color: #94A3B8;
+  display: block;
+  margin-top: 5px;
+}
+
+.preview-box {
+  width: 100%;
+  text-align: center;
+}
+
+.preview-img {
+  max-height: 250px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  max-width: 100%;
+}
+
+.audio-player {
+  width: 100%;
+  background: #F1F5F9;
+  padding: 10px;
+  border-radius: 50px;
+}
+
+audio {
+  width: 100%;
+}
+
+.btn-change-file {
+  margin-top: 15px;
+  background: #DBEAFE;
+  color: #2563EB;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+
+  &:hover {
+    background: #2563EB;
+    color: white;
+  }
+}
+
+/* ANSWERS */
+.answers-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.answer-card {
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  background: white;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    border-color: #94A3B8;
+    transform: translateY(-2px);
+  }
+
+  &.is-correct {
+    border-color: var(--green);
+    background: var(--green-light);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+
+    .letter-badge {
+      background: var(--green);
+      color: white;
+    }
+
+    .radio-circle {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .answer-input {
+      background: white;
+      border-color: var(--green);
+    }
+  }
+}
+
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-
-  h1 {
-    font-size: 1.6em;
-    color: #2196f3;
-  }
-
-  .btn-secondary {
-    background: #ccc;
-    color: #333;
-    padding: 8px 15px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-  }
+  margin-bottom: 12px;
 }
 
-.question-form-layout {
-  background: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.input-group {
-  margin-bottom: 20px;
-
-  label {
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  input,
-  select,
-  textarea {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 1em;
-  }
-}
-
-.option-group {
+.letter-badge {
+  width: 32px;
+  height: 32px;
+  background: #E2E8F0;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 8px;
+  justify-content: center;
+  font-weight: 800;
+  color: #475569;
+}
 
-  .option-label {
-    font-weight: bold;
-    margin-right: 10px;
-    color: #2196f3;
-  }
+.radio-circle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #CBD5E1;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 0.8rem;
+  transition: 0.2s;
+}
 
-  .option-input {
-    flex: 1;
-    border: none;
-    outline: none;
+.answer-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  outline: none;
+  font-size: 0.95rem;
+
+  &:focus {
+    border-color: var(--primary);
   }
 }
 
-.preview-media {
-  margin-top: 10px;
-
-  img {
-    max-width: 300px;
-    border-radius: 8px;
-  }
-}
-
-.answer-tip {
-  background: #e8f5e9;
-  color: #2e7d32;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-
-.form-actions {
+/* FOOTER */
+.form-footer {
+  grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
   margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
 
-  .btn-primary {
-    background: #4caf50;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
+.btn-primary-3d {
+  background: linear-gradient(135deg, var(--primary), #5b4cc4);
+  color: white;
+  padding: 14px 40px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #4C3FB5, 0 10px 20px rgba(108, 93, 211, 0.3);
+  transition: 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &:active {
+    transform: translateY(6px);
+    box-shadow: none;
   }
 
-  .btn-secondary {
-    background: #ccc;
-    color: #333;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    cursor: pointer;
+  &:disabled {
+    background: #94A3B8;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
   }
+}
+
+/* Animation */
+.animate-fade-down {
+  animation: fadeDown 0.5s ease-out;
+}
+
+.animate-fade-right {
+  animation: fadeRight 0.6s ease-out;
+}
+
+.animate-fade-left {
+  animation: fadeLeft 0.6s ease-out;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease-out;
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeLeft {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.mt-4 {
+  margin-top: 24px;
+}
+
+.mt-3 {
+  margin-top: 16px;
+}
+
+/* Container bao ngoài */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Khoảng cách giữa label và ô chọn */
+  font-family: 'Nunito', sans-serif;
+}
+
+/* Label tiêu đề */
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151; /* Màu xám đậm vừa phải, không đen kịt */
+}
+
+/* Wrapper để giữ vị trí icon */
+.select-wrapper {
+  position: relative;
+  width: 100%; /* Hoặc set độ rộng cố định nếu muốn */
+}
+
+/* Thẻ Select chính */
+.form-select {
+  appearance: none; /* Ẩn giao diện mặc định của trình duyệt */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 100%;
+  padding: 12px 45px 12px 16px; /* Padding phải lớn (45px) để chừa chỗ cho icon */
+
+  background-color: #ffffff; /* Nền trắng sáng */
+  border: 1px solid #e5e7eb; /* Viền xám rất nhạt */
+  border-radius: 12px; /* Bo góc mềm mại */
+
+  font-size: 15px;
+  color: #1f2937;
+  cursor: pointer;
+
+  transition: all 0.2s ease-in-out; /* Hiệu ứng mượt mà */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Đổ bóng cực nhẹ tạo độ nổi */
+}
+
+/* Hiệu ứng khi di chuột vào (Hover) */
+.form-select:hover {
+  border-color: #d1d5db;
+  background-color: #f9fafb; /* Sáng lên một chút xíu */
+}
+
+/* Hiệu ứng khi đang chọn (Focus) */
+.form-select:focus {
+  outline: none;
+  border-color: #6366f1; /* Màu tím/xanh chủ đạo (hoặc màu brand của bạn) */
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); /* Hiệu ứng tỏa sáng nhẹ (Glow) */
+}
+
+/* Icon mũi tên tùy chỉnh */
+.arrow-icon {
+  position: absolute;
+  right: 16px; /* Cách lề phải */
+  top: 50%;
+  transform: translateY(-50%);
+
+  font-size: 12px;
+  color: #6b7280; /* Màu xám trung tính */
+  pointer-events: none; /* Để click xuyên qua icon vào select */
+  transition: transform 0.2s ease;
+}
+
+/* Xoay mũi tên khi focus (tuỳ chọn, nếu bạn muốn xịn hơn) */
+.form-select:focus + .arrow-icon {
+  color: #6366f1;
+  transform: translateY(-50%) rotate(180deg);
+}
+textarea{
+  resize: none;
+  max-height: 500px;
 }

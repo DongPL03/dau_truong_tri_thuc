@@ -1,152 +1,140 @@
-<div class="question-page">
+<div class="question-page animate-fade-down">
   <div class="question-container">
-    <!-- 🧭 Header -->
-    <header class="header">
-      <h1>
-        <i class="fas fa-plus-circle"></i>
-        Thêm Câu Hỏi Mới (Admin)
-      </h1>
-      <button type="button" class="btn btn-gray" (click)="cancel()">
-        <i class="fas fa-arrow-left"></i> Quay Lại
-      </button>
+
+    <header class="page-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="cancel()">
+          <i class="fas fa-arrow-left"></i> Quay lại
+        </button>
+        <h1>Thêm Câu Hỏi Mới</h1>
+      </div>
     </header>
 
-    <form #form="ngForm" (ngSubmit)="onSubmit(form)" class="form-card animate-fade">
-      <!-- 1️⃣ Nội dung -->
-      <section class="section">
-        <h2><i class="fas fa-file-alt"></i> 1. Nội dung & Loại câu hỏi</h2>
+    <form #form="ngForm" (ngSubmit)="onSubmit(form)" class="form-card" autocomplete="off">
 
-        <div class="input-group">
-          <label>Loại câu hỏi</label>
-          <select
-            [(ngModel)]="model.loai_noi_dung"
-            name="loai_noi_dung"
-            class="input-control"
-            (change)="onLoaiNoiDungChange()">
-            <option value="VAN_BAN">Văn bản</option>
-            <option value="HINH_ANH">Hình ảnh</option>
-            <option value="AM_THANH">Âm thanh</option>
-          </select>
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-layer-group"></i> 1. Nội dung & Media</h3>
+
+        <div class="form-group">
+          <label>Loại nội dung</label>
+          <div class="type-selector">
+            <button type="button" class="type-btn" [class.active]="model.loai_noi_dung === 'VAN_BAN'"
+                    (click)="setMediaType('VAN_BAN')">
+              <i class="fas fa-font"></i> Văn bản
+            </button>
+            <button type="button" class="type-btn" [class.active]="model.loai_noi_dung === 'HINH_ANH'"
+                    (click)="setMediaType('HINH_ANH')">
+              <i class="fas fa-image"></i> Hình ảnh
+            </button>
+            <button type="button" class="type-btn" [class.active]="model.loai_noi_dung === 'AM_THANH'"
+                    (click)="setMediaType('AM_THANH')">
+              <i class="fas fa-volume-up"></i> Âm thanh
+            </button>
+<!--            <button type="button" class="type-btn" [class.active]="model.loai_noi_dung === 'VIDEO'"-->
+<!--                    (click)="setMediaType('VIDEO')">-->
+<!--              <i class="fas fa-video"></i> Video-->
+<!--            </button>-->
+          </div>
         </div>
 
-        <div class="input-group">
-          <label>Nội dung <span class="required">*</span></label>
-          <textarea
-            [(ngModel)]="model.noi_dung"
-            name="noi_dung"
-            rows="4"
-            placeholder="Nhập nội dung câu hỏi..."
-            required></textarea>
+        <div class="form-group">
+          <label>Nội dung câu hỏi <span class="required">*</span></label>
+          <textarea [(ngModel)]="model.noi_dung" name="noi_dung" rows="3" placeholder="Nhập câu hỏi của bạn..."
+                    class="form-textarea" required></textarea>
         </div>
 
         @if (model.loai_noi_dung !== 'VAN_BAN') {
-          <div class="input-group">
-            <label>Tệp đính kèm</label>
-            <input
-              type="file"
-              accept="image/*,audio/*"
-              (change)="onFileSelected($event)">
-
-            @if (previewUrl) {
-              <div class="media-preview">
-                <div class="media-box"
-                     (mouseenter)="hovering = true"
-                     (mouseleave)="hovering = false">
-                  @switch (model.loai_noi_dung) {
-                    @case ('HINH_ANH') {
-                      <img [src]="previewUrl" alt="preview" class="media-img"/>
-                    }
-                    @case ('AM_THANH') {
-                      <div class="audio-wrapper">
-                        <audio controls [src]="previewUrl"></audio>
-                      </div>
-                    }
+          <div class="upload-zone" [class.has-file]="previewUrl">
+            @if (!previewUrl) {
+              <div class="upload-placeholder" (click)="fileInput.click()">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <p>Kéo thả hoặc <span>nhấn để tải lên</span></p>
+                <span class="sub-text">Hỗ trợ: JPG, PNG, MP3, MP4</span>
+              </div>
+            } @else {
+              <div class="media-preview-box">
+                @switch (model.loai_noi_dung) {
+                  @case ('HINH_ANH') {
+                    <img [src]="previewUrl" class="preview-img">
                   }
-                  @if (hovering) {
-                    <button
-                      type="button"
-                      class="remove-btn"
-                      (click)="removeSelectedFile()">
-                      <i class="fas fa-times"></i>
-                    </button>
+                  @case ('AM_THANH') {
+                    <audio controls [src]="previewUrl" class="preview-audio"></audio>
                   }
-                </div>
+<!--                  @case ('VIDEO') {-->
+<!--                    <video controls [src]="previewUrl" class="preview-video"></video>-->
+<!--                  }-->
+                }
+                <button type="button" class="btn-remove-media" (click)="removeSelectedFile()">
+                  <i class="fas fa-trash"></i> Xóa file
+                </button>
               </div>
             }
+            <input #fileInput type="file" hidden (change)="onFileSelected($event)" accept="image/*,audio/*,video/*">
           </div>
         }
-      </section>
+      </div>
 
-      <!-- 2️⃣ Lựa chọn -->
-      <section class="section">
-        <h2><i class="fas fa-list-ul"></i> 2. Lựa chọn & Đáp án</h2>
+      <div class="divider"></div>
 
-        <div class="options-wrapper">
-          @for (opt of ['A', 'B', 'C', 'D']; track opt) {
-            <label class="option-card" [class.selected]="model.dap_an_dung === opt">
-              <input
-                type="radio"
-                name="dap_an_dung"
-                [value]="opt"
-                [(ngModel)]="model.dap_an_dung"
-                class="radio-hidden">
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-list-check"></i> 2. Lựa chọn đáp án</h3>
+        <p class="section-desc">Nhập nội dung cho 4 đáp án và chọn đáp án đúng.</p>
 
-              <div class="option-circle">{{ opt }}</div>
-              <input
-                type="text"
-                class="option-input"
-                [(ngModel)]="model['lua_chon_' + opt.toLowerCase()]"
-                name="lua_chon_{{opt}}"
-                placeholder="Nhập lựa chọn {{opt}}"
-                required>
-            </label>
+        <div class="answers-grid">
+          @for (opt of luaChonList; track opt) {
+            <div class="answer-card" [class.correct]="model.dap_an_dung === opt">
+              <div class="card-header" (click)="model.dap_an_dung = opt">
+                <div class="radio-circle">
+                  <span class="opt-char">{{ opt }}</span>
+                  <i class="fas fa-check check-icon"></i>
+                </div>
+                <span class="status-text">{{ model.dap_an_dung === opt ? 'Đáp án đúng' : 'Sai' }}</span>
+              </div>
+              <div class="card-body">
+                <input type="text" [(ngModel)]="model['lua_chon_' + opt.toLowerCase()]"
+                       name="lua_chon_{{opt}}"
+                       placeholder="Nhập câu trả lời {{opt}}..."
+                       class="ans-input" required>
+              </div>
+            </div>
           }
         </div>
+      </div>
 
-        <p class="hint">
-          <i class="fas fa-lightbulb"></i>
-          Hãy tích vào ô tròn hoặc nhấp thẻ để chọn đáp án đúng.
-        </p>
-      </section>
+      <div class="divider"></div>
 
-      <!-- 3️⃣ Giải thích -->
-      <section class="section">
-        <h2><i class="fas fa-brain"></i> 3. Giải thích & Độ khó</h2>
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-sliders-h"></i> 3. Cấu hình bổ sung</h3>
 
-        <div class="input-group">
-          <label>Giải thích</label>
-          <textarea
-            [(ngModel)]="model.giai_thich"
-            name="giai_thich"
-            rows="3"
-            placeholder="Nhập giải thích cho đáp án đúng (nếu có)"></textarea>
+        <div class="config-row">
+          <div class="form-group flex-2">
+            <label>Giải thích chi tiết (Hiện khi xem kết quả)</label>
+            <textarea [(ngModel)]="model.giai_thich" name="giai_thich" rows="2"
+                      placeholder="Tại sao đáp án này đúng?..." class="form-textarea"></textarea>
+          </div>
+
+          <div class="form-group flex-1">
+            <label>Độ khó</label>
+            <select [(ngModel)]="model.do_kho" name="do_kho" class="form-select">
+              <option value="DE">🟢 Dễ</option>
+              <option value="TRUNG_BINH">🟡 Trung bình</option>
+              <option value="KHO">🔴 Khó</option>
+            </select>
+          </div>
         </div>
+      </div>
 
-        <div class="input-group half">
-          <label>Độ khó</label>
-          <select
-            [(ngModel)]="model.do_kho"
-            name="do_kho"
-            class="input-control">
-            <option value="DE">Dễ</option>
-            <option value="TRUNG_BINH">Trung Bình</option>
-            <option value="KHO">Khó</option>
-          </select>
-        </div>
-      </section>
-
-      <!-- 4️⃣ Buttons -->
-      <div class="form-actions">
-        <button type="button" class="btn btn-gray" (click)="cancel()">
-          <i class="fas fa-times"></i> Hủy
-        </button>
-        <button
-          type="submit"
-          class="btn btn-green"
-          [disabled]="submitting || form.invalid">
-          <i class="fas fa-save"></i> Lưu & Thêm Mới
+      <div class="form-footer">
+        <button type="button" class="btn-cancel" (click)="cancel()">Hủy bỏ</button>
+        <button type="submit" class="btn-submit" [disabled]="submitting || form.invalid">
+          @if (submitting) {
+            <i class="fas fa-spinner fa-spin"></i> Đang lưu...
+          } @else {
+            <i class="fas fa-plus-circle"></i> Lưu & Thêm Mới
+          }
         </button>
       </div>
+
     </form>
   </div>
 </div>

@@ -4,13 +4,14 @@ import {FriendRequestItemResponse} from '../../../responses/banbe/friend_request
 import {FriendSummaryResponse} from '../../../responses/banbe/friend_summary_response';
 import Swal from 'sweetalert2';
 import {FormsModule} from '@angular/forms';
-import {DatePipe} from '@angular/common';
+import {CommonModule, DatePipe} from '@angular/common';
 
 @Component({
   selector: 'app-user-friend',
   imports: [
     FormsModule,
-    DatePipe
+    DatePipe,
+    CommonModule
   ],
   templateUrl: './user-friend.html',
   styleUrl: './user-friend.scss',
@@ -60,10 +61,8 @@ export class UserFriend extends Base implements OnInit {
         this.friends = res.data || [];
         this.loading_friends = false;
       },
-      error: (err) => {
-        console.error('loadFriends error', err);
+      error: () => {
         this.loading_friends = false;
-        Swal.fire('Lỗi', 'Không thể tải danh sách bạn bè', 'error');
       }
     });
   }
@@ -75,10 +74,8 @@ export class UserFriend extends Base implements OnInit {
         this.incoming_requests = res.data || [];
         this.loading_incoming = false;
       },
-      error: (err) => {
-        console.error('loadIncoming error', err);
+      error: () => {
         this.loading_incoming = false;
-        Swal.fire('Lỗi', 'Không thể tải danh sách lời mời đến', 'error');
       }
     });
   }
@@ -90,10 +87,8 @@ export class UserFriend extends Base implements OnInit {
         this.outgoing_requests = res.data || [];
         this.loading_outgoing = false;
       },
-      error: (err) => {
-        console.error('loadOutgoing error', err);
+      error: () => {
         this.loading_outgoing = false;
-        Swal.fire('Lỗi', 'Không thể tải danh sách lời mời đã gửi', 'error');
       }
     });
   }
@@ -199,4 +194,14 @@ export class UserFriend extends Base implements OnInit {
     });
   }
 
+  getAvatar(avatarUrl: string | null | undefined, name: string): string {
+    if (avatarUrl) {
+      return `http://localhost:8088/api/v1/users/profile-images/${avatarUrl}`;
+    }
+    return `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&size=128`;
+  }
+
+  navigateChatWithFriend(f: FriendSummaryResponse) {
+    this.router.navigate(['/chat', f.user_id]).then();
+  }
 }

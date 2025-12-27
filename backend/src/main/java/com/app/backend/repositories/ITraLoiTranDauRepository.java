@@ -30,5 +30,10 @@ public interface ITraLoiTranDauRepository extends JpaRepository<TraLoiTranDau, L
             GROUP BY cd.id, cd.ten
             """)
     List<TopicStatResponse> getTopicStatsRawByUser(@Param("userId") Long userId);
+
+    /**
+     * Xóa các câu trả lời theo tranDau ID và nguoiDung ID
+     */
+    void deleteByTranDau_IdAndNguoiDung_Id(Long tranDauId, Long nguoiDungId);
 }
 

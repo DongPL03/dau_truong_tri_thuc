@@ -1,369 +1,256 @@
 @if (!loading) {
-  <div class="profile-wrapper">
-    <header class="profile-header">
-      <h1><i class="fas fa-user-circle"></i> Hồ sơ người dùng</h1>
-      <a routerLink="/home" class="btn-link">
-        <i class="fas fa-home"></i> Về trang chủ
-      </a>
-    </header>
-    <nav class="profile-tabs">
-      <button
-        type="button"
-        [class.active]="active_tab === 'INFO'"
-        (click)="setTab('INFO')">
-        <i class="fas fa-id-card"></i> Thông tin
-      </button>
+  <div class="profile-page">
+    <div class="bg-decor-1"></div>
+    <div class="bg-decor-2"></div>
 
-      <button
-        type="button"
-        [class.active]="active_tab === 'ACHIEVEMENTS'"
-        (click)="setTab('ACHIEVEMENTS')">
-        <i class="fas fa-trophy"></i> Thành tích & tiến trình
-      </button>
+    <div class="profile-container animate-fade-down">
 
-      <button
-        type="button"
-        [class.active]="active_tab === 'ANALYSIS'"
-        (click)="setTab('ANALYSIS')"
-      >
-        <i class="fas fa-chart-pie"></i>
-        Phân tích chủ đề
-      </button>
+      <aside class="col-hero">
+        <div class="hero-card">
+          <div class="hero-bg"></div>
 
+          <div class="hero-content">
+            <div class="avatar-wrapper">
+              <div class="avatar-frame" [ngClass]="(me_rank?.rank_tier || 'bronze').toLowerCase()">
+                <img [src]="avatarPreview || 'assets/images/default-profile-image.jpeg'" alt="Avatar"
+                     class="avatar-img">
 
-      <!-- Sau này bạn muốn thêm tab Phân tích thì thêm 1 nút nữa ở đây -->
-    </nav>
+                <label class="btn-upload-cam">
+                  <input type="file" accept="image/*" (change)="onAvatarSelected($event)" hidden/>
+                  @if (uploading) {
+                    <i class="fas fa-spinner fa-spin"></i>
+                  } @else {
+                    <i class="fas fa-camera"></i>
+                  }
+                </label>
+              </div>
+              <div class="level-badge">Lv. {{ user_summary?.level || 1 }}</div>
+            </div>
 
-    @if (active_tab === 'INFO') {
-      <div class="profile-grid">
-        <!-- 🖼️ Ảnh đại diện -->
-        <section class="card avatar-card">
-          <h3><i class="fas fa-camera"></i> Ảnh đại diện</h3>
+            <h2 class="user-name">{{ me?.ten_hien_thi || me?.ho_ten }}</h2>
+            <p class="user-username">@ {{ me?.ten_dang_nhap }}</p>
+            <div class="rank-tag">{{ user_summary?.rank_tier || 'Tập sự' }}</div>
 
-          <div class="avatar-box">
-            <img
-              [src]="avatarPreview || 'assets/images/default-profile-image.jpeg'"
-              alt="avatar"
-            />
+            <div class="xp-section">
+              <div class="xp-info">
+                <span>EXP</span>
+                <span>{{ user_summary?.xp_in_current_level | number }} / 1000</span></div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="(user_summary?.xp_in_current_level || 0) / 10"></div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="mini-stats">
+              <div class="ms-item">
+                <strong>{{ user_summary?.tong_tran || 0 }}</strong>
+                <span>Trận</span>
+              </div>
+              <div class="ms-item">
+                <strong>{{ user_summary?.so_tran_thang || 0 }}</strong>
+                <span>Thắng</span>
+              </div>
+              <div class="ms-item">
+                <strong>{{ user_summary?.tien_vang || 0 | number }}</strong>
+                <span>Vàng</span>
+              </div>
+            </div>
           </div>
-
-          <label class="btn btn-outline">
-            <input
-              type="file"
-              accept="image/*"
-              (change)="onAvatarSelected($event)"
-              hidden
-            />
-            <i
-              class="fas"
-              [class.fa-spinner]="uploading"
-              [class.fa-spin]="uploading"
-              [class.fa-upload]="!uploading"
-            ></i>
-            {{ uploading ? 'Đang tải...' : 'Chọn ảnh mới' }}
-          </label>
-          <p class="hint">Định dạng JPG/PNG, tối đa 10MB</p>
-        </section>
-
-        <!-- 👤 Thông tin cá nhân -->
-        <section class="card info-card">
-          <h3><i class="fas fa-id-card"></i> Thông tin cá nhân</h3>
-
-          <form #infoForm="ngForm" (ngSubmit)="onSaveInfo(infoForm)">
-            <div class="form-grid">
-              <div class="form-row">
-                <label>Tên đăng nhập</label>
-                <input type="text" [value]="me?.ten_dang_nhap" disabled/>
-              </div>
-
-              <div class="form-row">
-                <label>Vai trò</label>
-                <input
-                  type="text"
-                  [value]="me?.vai_tro?.ten_vai_tro || 'Người dùng'"
-                  disabled
-                />
-              </div>
-
-              <div class="form-row">
-                <label>Email</label>
-                <input
-                  type="email"
-                  [(ngModel)]="updateDto.email"
-                  name="email"
-                  disabled
-                />
-              </div>
-
-              <div class="form-row">
-                <label>Họ và tên</label>
-                <input
-                  type="text"
-                  [(ngModel)]="updateDto.ho_ten"
-                  name="ho_ten"
-                  maxlength="100"
-                  placeholder="VD: Nguyễn Văn A"
-                />
-              </div>
-
-              <div class="form-row">
-                <label>Tên hiển thị</label>
-                <input
-                  type="text"
-                  [(ngModel)]="updateDto.ten_hien_thi"
-                  name="ten_hien_thi"
-                  maxlength="100"
-                  placeholder="Tên hiển thị công khai"
-                />
-              </div>
-
-              <!--            <div class="form-row full">-->
-              <!--              <label>Địa chỉ</label>-->
-              <!--              <input-->
-              <!--                type="text"-->
-              <!--                [(ngModel)]="updateDto.dia_chi"-->
-              <!--                name="dia_chi"-->
-              <!--                maxlength="255"-->
-              <!--                placeholder="Số nhà, đường, phường/xã..."-->
-              <!--              />-->
-              <!--            </div>-->
-              <div class="form-row full">
-                <label>Địa chỉ</label>
-                <app-address-selector (addressChange)="updateDto.dia_chi = $event"></app-address-selector>
-
-                <input
-                  type="text"
-                  [(ngModel)]="updateDto.dia_chi"
-                  name="dia_chi"
-                  readonly
-                  placeholder="Địa chỉ đã chọn sẽ hiển thị ở đây"
-                />
-              </div>
-            </div>
-
-            <div class="action-row">
-              <button
-                class="btn btn-green"
-                type="submit"
-                [disabled]="saving || infoForm.invalid"
-              >
-                <i
-                  class="fas"
-                  [class.fa-spinner]="saving"
-                  [class.fa-spin]="saving"
-                  [class.fa-save]="!saving"
-                ></i>
-                {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <!-- 🔑 Đổi mật khẩu -->
-        <section class="card password-card">
-          <h3><i class="fas fa-lock"></i> Đổi mật khẩu</h3>
-
-          <form #passwordForm="ngForm" (ngSubmit)="onChangePassword(passwordForm)">
-            <div class="form-row">
-              <label>Mật khẩu hiện tại</label>
-              <input
-                type="password"
-                name="oldPassword"
-                [(ngModel)]="passwordModel.oldPassword"
-                required
-                placeholder="••••••"
-              />
-            </div>
-
-            <div class="form-row">
-              <label>Mật khẩu mới</label>
-              <input
-                type="password"
-                name="newPassword"
-                [(ngModel)]="passwordModel.newPassword"
-                required
-                minlength="6"
-                placeholder="Tối thiểu 6 ký tự"
-              />
-            </div>
-
-            <div class="form-row">
-              <label>Nhập lại mật khẩu mới</label>
-              <input
-                type="password"
-                name="retypePassword"
-                [(ngModel)]="passwordModel.retypePassword"
-                required
-                placeholder="Nhập lại mật khẩu mới"
-              />
-            </div>
-
-            <div class="action-row">
-              <button
-                class="btn btn-blue"
-                type="submit"
-                [disabled]="changingPass"
-              >
-                <i
-                  class="fas"
-                  [class.fa-spinner]="changingPass"
-                  [class.fa-spin]="changingPass"
-                  [class.fa-key]="!changingPass"
-                ></i>
-                {{ changingPass ? 'Đang đổi...' : 'Đổi mật khẩu' }}
-              </button>
-            </div>
-          </form>
-        </section>
-      </div>
-    }
-    @if (active_tab === 'ACHIEVEMENTS') {
-      <div class="profile-grid achievements-grid">
-        <!-- Bên trái: Tiến trình & chỉ số -->
-        <section class="card stats-card">
-          <h3><i class="fas fa-chart-line"></i> Tiến trình & chỉ số</h3>
-
-          @if (user_summary) {
-            <div class="stats-grid">
-              <div class="stat-box">
-                <div class="stat-label">Level</div>
-                <div class="stat-value">Lv. {{ user_summary.level }}</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-label">Tổng EXP</div>
-                <div class="stat-value">{{ user_summary.xp_in_current_level | number }}</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-label">Rank hiện tại</div>
-                <div class="stat-value">{{ user_summary.rank_tier }}</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-label">Vàng hiện có</div>
-                <div class="stat-value">{{ user_summary.tien_vang | number }} 🪙</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-label">Tổng trận</div>
-                <div class="stat-value">{{ user_summary.tong_tran }}</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-label">Thắng / Thua</div>
-                <div class="stat-value">
-                  {{ user_summary.so_tran_thang }}/{{ user_summary.so_tran_thua }}
-                </div>
-              </div>
-            </div>
-
-            <p class="stats-hint">
-              Các chỉ số này được cập nhật sau mỗi trận đấu xếp hạng.
-            </p>
-          } @else {
-            <div class="empty-state">
-              <i class="fas fa-info-circle"></i>
-              <p>
-                Chưa có dữ liệu tiến trình. Hãy chơi một vài trận xếp hạng để hệ thống thống kê cho bạn nhé!
-              </p>
-            </div>
-          }
-        </section>
-
-        <!-- Bên phải: Thành tích -->
-        <section class="card achievements-card">
-          <h3><i class="fas fa-medal"></i> Thành tích</h3>
-
-          @if (loading_achievements) {
-            <div class="empty-state">
-              <i class="fas fa-spinner fa-spin"></i>
-              <p>Đang tải thành tích...</p>
-            </div>
-          } @else {
-            @if (achievements.length === 0) {
-              <div class="empty-state">
-                <p>Bạn chưa mở khóa thành tích nào. Cứ chơi và leo rank, thành tích sẽ tự động được thêm vào đây!</p>
-              </div>
-            } @else {
-              <div class="achievement-grid">
-                @for (a of achievements; track a.code) {
-                  <div class="achievement-card">
-                    <div class="badge-icon">
-                      <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="badge-content">
-                      <h4>{{ a.title }}</h4>
-                      <p>{{ a.description }}</p>
-                      <small>
-                        Đạt được lúc {{ a.mo_khoa_luc | date:'dd/MM/yyyy HH:mm' }}
-                      </small>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          }
-        </section>
-      </div>
-    } @else if (active_tab === 'ANALYSIS') {
-      @if (loading_topics) {
-        <div class="loading">
-          <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
         </div>
-      } @else {
-        @if (topic_stats.length === 0) {
-          <div class="empty-state">
-            <i class="fas fa-info-circle"></i>
-            <p>
-              Chưa có đủ dữ liệu để phân tích. Hãy chơi một vài trận hoặc luyện tập thêm để hệ thống hiểu điểm mạnh/yếu
-              của bạn nhé!
-            </p>
-          </div>
-        } @else {
-          <div class="topic-analysis">
-            <p class="analysis-intro">
-              Dưới đây là tỉ lệ trả lời đúng theo từng chủ đề. Hệ thống phân loại thành
-              <strong>Mạnh</strong>, <strong>Trung bình</strong> và <strong>Yếu</strong>.
-            </p>
+      </aside>
 
-            <div class="topic-list">
-              @for (t of topic_stats; track t.chu_de_id) {
-                <div class="topic-row" [ngClass]="t.danh_gia.toLowerCase()">
-                  <div class="topic-header">
-                    <div class="topic-name">
-                      <span class="pill" [ngClass]="t.danh_gia.toLowerCase()">
-                        @if (t.danh_gia === 'MANH') {
-                          Mạnh
-                        } @else if (t.danh_gia === 'TRUNG_BINH') {
-                          Trung bình
-                        } @else {
-                          Yếu
-                        }
-                      </span>
-                      <strong>{{ t.chu_de_ten }}</strong>
-                    </div>
-                    <div class="topic-meta">
-                      <span>{{ t.so_cau_dung }}/{{ t.tong_cau }} câu đúng</span>
-                      <span>{{ t.ti_le_dung | number:'1.0-1' }}%</span>
-                    </div>
+      <main class="col-content">
+
+        <nav class="nav-tabs">
+          <button class="tab-btn" [class.active]="active_tab === 'INFO'" (click)="setTab('INFO')">
+            <i class="fas fa-user-cog"></i> Hồ sơ
+          </button>
+          <button class="tab-btn" [class.active]="active_tab === 'ACHIEVEMENTS'" (click)="setTab('ACHIEVEMENTS')">
+            <i class="fas fa-chart-bar"></i> Chỉ số & Thành tích
+          </button>
+          <button class="tab-btn" [class.active]="active_tab === 'ANALYSIS'" (click)="setTab('ANALYSIS')">
+            <i class="fas fa-brain"></i> Phân tích
+          </button>
+        </nav>
+
+        @if (active_tab === 'INFO') {
+          <div class="tab-content animate-fade-up">
+
+            <section class="content-card">
+              <div class="card-header">
+                <h3><i class="fas fa-edit"></i> Chỉnh sửa thông tin</h3>
+              </div>
+              <form #infoForm="ngForm" (ngSubmit)="onSaveInfo(infoForm)" class="modern-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" [(ngModel)]="updateDto.ho_ten" name="ho_ten" class="inp"
+                           placeholder="Nhập họ tên...">
                   </div>
-
-                  <div class="topic-progress">
-                    <div class="progress-bar">
-                      <div
-                        class="progress-fill"
-                        [style.width.%]="t.ti_le_dung"
-                      ></div>
-                    </div>
+                  <div class="form-group">
+                    <label>Tên hiển thị (Nickname)</label>
+                    <input type="text" [(ngModel)]="updateDto.ten_hien_thi" name="ten_hien_thi" class="inp"
+                           placeholder="Tên hiển thị trong game...">
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" [(ngModel)]="updateDto.email" name="email" class="inp" disabled>
+                  </div>
+                  <div class="form-group">
+                    <label>Vai trò</label>
+                    <input type="text" [value]="me?.vai_tro?.ten_vai_tro" class="inp" disabled>
+                  </div>
+                  <div class="form-group full-width">
+                    <label>Địa chỉ</label>
+                    <app-address-selector (addressChange)="updateDto.dia_chi = $event"></app-address-selector>
+                    <input type="text" [(ngModel)]="updateDto.dia_chi" name="dia_chi" class="inp mt-2" readonly
+                           placeholder="Địa chỉ chi tiết...">
                   </div>
                 </div>
-              }
-            </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary" [disabled]="saving">
+                    @if (saving) {
+                      <i class="fas fa-spinner fa-spin"></i>
+                    }
+                    Lưu thay đổi
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section class="content-card mt-4">
+              <div class="card-header">
+                <h3><i class="fas fa-key"></i> Bảo mật</h3>
+              </div>
+              <form #passwordForm="ngForm" (ngSubmit)="onChangePassword(passwordForm)" class="modern-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Mật khẩu hiện tại</label>
+                    <input type="password" [(ngModel)]="passwordModel.oldPassword" name="oldPassword" class="inp">
+                  </div>
+                  <div class="form-group">
+                    <label>Mật khẩu mới</label>
+                    <input type="password" [(ngModel)]="passwordModel.newPassword" name="newPassword" class="inp">
+                  </div>
+                  <div class="form-group">
+                    <label>Nhập lại mật khẩu mới</label>
+                    <input type="password" [(ngModel)]="passwordModel.retypePassword" name="retypePassword" class="inp">
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn-outline" [disabled]="changingPass">
+                    Đổi mật khẩu
+                  </button>
+                </div>
+              </form>
+            </section>
           </div>
         }
-      }
-    }
 
+        @if (active_tab === 'ACHIEVEMENTS') {
+          <div class="tab-content animate-fade-up">
+
+            <div class="stats-overview">
+              <div class="stat-card purple">
+                <div class="icon"><i class="fas fa-book-reader"></i></div>
+                <div class="info">
+                  <span class="lbl">Khóa học</span>
+                  <span class="val">{{ course_stats?.tong_so_khoa_hoc || 0 }}</span>
+                </div>
+              </div>
+              <div class="stat-card blue">
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+                <div class="info">
+                  <span class="lbl">Độ chính xác</span>
+                  <span class="val">{{ course_stats?.do_chinh_xac_trung_binh | number:'1.0-1' }}%</span>
+                </div>
+              </div>
+              <div class="stat-card green">
+                <div class="icon"><i class="fas fa-tasks"></i></div>
+                <div class="info">
+                  <span class="lbl">Đã hoàn thành</span>
+                  <span class="val">{{ course_stats?.so_khoa_hoc_da_hoan_thanh || 0 }}</span>
+                </div>
+              </div>
+              <div class="stat-card orange">
+                <div class="icon"><i class="fas fa-fire"></i></div>
+                <div class="info">
+                  <span class="lbl">Luyện tập</span>
+                  <span class="val">{{ course_stats?.tong_so_phien_luyen_tap || 0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <section class="content-card mt-4">
+              <div class="card-header">
+                <h3><i class="fas fa-trophy"></i> Bộ sưu tập danh hiệu</h3>
+              </div>
+              @if (loading_achievements) {
+                <div class="loading-mini"><i class="fas fa-spinner fa-spin"></i></div>
+              } @else if (achievements.length === 0) {
+                <div class="empty-mini">Chưa có thành tích nào. Hãy chiến đấu!</div>
+              } @else {
+                <div class="achievements-grid">
+                  @for (a of achievements; track a.code) {
+                    <div class="badge-card">
+                      <div class="badge-img">
+                        <i class="fas fa-medal"></i>
+                      </div>
+                      <div class="badge-info">
+                        <h4>{{ a.title }}</h4>
+                        <p>{{ a.description }}</p>
+                        <span class="date">{{ a.mo_khoa_luc | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </section>
+          </div>
+        }
+
+        @if (active_tab === 'ANALYSIS') {
+          <div class="tab-content animate-fade-up">
+            <section class="content-card">
+              <div class="card-header">
+                <h3><i class="fas fa-chart-pie"></i> Phân tích năng lực</h3>
+                <p class="subtitle">Đánh giá điểm mạnh/yếu dựa trên lịch sử đấu</p>
+              </div>
+
+              @if (loading_topics) {
+                <div class="loading-mini"><i class="fas fa-spinner fa-spin"></i></div>
+              } @else if (topic_stats.length === 0) {
+                <div class="empty-mini">Chưa đủ dữ liệu để phân tích.</div>
+              } @else {
+                <div class="skill-bars">
+                  @for (t of topic_stats; track t.chu_de_id) {
+                    <div class="skill-row">
+                      <div class="skill-header">
+                        <span class="skill-name">{{ t.chu_de_ten }}</span>
+                        <span class="skill-val" [ngClass]="t.danh_gia.toLowerCase()">{{ t.danh_gia }}</span>
+                      </div>
+                      <div class="progress-track">
+                        <div class="progress-bar"
+                             [style.width.%]="t.ti_le_dung"
+                             [ngClass]="t.danh_gia.toLowerCase()">
+                        </div>
+                      </div>
+                      <div class="skill-meta">{{ t.ti_le_dung | number:'1.0-1' }}% chính xác</div>
+                    </div>
+                  }
+                </div>
+              }
+            </section>
+          </div>
+        }
+
+      </main>
+    </div>
   </div>
 } @else {
-  <div class="loading">
-    <i class="fas fa-spinner fa-spin"></i> Đang tải hồ sơ...
+  <div class="full-loading">
+    <div class="spinner-3d"></div>
+    Đang tải dữ liệu chiến binh...
   </div>
 }
-

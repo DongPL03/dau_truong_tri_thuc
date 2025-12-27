@@ -32,7 +32,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.app.backend.utils.ValidationUtils.isValidEmail;
@@ -426,10 +430,76 @@ public class NguoiDungService implements INguoiDungService {
     @Override
     public Long findIdVaiTroByTenDangNhap(String tenDangNhap) {
         return userRepository.findIdVaiTroByTenDangNhap(tenDangNhap);
+    }
 
+    // ================== ADMIN METHODS ==================
+
+    @Override
+    public Map<String, Object> getAdminUserStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        stats.put("totalUsers", userRepository.count());
+        stats.put("activeUsers", userRepository.countActive());
+        stats.put("blockedUsers", userRepository.countBlocked());
+        stats.put("deletedUsers", userRepository.countDeleted());
+        stats.put("totalAdmins", userRepository.countAdmins());
+
+        // User đăng ký hôm nay
+        Instant startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        stats.put("todayRegistrations", userRepository.countRegisteredToday(startOfDay));
+
+        return stats;
+    }
+
+    @Override
+    public Page<NguoiDung> findAllForAdmin(String keyword, Pageable pageable) {
+        return userRepository.findAllForAdmin(keyword, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void adminSoftDeleteUser(Long userId) throws Exception {
+        NguoiDung user = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+        user.setXoa(true);
+        userRepository.save(user);
+
+        // Revoke tất cả token của user
+        tokenService.revokeAllTokensForUser(user);
+    }
+
+    @Override
+    public String exportUsersCsv(String keyword) {
+        List<NguoiDung> users = userRepository.findAllForExport(keyword);
+
+        StringBuilder csv = new StringBuilder();
+        // Header
+        csv.append("ID,Tên đăng nhập,Họ tên,Email,Vai trò,Trạng thái,Ngày tạo\n");
+
+        for (NguoiDung u : users) {
+            String status = u.isXoa() ? "Đã xóa" : (u.isActive() ? "Đang hoạt động" : "Bị khóa");
+            String role = u.getVaiTro() != null ? u.getVaiTro().getTenVaiTro() : "";
+            String createdAt = u.getTaoLuc() != null ? u.getTaoLuc().toString() : "";
+
+            csv.append(String.format("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                    u.getId(),
+                    escapeCsv(u.getTenDangNhap()),
+                    escapeCsv(u.getHoTen()),
+                    escapeCsv(u.getEmail()),
+                    role,
+                    status,
+                    createdAt
+            ));
+        }
+
+        return csv.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        return value.replace("\"", "\"\"");
     }
 }
-
 
 
 

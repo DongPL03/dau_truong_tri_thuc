@@ -59,6 +59,82 @@ public class NguoiDungController {
     private final IBangXepHangService bangXepHangService;
     private final com.app.backend.repositories.INguoiDungRepository userRepository;
 
+    // ================== ADMIN ENDPOINTS ==================
+    
+    @GetMapping("/admin/stats")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getAdminUserStats() {
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy thống kê người dùng thành công")
+                .data(userService.getAdminUserStats())
+                .build());
+    }
+    
+    @GetMapping("/admin/list")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getAllUsersForAdmin(
+            @RequestParam(defaultValue = "", required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").ascending());
+        Page<UserResponse> userPage = userService.findAllForAdmin(keyword, pageRequest)
+                .map(UserResponse::fromUser);
+        
+        UserListResponse userListResponse = UserListResponse.builder()
+                .users(userPage.getContent())
+                .totalPages(userPage.getTotalPages())
+                .build();
+        
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách người dùng thành công")
+                .data(userListResponse)
+                .build());
+    }
+    
+    @DeleteMapping("/admin/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> adminSoftDeleteUser(@PathVariable Long userId) {
+        try {
+            // Không cho phép admin xóa chính mình
+            NguoiDung currentAdmin = (NguoiDung) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+            if (currentAdmin.getId().equals(userId)) {
+                return ResponseEntity.badRequest().body(ResponseObject.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .message("Không thể xóa chính tài khoản của bạn")
+                        .build());
+            }
+            
+            userService.adminSoftDeleteUser(userId);
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Xóa người dùng thành công")
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(ResponseObject.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("Lỗi: " + e.getMessage())
+                    .build());
+        }
+    }
+    
+    @GetMapping("/admin/export-csv")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<byte[]> exportUsersCsv(
+            @RequestParam(defaultValue = "", required = false) String keyword
+    ) {
+        String csv = userService.exportUsersCsv(keyword);
+        byte[] bytes = csv.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=users_export.csv")
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .body(bytes);
+    }
+
     @GetMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getAllUser(

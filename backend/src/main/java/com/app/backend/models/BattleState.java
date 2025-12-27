@@ -6,9 +6,7 @@ import lombok.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -112,6 +110,51 @@ public class BattleState {
     @Builder.Default
     @JsonProperty("marked_finished")
     private boolean markedFinished = false;
+
+    // ================== POWER-UPS / ITEMS STATE ==================
+
+    /**
+     * userId -> hệ số nhân điểm đang active (x2, x3...)
+     * Được reset sau khi trả lời câu hỏi
+     */
+    @Builder.Default
+    @JsonProperty("active_multipliers")
+    private Map<Long, Double> activeMultipliers = new ConcurrentHashMap<>();
+
+    /**
+     * userId -> số giây thêm cho câu hiện tại (đóng băng thời gian)
+     */
+    @Builder.Default
+    @JsonProperty("extra_time_seconds")
+    private Map<Long, Integer> extraTimeSeconds = new ConcurrentHashMap<>();
+
+    /**
+     * userId -> set các đáp án đã bị loại (50-50)
+     */
+    @Builder.Default
+    @JsonProperty("eliminated_options")
+    private Map<Long, Set<String>> eliminatedOptions = new ConcurrentHashMap<>();
+
+    /**
+     * Danh sách user đang có khiên bảo vệ combo
+     */
+    @Builder.Default
+    @JsonProperty("shielded_players")
+    private Set<Long> shieldedPlayers = ConcurrentHashMap.newKeySet();
+
+    /**
+     * userId -> set các câu hỏi đã bỏ qua (dùng item skip)
+     */
+    @Builder.Default
+    @JsonProperty("skipped_questions")
+    private Map<Long, Set<Integer>> skippedQuestions = new ConcurrentHashMap<>();
+
+    /**
+     * userId -> danh sách vật phẩm đã dùng trong trận (để giới hạn)
+     */
+    @Builder.Default
+    @JsonProperty("used_items")
+    private Map<Long, List<String>> usedItems = new ConcurrentHashMap<>();
 
 
     // ✅ Thêm: helper để thêm câu trả lời

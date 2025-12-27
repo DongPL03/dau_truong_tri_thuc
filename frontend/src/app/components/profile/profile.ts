@@ -1,25 +1,25 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormsModule, NgForm} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
-import Swal from 'sweetalert2';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormsModule, NgForm} from '@angular/forms';
 import {RouterLink} from '@angular/router';
-import {Base} from '../base/base';
-import {UserResponse} from '../../responses/nguoidung/user-response';
-import {ResponseObject} from '../../responses/response-object';
+import Swal from 'sweetalert2';
 import {UpdateUserDTO} from '../../dtos/nguoi-dung/update-user-dto';
 import {environment} from '../../environments/environment';
-import {AddressSelector} from '../shared/address-selector/address-selector';
-import {AchievementResponse} from '../../responses/thanhtich/achievement-response';
-import {UserSummaryResponse} from '../../responses/nguoidung/user-summary-response';
+import {CourseStatResponse} from '../../responses/khoahoc/course-stat-response';
 import {LichSuTranDauResponse as LichSuTranDauShort} from '../../responses/lichsutrandau/lich_su_tran_dau_response';
+import {UserResponse} from '../../responses/nguoidung/user-response';
+import {UserSummaryResponse} from '../../responses/nguoidung/user-summary-response';
+import {ResponseObject} from '../../responses/response-object';
+import {AchievementResponse} from '../../responses/thanhtich/achievement-response';
 import {TopicStatResponse} from '../../responses/thongke/topic-stat-response';
-
+import {Base} from '../base/base';
+import {AddressSelector} from '../shared/address-selector/address-selector';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AddressSelector],
+  imports: [CommonModule, FormsModule, AddressSelector],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -34,23 +34,16 @@ export class Profile extends Base implements OnInit {
   saving = false;
   changingPass = false;
 
-  // Base URL để hiển thị ảnh
   private readonly imageBaseUrl = `${environment.apiBaseUrl}/users/profile-images/`;
 
   updateDto: UpdateUserDTO = new UpdateUserDTO();
   passwordModel = {oldPassword: '', newPassword: '', retypePassword: ''};
 
-  // Tab hiện tại: INFO = thông tin cá nhân, ACHIEVEMENTS = thành tích & tiến trình
   active_tab: 'INFO' | 'ACHIEVEMENTS' | 'ANALYSIS' = 'INFO';
 
-  // Thành tích
+  // Stats Data
   achievements: AchievementResponse[] = [];
   loading_achievements = false;
-
-  // Chỗ chứa exp/level/rank/gold & thống kê trận (lấy từ API mà bạn đã dùng ở trang home)
-  me_rank: any = null;
-
-  user?: UserResponse | null;
 
   user_summary?: UserSummaryResponse | null;
   recent_matches: LichSuTranDauShort[] = [];
@@ -59,17 +52,25 @@ export class Profile extends Base implements OnInit {
   topic_stats: TopicStatResponse[] = [];
   loading_topics = false;
 
-  ngOnInit(): void {
-    this.me = this.userService.getUserResponseFromLocalStorage();
-    this.fetchProfile();
-    this.user = this.userService.getUserResponseFromLocalStorage();
+  course_stats?: CourseStatResponse | null;
+  loading_course_stats = false;
 
-    if (this.user?.id) {
-      this.loadUserSummary(this.user.id);
+  // Rank Info (Có thể gộp vào user_summary hoặc lấy riêng)
+  me_rank: any = {rank_tier: 'Tập sự'}; // Giá trị mặc định an toàn
+
+  ngOnInit(): void {
+    // Lấy user từ local storage trước để render nhanh
+    this.me = this.userService.getUserResponseFromLocalStorage();
+
+    // Fetch dữ liệu mới nhất
+    this.fetchProfile();
+
+    // Nếu có ID, load thêm thống kê rank/level
+    if (this.me?.id) {
+      this.loadUserSummary(this.me.id);
     }
   }
 
-  /** Lấy thông tin hồ sơ */
   fetchProfile(): void {
     this.loading = true;
     this.userService.getUserDetails().subscribe({
@@ -77,6 +78,7 @@ export class Profile extends Base implements OnInit {
         this.me = res.data as UserResponse;
         this.userService.saveUserResponseToLocalStorage(this.me);
 
+        // Map data sang DTO để binding form
         this.updateDto = {
           ho_ten: this.me?.ho_ten?.trim() ?? '',
           ten_hien_thi: this.me?.ten_hien_thi?.trim() ?? '',
@@ -91,95 +93,72 @@ export class Profile extends Base implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;
-        Swal.fire('Lỗi', err.error?.message || 'Không thể tải thông tin người dùng', 'error').then(r => {
-          if (r.isConfirmed) {
-            this.tokenService.clear();
-            this.userService.removeUserFromLocalStorage();
-            location.href = '/dang-nhap';
-          }
-        });
+        console.error('Error fetching profile:', err);
       },
     });
   }
 
-  /** Chuyển tab */
   setTab(tab: 'INFO' | 'ACHIEVEMENTS' | 'ANALYSIS'): void {
     this.active_tab = tab;
-    if (tab === 'ACHIEVEMENTS' && !this.loading_achievements && this.achievements.length === 0) {
-      this.loadAchievements();
-    }
 
-    if (tab === 'ANALYSIS' && this.topic_stats.length === 0) {
+    // Lazy load dữ liệu khi bấm tab
+    if (tab === 'ACHIEVEMENTS') {
+      if (!this.achievements.length) this.loadAchievements();
+      if (!this.course_stats) this.loadCourseStats();
+    }
+    if (tab === 'ANALYSIS' && !this.topic_stats.length) {
       this.loadTopicStats();
     }
   }
 
-  /** Lấy danh sách thành tích của user */
   loadAchievements(): void {
     this.loading_achievements = true;
-
-    // Gợi ý: userService.getMyAchievements() gọi về /achievements/me
     this.thanhTichService.getMyAchievements().subscribe({
       next: (res: ResponseObject) => {
         this.achievements = (res.data || []) as AchievementResponse[];
         this.loading_achievements = false;
       },
-      error: () => {
-        this.loading_achievements = false;
-        // Có thể show toast nhẹ nếu muốn
-        // this.toastService.show('Không thể tải thành tích', 'error');
-      }
+      error: () => this.loading_achievements = false
     });
   }
 
-  /** Lấy exp/level/rank/gold + tổng trận, thắng/thua (từ BXH) */
   loadUserSummary(user_id: number) {
     this.loading_summary = true;
-
     this.userService.getUserSummary(user_id).subscribe({
       next: (res: ResponseObject<UserSummaryResponse>) => {
-        console.log('✅ Thống kê người dùng tải về:', res.data);
         this.loading_summary = false;
         this.user_summary = res.data ?? null;
-        console.log('User Summary:', this.user_summary);
-
-        // Lấy tối đa 3 trận gần nhất từ lich_su_tran_dau (nếu backend có trả)
-        const history = this.user_summary?.lich_su_tran_dau ?? [];
-        this.recent_matches = history.slice(0, 3);
+        this.me_rank = this.user_summary; // Map sang biến me_rank để dùng chung logic
       },
-      error: (err) => {
-        this.loading_summary = false;
-        console.error('❌ Lỗi khi tải thống kê người dùng:', err);
-      }
+      error: () => this.loading_summary = false
     });
   }
 
-  /** Gọi API thống kê mạnh/yếu theo chủ đề */
   private loadTopicStats(): void {
     this.loading_topics = true;
-
     this.userStatsService.getMyTopicStats().subscribe({
       next: (res: ResponseObject) => {
         this.topic_stats = (res.data || []) as TopicStatResponse[];
         this.loading_topics = false;
       },
-      error: () => {
-        this.loading_topics = false;
-        Swal.fire('Lỗi', 'Không thể tải thống kê theo chủ đề', 'error').then(() => {
-        });
-      }
+      error: () => this.loading_topics = false
     });
   }
 
+  private loadCourseStats(): void {
+    this.loading_course_stats = true;
+    this.khoaHocService.getCourseStats().subscribe({
+      next: (res: ResponseObject<CourseStatResponse>) => {
+        this.course_stats = res.data ?? null;
+        this.loading_course_stats = false;
+      },
+      error: () => this.loading_course_stats = false
+    });
+  }
 
-  /** Lưu thông tin cá nhân */
   onSaveInfo(form: NgForm): void {
     if (form.invalid || !this.me) {
-      Swal.fire('Cảnh báo', 'Vui lòng điền đầy đủ thông tin hợp lệ', 'warning').then(r => {
-        if (r.isConfirmed) {
-          this.infoForm.control.markAllAsTouched();
-        }
-      });
+      Swal.fire('Thiếu thông tin', 'Vui lòng kiểm tra lại các trường.', 'warning');
       return;
     }
 
@@ -188,114 +167,71 @@ export class Profile extends Base implements OnInit {
       next: (res: ResponseObject) => {
         this.me = res.data as UserResponse;
         this.userService.saveUserResponseToLocalStorage(this.me);
-        Swal.fire('Thành công', 'Cập nhật thông tin thành công', 'success').then(r => {
-          if (r.isConfirmed) {
-            this.fetchProfile();
-          }
-        });
-      },
-      complete: () => {
+        Swal.fire('Thành công', 'Cập nhật hồ sơ thành công!', 'success');
         this.saving = false;
       },
       error: (err: HttpErrorResponse) => {
-        Swal.fire('Lỗi', err.error?.message || 'Không thể cập nhật thông tin', 'error').then(r => {
-          if (r.isConfirmed) {
-            this.infoForm.control.markAllAsTouched();
-          }
-        });
+        Swal.fire('Lỗi', err.error?.message || 'Cập nhật thất bại', 'error');
         this.saving = false;
-      },
+      }
     });
   }
 
-  /** Đổi mật khẩu */
   onChangePassword(form: NgForm): void {
     const {oldPassword, newPassword, retypePassword} = this.passwordModel;
     if (!oldPassword || !newPassword) {
-      Swal.fire('Cảnh báo', 'Vui lòng nhập đầy đủ mật khẩu', 'warning').then(r => {
-        if (r.isConfirmed) {
-          this.passwordForm.control.markAllAsTouched();
-        }
-      });
-      return;
-    }
-    if (newPassword.length < 6) {
-      Swal.fire('Cảnh báo', 'Mật khẩu mới phải có ít nhất 6 ký tự', 'warning').then(r => {
-        if (r.isConfirmed) {
-          this.passwordForm.control.markAllAsTouched();
-        }
-      });
+      Swal.fire('Lỗi', 'Vui lòng nhập đầy đủ mật khẩu', 'warning');
       return;
     }
     if (newPassword !== retypePassword) {
-      Swal.fire('Cảnh báo', 'Mật khẩu nhập lại không khớp', 'warning').then(r => {
-        if (r.isConfirmed) {
-          this.passwordForm.control.markAllAsTouched();
-        }
-      });
+      Swal.fire('Lỗi', 'Mật khẩu xác nhận không khớp', 'warning');
       return;
     }
 
     this.changingPass = true;
     this.userService.changePassword(oldPassword, newPassword).subscribe({
       next: () => {
-        Swal.fire('Thành công', 'Đổi mật khẩu thành công, vui lòng đăng nhập lại', 'success').then(r => {
-          if (r.isConfirmed) {
-            this.tokenService.clear();
-            this.userService.removeUserFromLocalStorage();
-            location.href = '/dang-nhap';
-          }
+        Swal.fire('Thành công', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.', 'success').then(() => {
+          this.tokenService.clear();
+          this.userService.removeUserFromLocalStorage();
+          location.href = '/dang-nhap';
         });
-      },
-      complete: () => {
-        this.changingPass = false;
-        this.tokenService.clear();
-        this.userService.removeUserFromLocalStorage();
-        location.href = '/dang-nhap';
       },
       error: (err: HttpErrorResponse) => {
-        Swal.fire('Lỗi', err.error?.message || 'Không thể đổi mật khẩu', 'error').then(r => {
-          if (r.isConfirmed) {
-            this.passwordForm.control.markAllAsTouched();
-          }
-        });
+        Swal.fire('Lỗi', err.error?.message || 'Đổi mật khẩu thất bại', 'error');
         this.changingPass = false;
-      },
+      }
     });
   }
 
-  /** Upload ảnh đại diện */
   onAvatarSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
 
+    // Preview
     const reader = new FileReader();
     reader.onload = () => (this.avatarPreview = reader.result as string);
     reader.readAsDataURL(file);
 
+    // Upload
     this.uploading = true;
     this.userService.uploadProfileImage(file).subscribe({
       next: () => {
-        Swal.fire('Thành công', 'Cập nhật ảnh đại diện thành công', 'success').then(r => {
-          if (r.isConfirmed) {
-            this.uploading = false;
-            this.fetchProfile();
-          }
-        });
-      },
-      complete: () => {
         this.uploading = false;
-        this.fetchProfile();
-      },
-      error: (err: HttpErrorResponse) => {
-        Swal.fire('Lỗi', err.error?.message || 'Tải ảnh thất bại', 'error').then(r => {
-          if (r.isConfirmed) {
-            this.fetchProfile();
-          }
+        Swal.fire({
+          icon: 'success',
+          title: 'Cập nhật ảnh',
+          text: 'Ảnh đại diện đã được thay đổi!',
+          timer: 1500,
+          showConfirmButton: false
         });
-        this.uploading = false;
+        this.fetchProfile(); // Refresh để lấy URL chuẩn từ server
       },
+      error: () => {
+        this.uploading = false;
+        Swal.fire('Lỗi', 'Không thể tải ảnh lên', 'error');
+      }
     });
   }
 }

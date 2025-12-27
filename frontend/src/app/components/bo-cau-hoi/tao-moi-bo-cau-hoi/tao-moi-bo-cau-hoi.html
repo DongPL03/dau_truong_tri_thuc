@@ -1,88 +1,156 @@
-<div class="page-wrapper">
-  <div class="page-container">
-    <header class="page-header">
-      <h1><i class="fas fa-magic"></i> Tạo Bộ Câu Hỏi Mới</h1>
-    </header>
+<div class="craft-container">
 
-    <div class="form-card">
-      <form #createForm="ngForm" (ngSubmit)="onSubmit(createForm)">
-        <section class="section-details">
-          <h3>Thông Tin Chung</h3>
+  <header class="craft-header">
+    <div class="header-icon-3d">
+      <i class="fas fa-magic"></i>
+    </div>
+    <div class="header-text">
+      <h1>Chế Tác Bộ Câu Hỏi</h1>
+      <p>Sáng tạo nội dung và thách thức cộng đồng!</p>
+    </div>
+  </header>
 
-          <div class="input-group">
-            <label for="title">Tiêu đề Bộ Câu Hỏi <span class="required">*</span></label>
-            <input type="text"
-                   id="title"
-                   name="tieu_de"
-                   [(ngModel)]="model.tieu_de"
-                   maxlength="100"
-                   placeholder="Ví dụ: 50 Câu Hỏi Lịch Sử Cổ Đại"
-                   required>
+  <div class="craft-card">
+    <form #createForm="ngForm" (ngSubmit)="onSubmit(createForm)" class="craft-form" autocomplete="off">
+
+      <div class="form-layout">
+
+        <section class="form-section left-col">
+          <h3 class="section-title"><i class="fas fa-scroll"></i> Thông Tin Cơ Bản</h3>
+
+          <div class="form-group">
+            <label>Tiêu đề bộ câu hỏi <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-heading input-icon"></i>
+              <input type="text"
+                     name="tieu_de"
+                     [(ngModel)]="model.tieu_de"
+                     maxlength="100"
+                     placeholder="VD: Thử thách lịch sử thế giới..."
+                     required>
+            </div>
           </div>
 
-          <div class="input-group">
-            <label for="category">Chủ Đề <span class="required">*</span></label>
-            <select id="category"
-                    name="chu_de_id"
-                    required
-                    [(ngModel)]="model.chu_de_id">
-              <option value="0">-- Chọn chủ đề --</option>
-              @for (c of chuDes; track c.id) {
-                <option [value]="c.id">{{ c.ten }}</option>
-              }
-            </select>
+          <div class="form-group">
+            <label>Chủ đề kiến thức <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <i class="fas fa-layer-group input-icon"></i>
+              <select name="chu_de_id" required [(ngModel)]="model.chu_de_id">
+                <option [ngValue]="0" disabled>-- Chọn chủ đề phù hợp --</option>
+                @for (c of chuDes; track c.id) {
+                  <option [value]="c.id">{{ c.ten }}</option>
+                }
+              </select>
+              <i class="fas fa-chevron-down arrow-icon"></i>
+            </div>
           </div>
 
-          <div class="input-group">
-            <label for="description">Mô Tả</label>
-            <textarea id="description"
-                      name="mo_ta"
-                      rows="4"
-                      maxlength="255"
-                      [(ngModel)]="model.mo_ta"
-                      placeholder="Mô tả ngắn gọn về bộ câu hỏi..."></textarea>
+          <div class="form-group">
+            <label>Mô tả ngắn</label>
+            <div class="textarea-wrapper">
+              <i class="fas fa-align-left input-icon textarea-icon"></i>
+              <textarea name="mo_ta"
+                        rows="5"
+                        maxlength="255"
+                        [(ngModel)]="model.mo_ta"
+                        placeholder="Giới thiệu sơ lược về bộ câu hỏi này..."></textarea>
+            </div>
           </div>
         </section>
 
-        <section class="section-settings">
-          <h3>Cài Đặt Truy Cập</h3>
+        <section class="form-section right-col">
+          <h3 class="section-title"><i class="fas fa-shield-alt"></i> Quyền Truy Cập</h3>
 
-          <div class="input-group-1 radio-group">
-            <label style="margin-bottom: 10px">Chế độ hiển thị <span class="required">*</span></label>
-            <div class="input-label-div">
+          <div class="form-group">
+            <label>Ai có thể nhìn thấy?</label>
 
-                <input type="radio"
-                       id="public"
-                       name="che_do_hien_thi"
-                       value="PUBLIC"
-                       [(ngModel)]="model.che_do_hien_thi">
-                <label class="label-radio" for="public">Công khai (Mọi người đều thấy)</label>
+            <div class="visibility-options">
 
+              <label class="visual-card public-card" [class.selected]="model.che_do_hien_thi === 'PUBLIC'">
+                <input type="radio" name="che_do_hien_thi" value="PUBLIC" [(ngModel)]="model.che_do_hien_thi" hidden>
+                <div class="card-icon"><i class="fas fa-globe-americas"></i></div>
+                <div class="card-info">
+                  <span class="card-name">Công Khai</span>
+                  <span class="card-desc">Mọi người đều có thể thấy và luyện tập.</span>
+                </div>
+                <div class="check-circle"><i class="fas fa-check"></i></div>
+              </label>
 
-              <input type="radio"
-                     id="private"
-                     name="che_do_hien_thi"
-                     value="PRIVATE"
-                     [(ngModel)]="model.che_do_hien_thi">
-              <label class="label-radio" for="private">Riêng tư (Chỉ mình tôi thấy)</label>
+              <label class="visual-card private-card" [class.selected]="model.che_do_hien_thi === 'PRIVATE'">
+                <input type="radio" name="che_do_hien_thi" value="PRIVATE" [(ngModel)]="model.che_do_hien_thi" hidden>
+                <div class="card-icon"><i class="fas fa-lock"></i></div>
+                <div class="card-info">
+                  <span class="card-name">Riêng Tư</span>
+                  <span class="card-desc">Chỉ mình bạn thấy. Dùng để nháp hoặc test.</span>
+                </div>
+                <div class="check-circle"><i class="fas fa-check"></i></div>
+              </label>
 
             </div>
           </div>
 
-          <div class="info-box">
-            <i class="fas fa-info-circle"></i>
-            <p>Bộ câu hỏi công khai cần được Admin duyệt trước khi hiển thị.</p>
-          </div>
-        </section>
+          @if (model.che_do_hien_thi === 'PUBLIC') {
+            <div class="tip-box">
+              <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
+              <p><strong>Chú thích:</strong> Bộ câu hỏi công khai sẽ cần <strong>Admin duyệt</strong> trước khi xuất hiện trên
+                trang chủ. Hãy đảm bảo nội dung chính xác nhé!</p>
+            </div>
+          }
 
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="cancel()">Hủy</button>
-          <button type="submit" class="btn-primary" [disabled]="creating">
-            <i class="fas fa-save"></i>
-            {{ creating ? 'Đang lưu...' : 'Lưu & Quay lại' }}
-          </button>
-        </div>
-      </form>
-    </div>
+          <div class="form-group">
+            <label>Loại bộ câu hỏi</label>
+
+            <div class="visibility-options">
+              <label class="visual-card free-card" [class.selected]="!model.muon_tao_tra_phi"
+                     (click)="model.muon_tao_tra_phi = false">
+                <input type="radio" name="muon_tao_tra_phi" [checked]="!model.muon_tao_tra_phi" hidden>
+                <div class="card-icon"><i class="fas fa-gift"></i></div>
+                <div class="card-info">
+                  <span class="card-name">Miễn Phí</span>
+                  <span class="card-desc">Bộ câu hỏi sẽ được phát hành miễn phí cho mọi người.</span>
+                </div>
+                <div class="check-circle"><i class="fas fa-check"></i></div>
+              </label>
+
+              <label class="visual-card paid-card" [class.selected]="model.muon_tao_tra_phi"
+                     (click)="model.muon_tao_tra_phi = true">
+                <input type="radio" name="muon_tao_tra_phi" [checked]="model.muon_tao_tra_phi" hidden>
+                <div class="card-icon"><i class="fas fa-coins"></i></div>
+                <div class="card-info">
+                  <span class="card-name">Trả Phí</span>
+                  <span class="card-desc">Admin sẽ quyết định giá mở khóa khi duyệt. Bạn sẽ nhận 70% số vàng khi người chơi mở khóa.</span>
+                </div>
+                <div class="check-circle"><i class="fas fa-check"></i></div>
+              </label>
+            </div>
+
+            @if (model.muon_tao_tra_phi) {
+              <div class="tip-box info">
+                <div class="tip-icon"><i class="fas fa-info-circle"></i></div>
+                <p><strong>Lưu ý:</strong> Admin sẽ quyết định giá mở khóa dựa trên số lượng câu hỏi khi duyệt. Bạn sẽ
+                  nhận <strong>70%</strong> số vàng mỗi khi có người chơi mở khóa bộ câu hỏi này.</p>
+              </div>
+            }
+          </div>
+
+        </section>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-ghost" (click)="cancel()">
+          <i class="fas fa-times"></i> Hủy bỏ
+        </button>
+        <button type="submit" class="btn-save-3d" [disabled]="creating">
+          @if (creating) {
+            <i class="fas fa-spinner fa-spin"></i> Đang khởi tạo...
+          } @else {
+            <span class="btn-content">
+              <i class="fas fa-save"></i> LƯU & TIẾP TỤC
+            </span>
+          }
+        </button>
+      </div>
+
+    </form>
   </div>
 </div>

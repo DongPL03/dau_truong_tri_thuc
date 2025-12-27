@@ -1,18 +1,18 @@
-import {inject, Inject, Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {DOCUMENT} from '@angular/common';
-import {Observable, of, switchMap, tap} from 'rxjs';
-import {environment} from '../environments/environment';
-import {TokenService} from './token.service';
-import {RegisterDto} from '../dtos/nguoi-dung/register-dto';
-import {ResponseObject} from '../responses/response-object';
-import {LoginDTO} from '../dtos/nguoi-dung/login-dto';
-import {UserResponse} from '../responses/nguoidung/user-response';
-import {UpdateUserDTO} from '../dtos/nguoi-dung/update-user-dto';
-import {UserSummaryResponse} from '../responses/nguoidung/user-summary-response';
-import {UserListResponse} from '../responses/nguoidung/user-list-response';
+import { DOCUMENT } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { inject, Inject, Injectable } from '@angular/core';
+import { Observable, of, switchMap, tap } from 'rxjs';
+import { LoginDTO } from '../dtos/nguoi-dung/login-dto';
+import { RegisterDto } from '../dtos/nguoi-dung/register-dto';
+import { UpdateUserDTO } from '../dtos/nguoi-dung/update-user-dto';
+import { environment } from '../environments/environment';
+import { UserListResponse } from '../responses/nguoidung/user-list-response';
+import { UserResponse } from '../responses/nguoidung/user-response';
+import { UserSummaryResponse } from '../responses/nguoidung/user-summary-response';
+import { ResponseObject } from '../responses/response-object';
+import { TokenService } from './token.service';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly baseUrl = `${environment.apiBaseUrl}/users`;
   private apiUserDetail = `${environment.apiBaseUrl}/users/details`;
@@ -75,7 +75,7 @@ export class UserService {
   }
 
   refreshToken(refreshToken: string): Observable<ResponseObject> {
-    return this.http.post<ResponseObject>(`${this.baseUrl}/refreshToken`, {refreshToken});
+    return this.http.post<ResponseObject>(`${this.baseUrl}/refreshToken`, { refreshToken });
   }
 
   // --- USER INFO ---
@@ -103,12 +103,16 @@ export class UserService {
 
   updateUserDetail(token: string, updateUserDTO: UpdateUserDTO): Observable<ResponseObject> {
     let userResponse = this.getUserResponseFromLocalStorage();
-    return this.http.put<ResponseObject>(`${this.apiUserDetail}/${userResponse?.id}`, updateUserDTO, {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      })
-    })
+    return this.http.put<ResponseObject>(
+      `${this.apiUserDetail}/${userResponse?.id}`,
+      updateUserDTO,
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }),
+      }
+    );
   }
 
   updateMe(userId: number, updateUserDTO: UpdateUserDTO): Observable<ResponseObject> {
@@ -117,18 +121,21 @@ export class UserService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token ?? ''}`,
     });
-    return this.http.put<ResponseObject>(`${this.apiUserDetail}/${userId}`, updateUserDTO, {headers});
+    return this.http.put<ResponseObject>(`${this.apiUserDetail}/${userId}`, updateUserDTO, {
+      headers,
+    });
   }
 
   uploadProfileImage(file: File): Observable<ResponseObject> {
-
     const token = this.tokenService.getAccessToken();
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token ?? ''}`,
     });
     const form = new FormData();
     form.append('file', file);
-    return this.http.post<ResponseObject>(`${this.baseUrl}/upload-profile-image`, form, {headers});
+    return this.http.post<ResponseObject>(`${this.baseUrl}/upload-profile-image`, form, {
+      headers,
+    });
   }
 
   /** Đổi mật khẩu (PUT /users/change-password) */
@@ -138,8 +145,8 @@ export class UserService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token ?? ''}`,
     });
-    const body = {oldPassword, newPassword};
-    return this.http.put<ResponseObject>(`${this.baseUrl}/change-password`, body, {headers});
+    const body = { oldPassword, newPassword };
+    return this.http.put<ResponseObject>(`${this.baseUrl}/change-password`, body, { headers });
   }
 
   getUserDetails(): Observable<ResponseObject<UserResponse>> {
@@ -171,13 +178,64 @@ export class UserService {
     );
   }
 
+  // ================== ADMIN METHODS ==================
 
-  getUsers(params: { page: number; limit: number; keyword: string }): Observable<ResponseObject<UserListResponse>> {
+  /** Lấy thống kê user cho admin dashboard */
+  getAdminUserStats(): Observable<ResponseObject<any>> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.tokenService.getAccessToken() ?? ''}`,
+    });
+    return this.http.get<ResponseObject<any>>(`${this.baseUrl}/admin/stats`, { headers });
+  }
+
+  /** Lấy danh sách tất cả user (bao gồm cả đã xóa, bị block) */
+  getAdminUserList(params: {
+    page: number;
+    limit: number;
+    keyword: string;
+  }): Observable<ResponseObject<UserListResponse>> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.tokenService.getAccessToken() ?? ''}`,
+    });
+    return this.http.get<ResponseObject<UserListResponse>>(`${this.baseUrl}/admin/list`, {
+      params,
+      headers,
+    });
+  }
+
+  /** Admin xóa mềm user */
+  adminSoftDeleteUser(userId: number): Observable<ResponseObject<any>> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.tokenService.getAccessToken() ?? ''}`,
+    });
+    return this.http.delete<ResponseObject<any>>(`${this.baseUrl}/admin/${userId}`, { headers });
+  }
+
+  /** Export danh sách user ra CSV */
+  adminExportUsersCsv(keyword?: string): Observable<Blob> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.tokenService.getAccessToken() ?? ''}`,
+    });
+    const params: any = {};
+    if (keyword) params.keyword = keyword;
+
+    return this.http.get(`${this.baseUrl}/admin/export-csv`, {
+      headers,
+      params,
+      responseType: 'blob',
+    });
+  }
+
+  getUsers(params: {
+    page: number;
+    limit: number;
+    keyword: string;
+  }): Observable<ResponseObject<UserListResponse>> {
     const token = this.tokenService.getAccessToken();
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token ?? ''}`,
     });
-    return this.http.get<ResponseObject<UserListResponse>>(this.baseUrl, {params, headers});
+    return this.http.get<ResponseObject<UserListResponse>>(this.baseUrl, { params, headers });
   }
 
   /** 🔹 Admin lấy thông tin chi tiết user theo ID */
@@ -187,10 +245,9 @@ export class UserService {
       Authorization: `Bearer ${token ?? ''}`,
     });
 
-    return this.http.get<ResponseObject<UserResponse>>(
-      `${this.baseUrl}/details/${user_id}`,
-      {headers}
-    );
+    return this.http.get<ResponseObject<UserResponse>>(`${this.baseUrl}/details/${user_id}`, {
+      headers,
+    });
   }
 
   /** 🔐 Admin reset mật khẩu cho user, data trả về là mật khẩu mới (string) */
@@ -203,7 +260,7 @@ export class UserService {
     return this.http.put<ResponseObject<string>>(
       `${this.baseUrl}/reset-password/${user_id}`,
       {},
-      {headers}
+      { headers }
     );
   }
 
@@ -218,7 +275,7 @@ export class UserService {
     return this.http.put<ResponseObject>(
       `${this.baseUrl}/block/${user_id}/${activeFlag}`,
       {},
-      {headers}
+      { headers }
     );
   }
 
@@ -230,12 +287,8 @@ export class UserService {
       Authorization: `Bearer ${token ?? ''}`,
     });
 
-    const body = {role};
-    return this.http.put<ResponseObject>(
-      `${this.baseUrl}/role/${user_id}`,
-      body,
-      {headers}
-    );
+    const body = { role };
+    return this.http.put<ResponseObject>(`${this.baseUrl}/role/${user_id}`, body, { headers });
   }
 
   /** ♻️ Khôi phục user đã deactivate / soft-delete */
@@ -245,13 +298,8 @@ export class UserService {
       Authorization: `Bearer ${token ?? ''}`,
     });
 
-    return this.http.put<ResponseObject>(
-      `${this.baseUrl}/restore/${user_id}`,
-      {},
-      {headers}
-    );
+    return this.http.put<ResponseObject>(`${this.baseUrl}/restore/${user_id}`, {}, { headers });
   }
-
 
   // --- LOCAL STORAGE ---
   saveUserResponseToLocalStorage(userResponse?: UserResponse) {

@@ -101,8 +101,9 @@ public class BangXepHangService implements IBangXepHangService {
                     .soTranThang(soThang)
                     .soTranThua(soThua)
                     .tiLeThang(winRate)
-//                    .xepHang(rank)
+                    .xepHang(bxh.getXepHang())
                     .rankTier(tier)
+                    .level(bxh.getLevel())
                     .build();
         });
     }
@@ -176,7 +177,6 @@ public class BangXepHangService implements IBangXepHangService {
                     .soTranThang(soThang)
                     .soTranThua(soThua)
                     .tiLeThang(winRate)
-//                    .xepHang(rank)
                     .rankTier(tier)
                     .build();
         });

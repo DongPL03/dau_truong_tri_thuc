@@ -1,0 +1,200 @@
+<div class="page">
+  <div class="container">
+    <header class="header">
+      <div>
+        <h1>Luyện tập khóa học</h1>
+        <p class="subtitle">
+          Bạn đang luyện tập bộ câu hỏi trong khóa học
+        </p>
+      </div>
+    </header>
+
+    @if (loading()) {
+      <div class="loading-container">
+        <p>Đang tải câu hỏi...</p>
+      </div>
+    }
+
+    @if (playing() && currentQuestion(); as q) {
+      <section class="practice-area">
+        <div class="practice-header">
+          <div>
+            <h2>{{ practice_data()?.bo_cau_hoi }}</h2>
+            <p class="small">
+              Câu {{ current_index() + 1 }}/{{ practice_data()?.tong_cau_hoi }}
+              – Thời gian còn lại: <strong>{{ remaining_seconds() }}s</strong>
+            </p>
+          </div>
+          <button class="btn-back" type="button" (click)="backToCourse()">
+            ← Về khóa học
+          </button>
+        </div>
+
+        <div class="question-card">
+          <div class="question-text">
+            {{ q.noi_dung }}
+          </div>
+
+          @if (q.duong_dan_tep && q.loai_noi_dung !== 'VAN_BAN') {
+            @switch (q.loai_noi_dung) {
+              @case ('HINH_ANH') {
+                <div class="media">
+                  <img
+                    [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep"
+                    alt="Câu hỏi hình ảnh"
+                  />
+                </div>
+              }
+              @case ('AM_THANH') {
+                <div class="media">
+                  <audio
+                    controls
+                    [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep">
+                  </audio>
+                </div>
+              }
+              @case ('VIDEO') {
+                <div class="media">
+                  <video
+                    controls
+                    [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep">
+                  </video>
+                </div>
+              }
+            }
+          }
+
+          <div class="choices">
+            <button
+              type="button"
+              class="choice"
+              [class.active]="currentAnswer() === 'A'"
+              (click)="selectAnswer('A')"
+            >
+              <strong>A.</strong> {{ q.lua_chon_a }}
+            </button>
+
+            <button
+              type="button"
+              class="choice"
+              [class.active]="currentAnswer() === 'B'"
+              (click)="selectAnswer('B')"
+            >
+              <strong>B.</strong> {{ q.lua_chon_b }}
+            </button>
+
+            <button
+              type="button"
+              class="choice"
+              [class.active]="currentAnswer() === 'C'"
+              (click)="selectAnswer('C')"
+            >
+              <strong>C.</strong> {{ q.lua_chon_c }}
+            </button>
+
+            <button
+              type="button"
+              class="choice"
+              [class.active]="currentAnswer() === 'D'"
+              (click)="selectAnswer('D')"
+            >
+              <strong>D.</strong> {{ q.lua_chon_d }}
+            </button>
+          </div>
+
+          <div class="practice-footer">
+            <div class="left">
+              <button type="button" (click)="goPrev()" [disabled]="current_index() === 0">
+                ← Câu trước
+              </button>
+            </div>
+            <div class="center">
+              <span>Câu {{ current_index() + 1 }} / {{ practice_data()?.tong_cau_hoi }}</span>
+            </div>
+            <div class="right">
+              <button type="button" (click)="goNext()"
+                      [disabled]="current_index() >= (practice_data()?.tong_cau_hoi || 1) - 1">
+                Câu tiếp →
+              </button>
+            </div>
+          </div>
+
+          <div class="submit-row">
+            <button
+              class="btn primary"
+              type="button"
+              (click)="submitCurrentQuestion()"
+              [disabled]="submitting()"
+            >
+              {{
+                current_index() >= (practice_data()?.tong_cau_hoi || 1) - 1
+                  ? (submitting() ? 'Đang nộp & xem kết quả...' : 'Nộp câu cuối & xem kết quả')
+                  : 'Nộp câu hiện tại'
+              }}
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+
+    @if (finished() && result(); as r) {
+      <section class="summary">
+        <div class="summary-card">
+          <h2>Kết quả luyện tập</h2>
+          <p class="summary-main">
+            Điểm: <strong>{{ r.diem_so }}</strong> —
+            Đúng: <strong>{{ r.so_cau_dung }}/{{ r.tong_so_cau }}</strong> —
+            Độ chính xác: <strong>{{ r.do_chinh_xac }}%</strong>
+          </p>
+          <p class="summary-sub">
+            Thời gian trung bình: {{ r.thoi_gian_tb_ms }} ms / câu
+          </p>
+
+          <div class="summary-actions">
+            <button class="btn" type="button" (click)="current_index.set(0); playing.set(true); finished.set(false)">
+              Xem lại câu hỏi
+            </button>
+            <button class="btn primary" type="button" (click)="backToCourse()">
+              Về khóa học
+            </button>
+          </div>
+
+          <div class="detail-table">
+            <h3>Chi tiết từng câu</h3>
+            <table>
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Câu hỏi</th>
+                <th>Đáp án chọn</th>
+                <th>Đáp án đúng</th>
+                <th>Kết quả</th>
+                <th>Giải thích</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (d of r.chi_tiet; track $index; let i = $index) {
+                  <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ practice_data()?.cau_hoi_list?.[i]?.noi_dung }}</td>
+                    <td [class.correct]="d.dung_hay_sai" [class.wrong]="!d.dung_hay_sai">
+                      {{ d.lua_chon || '—' }}
+                    </td>
+                    <td>{{ d.dap_an_dung || '—' }}</td>
+                    <td>
+                      <span [class.correct]="d.dung_hay_sai" [class.wrong]="!d.dung_hay_sai">
+                        {{ d.dung_hay_sai ? 'Đúng' : 'Sai' }}
+                      </span>
+                    </td>
+                    <td class="explain-cell">{{ d.giai_thich || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+</div>
+

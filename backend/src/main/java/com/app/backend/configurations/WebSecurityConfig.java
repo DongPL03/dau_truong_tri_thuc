@@ -72,7 +72,10 @@ public class WebSecurityConfig {
 
                                     String.format("%s/leaderboard/**", apiPrefix),
 
-                                    String.format("%s/provinces/**", apiPrefix)
+                                    String.format("%s/provinces/**", apiPrefix),
+
+                                    String.format("%s/khoa-hoc**", apiPrefix)
+//                                    String.format("%s/khoa-hoc/{id:\\d+}", apiPrefix)
                             ).permitAll()
 
                             .anyRequest()

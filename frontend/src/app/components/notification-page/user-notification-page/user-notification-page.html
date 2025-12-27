@@ -1,38 +1,106 @@
 <div class="notif-page">
-  <header class="notif-page-header">
-    <div>
-      <h2>Thông báo của bạn</h2>
-      <p>Danh sách tất cả thông báo từ hệ thống, trận đấu và bạn bè.</p>
-    </div>
-    <button class="btn-filter" (click)="toggleFilterUnread()">
-      {{ only_unread ? 'Hiện tất cả' : 'Chỉ hiện chưa đọc' }}
-    </button>
-  </header>
+  <div class="bg-decor-1"></div>
+  <div class="bg-decor-2"></div>
 
-  @if (loading) {
-    <div class="loading">Đang tải...</div>
-  } @else {
-    @if (notifications.length === 0) {
-      <div class="empty">Không có thông báo nào.</div>
-    } @else {
-      <ul class="notif-list">
-        @for (n of notifications; track n.thong_bao_id) {
-          <li class="notif-item" [class.unread]="!n.da_doc">
-            <div class="title-row">
-              <span class="sender">{{ n.nguoi_gui_ten }}</span>
-              <span class="type">{{ n.loai }}</span>
-            </div>
-            <div class="body">{{ n.noi_dung }}</div>
-            <div class="time">{{ n.tao_luc | date:'dd/MM/yyyy HH:mm' }}</div>
-          </li>
-        }
-      </ul>
+  <div class="container animate-fade-down">
 
-      <div class="pagination">
-        <button (click)="prevPage()" [disabled]="page === 0">« Trước</button>
-        <span>Trang {{ page + 1 }} / {{ total_pages || 1 }}</span>
-        <button (click)="nextPage()" [disabled]="page + 1 >= total_pages">Sau »</button>
+    <div class="page-header">
+      <div class="header-content">
+        <h1><i class="fas fa-bell"></i> Trung tâm thông báo</h1>
+        <p>Cập nhật tin tức, quà tặng và lời mời từ bạn bè</p>
       </div>
-    }
-  }
+
+      <button class="btn-mark-all" (click)="markAllRead()" [disabled]="loading">
+        <i class="fas fa-check-double"></i> Đánh dấu đã đọc tất cả
+      </button>
+    </div>
+
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="!only_unread" (click)="setFilter(false)">
+        Tất cả
+      </button>
+      <button class="tab-btn" [class.active]="only_unread" (click)="setFilter(true)">
+        Chưa đọc
+      </button>
+    </div>
+
+    <div class="notification-card custom-scrollbar">
+
+      @if (loading) {
+        <div class="state-box">
+          <div class="spinner-3d"></div>
+          <span>Đang tải thông báo...</span>
+        </div>
+      } @else {
+
+        @if (notifications.length === 0) {
+          <div class="state-box empty">
+            <img src="assets/images/empty-inbox.png" onerror="this.style.display='none'">
+            <p>Bạn không có thông báo nào {{ only_unread ? 'chưa đọc' : '' }}.</p>
+          </div>
+        } @else {
+
+          <div class="notif-list">
+            @for (item of notifications; track item.thong_bao_id) {
+              <div class="notif-row"
+                   [class.unread]="!item.da_doc"
+                   (click)="onClickItem(item)">
+
+                <div class="icon-col">
+                  <div class="icon-circle" [ngClass]="getIconClass(item)">
+                    <i [class]="getIcon(item)"></i>
+                  </div>
+                </div>
+
+                <div class="content-col">
+                  <div class="row-top">
+                    <span class="sender">{{ item.nguoi_gui_ten }}</span>
+                    <span class="time">{{ item.tao_luc | date:'dd/MM HH:mm' }}</span>
+                  </div>
+
+                  <div class="message">{{ item.noi_dung }}</div>
+
+                  <div class="extra-row">
+                    @if (getGoldReward(item)) {
+                      <span class="badge gold">
+                        <i class="fas fa-coins"></i> +{{ getGoldReward(item) }} vàng
+                      </span>
+                    }
+                    @if (isQuizNotification(item)) {
+                      <span class="badge quiz" (click)="goToQuiz($event, item)">
+                        <i class="fas fa-arrow-right"></i> Xem bộ câu hỏi
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <div class="actions-col">
+                  @if (!item.da_doc) {
+                    <button class="btn-icon check" (click)="markOneRead($event, item)" title="Đánh dấu đã đọc">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  }
+                  <button class="btn-icon trash" (click)="deleteNotification($event, item)" title="Xóa">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="pagination-footer">
+            <button class="btn-page" (click)="prevPage()" [disabled]="page === 0">
+              <i class="fas fa-chevron-left"></i> Trước
+            </button>
+            <span class="page-info">Trang {{ page + 1 }} / {{ total_pages || 1 }}</span>
+            <button class="btn-page" (click)="nextPage()" [disabled]="page + 1 >= total_pages">
+              Sau <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+
+        }
+      }
+    </div>
+
+  </div>
 </div>

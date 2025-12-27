@@ -42,4 +42,11 @@ export class Admin extends Base implements OnInit {
     this.router.navigate(['/admin', path]).then(r => {
     });
   }
+
+  getAvatar(): string {
+    if (this.user?.avatar_url) {
+      return `http://localhost:8088/api/v1/users/profile-images/${this.user?.avatar_url}`
+    }
+    return 'assets/images/default-avatar.png';
+  }
 }

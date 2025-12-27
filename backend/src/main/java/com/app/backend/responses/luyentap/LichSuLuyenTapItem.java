@@ -20,6 +20,12 @@ public class LichSuLuyenTapItem {
     @JsonProperty("bo_cau_hoi")
     private String boCauHoi;
 
+    @JsonProperty("bo_cau_hoi_id")
+    private Long boCauHoiId;
+
+    @JsonProperty("khoa_hoc")
+    private KhoaHocInfo khoaHoc;
+
     @JsonProperty("tong_cau_hoi")
     private Integer tongCauHoi;
 
@@ -54,10 +60,35 @@ public class LichSuLuyenTapItem {
         private String hoTen;
     }
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class KhoaHocInfo {
+        @JsonProperty("id")
+        private Long id;
+        @JsonProperty("ten")
+        private String ten;
+    }
+
     public static LichSuLuyenTapItem from(PhienLuyenTap p) {
+        Long boCauHoiId = p.getBoCauHoi() != null ? p.getBoCauHoi().getId() : null;
+        String boCauHoiTieuDe = p.getBoCauHoi() != null ? p.getBoCauHoi().getTieuDe() : null;
+
+        // Lấy thông tin khóa học nếu bộ câu hỏi thuộc một khóa học
+        KhoaHocInfo khoaHocInfo = null;
+        if (boCauHoiId != null) {
+            // Sử dụng repository để tìm khóa học
+            // Note: Cần inject repository vào method này hoặc truyền từ service
+            // Tạm thời để null, sẽ được set từ service
+        }
+
         return LichSuLuyenTapItem.builder()
                 .phienId(p.getId())
-                .boCauHoi(p.getBoCauHoi().getTieuDe())
+                .boCauHoi(boCauHoiTieuDe)
+                .boCauHoiId(boCauHoiId)
+                .khoaHoc(null)
                 .tongCauHoi(p.getTongCauHoi())
                 .soCauDung(p.getSoCauDung())
                 .diemSo(p.getDiemSo())
@@ -69,6 +100,18 @@ public class LichSuLuyenTapItem {
                         .hoTen(p.getNguoiDung().getHoTen())
                         .build())
                 .build();
+    }
+
+    // Overload method để nhận thông tin khóa học từ service
+    public static LichSuLuyenTapItem from(PhienLuyenTap p, com.app.backend.models.KhoaHoc khoaHoc) {
+        LichSuLuyenTapItem item = from(p);
+        if (khoaHoc != null) {
+            item.setKhoaHoc(KhoaHocInfo.builder()
+                    .id(khoaHoc.getId())
+                    .ten(khoaHoc.getTieuDe())
+                    .build());
+        }
+        return item;
     }
 
 }

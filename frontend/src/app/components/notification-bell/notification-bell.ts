@@ -1,23 +1,20 @@
-import {Component, HostListener, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {Component, ElementRef, HostListener, OnInit} from '@angular/core';
 import {RouterModule} from '@angular/router';
-import {Base} from '../base/base';
 import {NotificationResponse} from '../../responses/notification/notification-response';
-import {ResponseObject} from '../../responses/response-object';
 import {PageResponse} from '../../responses/page-response';
+import {ResponseObject} from '../../responses/response-object';
+import {Base} from '../base/base';
+import {ClickOutsideDirective} from './click-outside.directive';
 
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ClickOutsideDirective],
   templateUrl: './notification-bell.html',
-  styleUrl: './notification-bell.scss'
+  styleUrl: './notification-bell.scss',
 })
-
-
 export class NotificationBell extends Base implements OnInit {
-
-
   unread_count = 0;
   notifications: NotificationResponse[] = [];
   loading = false;
@@ -33,6 +30,11 @@ export class NotificationBell extends Base implements OnInit {
   battle_invite_ma_phong: string | null = null;
   private battle_invite_timer: any = null;
 
+  constructor(
+    private elementRef: ElementRef,
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.loadUnreadCount();
@@ -82,10 +84,7 @@ export class NotificationBell extends Base implements OnInit {
             ? `${notif.nguoi_gui_ten} đã gửi cho bạn lời mời kết bạn`
             : 'Bạn có thông báo mới');
 
-        const type =
-          notif.loai === 'FRIEND_REQUEST'
-            ? ('info' as const)
-            : ('success' as const);
+        const type = notif.loai === 'FRIEND_REQUEST' ? ('info' as const) : ('success' as const);
 
         const route = this.build_toast_route_from_notif(notif);
 
@@ -95,33 +94,38 @@ export class NotificationBell extends Base implements OnInit {
     }
   }
 
-
   ngOnDestroy(): void {
     // nếu NotificationWsService có hàm disconnect thì gọi thêm:
     this.notificationWsService.ngOnDestroy();
   }
 
-  /** Đóng dropdown khi click ra ngoài */
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.show_dropdown = false;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.show_dropdown = false;
+    }
   }
 
   loadUnreadCount(): void {
     this.notificationService.getUnreadCount().subscribe({
       next: (res: ResponseObject<any>) => {
         this.unread_count = res.data ?? 0;
+        console.log('Loaded unread notification count:', this.unread_count);
       },
       error: () => {
         this.unread_count = 0;
-      }
+      },
     });
   }
 
-  toggleDropdown(): void {
+  toggleDropdown(event: Event): void {
+    event.stopPropagation(); // 🛑 Dừng không cho lan lên document
+    console.log('Toggling notification dropdown');
     this.show_dropdown = !this.show_dropdown;
+    console.log('Dropdown is now', this.show_dropdown ? 'shown' : 'hidden');
     if (this.show_dropdown && this.notifications.length === 0) {
       this.loadPage(0);
+      console.log('Loading first page of notifications');
     }
   }
 
@@ -151,9 +155,8 @@ export class NotificationBell extends Base implements OnInit {
       },
       error: () => {
         this.loading = false;
-      }
+      },
     });
-
   }
 
   loadMore(): void {
@@ -172,7 +175,7 @@ export class NotificationBell extends Base implements OnInit {
           }
         },
         error: () => {
-        }
+        },
       });
     }
 
@@ -197,11 +200,11 @@ export class NotificationBell extends Base implements OnInit {
   markAllRead(): void {
     this.notificationService.markAllAsRead().subscribe({
       next: () => {
-        this.notifications.forEach(n => n.da_doc = true);
+        this.notifications.forEach((n) => (n.da_doc = true));
         this.unread_count = 0;
       },
       error: () => {
-      }
+      },
     });
   }
 
@@ -223,6 +226,11 @@ export class NotificationBell extends Base implements OnInit {
       return ['/tran-dau', meta.tran_dau_id];
     }
 
+    // Thông báo liên quan đến bộ câu hỏi (loại chi tiết nằm trong metadata.type)
+    if ((meta?.type === 'QUIZ_APPROVED' || meta?.type === 'QUIZ_UNLOCKED') && meta?.bo_cau_hoi_id) {
+      return ['/bo-cau-hoi/chi-tiet-bo-cau-hoi', meta.bo_cau_hoi_id];
+    }
+
     // các loại khác: chưa cần navigate
     return undefined;
   }
@@ -241,7 +249,7 @@ export class NotificationBell extends Base implements OnInit {
         next: () => {
         },
         error: () => {
-        }
+        },
       });
     }
 
@@ -256,7 +264,7 @@ export class NotificationBell extends Base implements OnInit {
         next: () => {
         },
         error: () => {
-        }
+        },
       });
     }
     this.closeBattleInviteToast();
@@ -269,5 +277,84 @@ export class NotificationBell extends Base implements OnInit {
       this.battle_invite_timer = null;
     }
   }
+
+  // ================== Helper UI cho template ==================
+  getDisplayType(n: NotificationResponse): string {
+    const t = this.getTypeFromMetadata(n);
+    switch (t) {
+      case 'FRIEND_REQUEST':
+        return 'Lời mời kết bạn';
+      case 'BATTLE_INVITE':
+        return 'Lời mời trận đấu';
+      case 'QUIZ_APPROVED':
+        return 'Bộ câu hỏi được duyệt';
+      case 'QUIZ_UNLOCKED':
+        return 'Bộ câu hỏi được mở khóa';
+      case 'SYSTEM':
+      default:
+        return 'Hệ thống';
+    }
+  }
+
+  isQuizNotification(n: NotificationResponse): boolean {
+    const t = this.getTypeFromMetadata(n);
+    return t === 'QUIZ_APPROVED' || t === 'QUIZ_UNLOCKED';
+  }
+
+  getIconClass(notif: any): string {
+    const type = this.getTypeFromMetadata(notif);
+    switch (type) {
+      case 'FRIEND_REQUEST':
+        return 'friend';
+      case 'BATTLE_INVITE':
+        return 'battle';
+      case 'QUIZ_APPROVED':
+      case 'QUIZ_UNLOCKED':
+        return 'gold'; // Hoặc tạo class 'quiz' riêng
+      default:
+        return 'system';
+    }
+  }
+
+  // Lấy Icon FontAwesome
+  getIcon(notif: any): string {
+    const type = this.getTypeFromMetadata(notif);
+    switch (type) {
+      case 'FRIEND_REQUEST':
+        return 'fas fa-user-plus';
+      case 'BATTLE_INVITE':
+        return 'fas fa-swords'; // Cần FontAwesome Pro hoặc dùng fa-gamepad
+      case 'QUIZ_APPROVED':
+        return 'fas fa-check-circle';
+      case 'QUIZ_UNLOCKED':
+        return 'fas fa-unlock-alt';
+      default:
+        return 'fas fa-bell';
+    }
+  }
+
+  // Lấy thông tin loại từ metadata (nếu có)
+  private getTypeFromMetadata(n: any): string {
+    if (n.metadata) {
+      try {
+        const meta = JSON.parse(n.metadata);
+        if (typeof meta?.type === 'string') return meta.type;
+      } catch {
+      }
+    }
+    return n.loai;
+  }
+
+  // Lấy số vàng thưởng (nếu có)
+  getGoldReward(n: any): number | null {
+    if (!n.metadata) return null;
+    try {
+      const meta = JSON.parse(n.metadata);
+      return typeof meta?.gold_reward === 'number' ? meta.gold_reward : null;
+    } catch {
+      return null;
+    }
+  }
+
 
 }

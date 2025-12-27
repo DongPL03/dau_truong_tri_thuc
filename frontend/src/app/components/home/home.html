@@ -21,7 +21,8 @@
         <div class="xp-container">
           <div class="xp-info">
             <span>XP</span>
-            <span class="xp-val">{{ user_summary?.xp_in_current_level || 0 }} / {{ (user_summary?.xp_in_current_level || 0) + (user_summary?.xp_next_level || 100) }}</span>
+            <span class="xp-val">{{ user_summary?.xp_in_current_level || 0 }}
+              / {{ (user_summary?.xp_in_current_level || 0) + (user_summary?.xp_next_level || 100) }}</span>
           </div>
           <div class="progress-track">
             <div class="progress-fill" [style.width.%]="user_summary?.level_progress_percent || 0"></div>
@@ -75,20 +76,22 @@
           <div class="btn-content">
             <i class="fas fa-swords"></i>
             <span>TÌM TRẬN ĐẤU</span>
-            <small>Chế độ xếp hạng</small>
           </div>
           <div class="shine-effect"></div>
         </button>
 
         <div class="sub-actions">
-          <button class="btn-3d btn-secondary" (click)="navigatePractice()">
-            <i class="fas fa-dumbbell"></i> Luyện tập
-          </button>
           <button class="btn-3d btn-secondary" (click)="navigateQuiz()">
             <i class="fas fa-plus"></i> Tạo câu hỏi
           </button>
+          <button class="btn-3d btn-secondary" (click)="navigatePractice()">
+            <i class="fas fa-dumbbell"></i> Luyện tập
+          </button>
           <button class="btn-3d btn-secondary" (click)="navigateFriend()">
             <i class="fas fa-user-friends"></i> Bạn bè
+          </button>
+          <button class="btn-3d btn-secondary" (click)="navigateRecommendation()">
+            <i class="fas fa-lightbulb"></i> Gợi ý học tập
           </button>
         </div>
       </section>
@@ -129,7 +132,7 @@
               @for (b of pendingBattles; track b.id) {
                 <div class="room-item">
                   <span class="room-id">#{{ b.ma_phong }}</span>
-                  <button class="btn-sm btn-join">Vào ngay</button>
+                  <button class="btn-sm btn-join" (click)="tryJoinRoom(b)">Vào ngay</button>
                 </div>
               }
             </div>

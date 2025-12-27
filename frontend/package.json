@@ -41,6 +41,7 @@
     "@popperjs/core": "^2.11.8",
     "@stomp/stompjs": "^7.2.1",
     "@tailwindcss/postcss": "^4.1.16",
+    "@tsparticles/confetti": "^3.9.1",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
     "class-transformer": "^0.5.1",

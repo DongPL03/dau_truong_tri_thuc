@@ -1,0 +1,104 @@
+.recommendation-page {
+  padding: 24px;
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .loading {
+    margin-top: 16px;
+  }
+}
+
+.recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.card-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+
+  h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 12px;
+  }
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rec-card {
+  border-radius: 10px;
+  border: 1px solid #eee;
+  padding: 12px 14px;
+  background: #fafafa;
+}
+
+.rec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  h3 {
+    font-size: 15px;
+    margin: 0;
+  }
+}
+
+.badge-topic {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.reason,
+.memo-count {
+  font-size: 13px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.btn-primary,
+.btn-secondary {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: white;
+}
+
+.btn-secondary {
+  background: #eeeeee;
+  color: #333;
+}
+
+.empty-text {
+  font-size: 13px;
+  color: #777;
+  margin-top: 8px;
+}
+
+

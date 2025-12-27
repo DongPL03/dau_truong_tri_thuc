@@ -1,521 +1,666 @@
 :host {
-  --primary-color: #4CAF50;
-  --secondary-color: #2196F3;
-  --accent-edit: #FFC107;
-  --accent-private: #9C27B0;
-  --bg-color: #f7f9fc;
+  /* Game Theme Colors */
+  --primary: #6c5dd3;
+  --primary-dark: #5b4cc4;
+  --accent: #ff754c; /* Cam - cho nút hành động */
+  --bg-body: #f0f2f5;
   --card-bg: #ffffff;
-  --border-color: #e0e0e0;
-  --text-color: #333;
-  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --text-main: #11142d;
+  --text-muted: #808191;
+
+  --success: #4caf50;
+  --warning: #ffc107;
+  --danger: #ff5252;
+  --info: #2196f3;
+
+  /* Status Colors */
+  --status-approved: #4caf50;
+  --status-pending: #ff9800;
+  --status-rejected: #f44336;
 }
 
-.page-container {
-  max-width: 1200px;
+/* --- CONTAINER --- */
+.inventory-container {
+  max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+  font-family: inherit;
+  color: var(--text-main);
 }
 
-/* giữ nguyên phần .quiz-card, .filter-sidebar, .page-header, .pagination, v.v. từ HTML mẫu của bạn */
-.page-header {
+/* --- HERO HEADER --- */
+.inventory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: 15px;
   margin-bottom: 30px;
+  background: white;
+  padding: 20px 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
 
-.page-header h1 {
-  color: var(--secondary-color);
+.header-content h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 5px 0;
+  background: linear-gradient(90deg, var(--primary), #a29bfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-content p {
   margin: 0;
-  font-size: 2em;
+  color: var(--text-muted);
 }
 
-.btn-primary {
-  background-color: var(--primary-color);
+/* Nút Hero 3D */
+.btn-hero-3d {
+  background: linear-gradient(135deg, var(--accent), #ff9f43);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 12px 25px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 6px 0 #d35400, 0 12px 20px rgba(255, 117, 76, 0.3);
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-  background-color: #388E3C;
-}
-
-/* Layout Chính */
-.quiz-management-layout {
+  transition: all 0.1s;
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-hero-3d:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 #d35400;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px;
+  border-radius: 8px;
+}
+
+/* --- LAYOUT GRID --- */
+.inventory-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
   gap: 30px;
 }
 
-/* Sidebar */
-.filter-sidebar {
-  width: 250px;
-  background-color: var(--card-bg);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: var(--shadow-light);
-  flex-shrink: 0;
+/* --- LEFT SIDEBAR (CONTROL PANEL) --- */
+.control-panel {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
 }
 
-.search-box {
-  position: relative;
+.panel-header {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-
-.search-input {
-  width: 100%;
-  padding: 10px 12px 10px 36px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.95em;
-}
-
-.search-box i {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #888;
-}
-
 
 .filter-group {
   margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 1px dashed var(--border-color);
 }
 
-.filter-group h3 {
-  margin-top: 0;
-  color: var(--primary-color);
-  font-size: 1.1em;
+.group-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
   margin-bottom: 10px;
 }
 
-.filter-group label {
-  display: block;
-  margin-bottom: 8px;
-  cursor: pointer;
-  font-size: 0.95em;
+/* Search HUD */
+.search-hud {
+  position: relative;
+  background: #f8f9fb;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
 }
 
-.btn-secondary.apply-filter {
+.search-hud:focus-within {
+  border-color: var(--primary);
+  background: white;
+}
+
+.search-hud i {
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  color: var(--text-muted);
+}
+
+.search-hud input {
   width: 100%;
-  background-color: #6c757d;
-  color: white;
   border: none;
-  padding: 10px;
+  background: transparent;
+  padding: 12px 12px 12px 40px;
+  font-weight: 600;
+  color: var(--text-main);
+  outline: none;
+}
+
+/* Toggle Buttons */
+.toggle-row {
+  display: flex;
+  background: #f8f9fb;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.toggle-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: 0.2s;
 }
 
-.btn-secondary.apply-filter:hover {
-  background-color: #5a6268;
+.toggle-btn.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* Danh sách Quiz */
-.quiz-list-area {
-  flex-grow: 1;
+/* Radio Cards (Vertical) */
+.toggle-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.quiz-card {
+.radio-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.radio-card:hover {
+  background: #f8f9fb;
+}
+
+.radio-card.active {
+  border-color: var(--primary);
+  background: #f3f0ff;
+  color: var(--primary);
+}
+
+/* Custom Select */
+.select-wrapper {
+  position: relative;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid #f0f2f5;
+  background: white;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+  transition: 0.2s;
+}
+
+.custom-select:focus {
+  border-color: var(--primary);
+}
+
+.arrow {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Action Buttons */
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-glass {
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.btn-glass.primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-glass.primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-glass.secondary {
+  background: #e4e5ee;
+  color: var(--text-muted);
+}
+
+.btn-glass.secondary:hover {
+  background: #dcdde9;
+  color: var(--text-main);
+}
+
+/* --- MAIN CARD GRID --- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+/* Section grouping giống mũi tên trong mock */
+.quiz-section {
+  margin-bottom: 30px;
+}
+
+.section-header-arrow {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 6px 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.section-header-arrow .section-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.section-header-arrow .arrow-head {
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-left: 18px solid var(--primary);
+  margin-left: 10px;
+}
+
+.section-header-arrow.secondary {
+  background: #f8fafc;
+}
+
+.section-header-arrow.secondary .arrow-head {
+  border-left-color: #0ea5e9;
+}
+
+.section-header-arrow.tertiary {
+  background: #f0f9ff;
+}
+
+.section-header-arrow.tertiary .arrow-head {
+  border-left-color: #10b981;
+}
+
+/* SKILL CARD STYLE */
+.skill-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top: 5px solid #ccc; /* Default border color */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.skill-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Border Colors based on Status */
+.skill-card.status-approved {
+  border-top-color: var(--status-approved);
+}
+
+.skill-card.status-pending {
+  border-top-color: var(--status-pending);
+}
+
+.skill-card.status-rejected {
+  border-top-color: var(--status-rejected);
+}
+
+/* Card Top */
+.card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background-color: var(--card-bg);
-  padding: 20px;
   margin-bottom: 15px;
-  border-radius: 10px;
-  box-shadow: var(--shadow-light);
-  transition: transform 0.2s;
-  border-left: 5px solid transparent;
 }
 
-.quiz-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-}
-
-.quiz-card.public {
-  border-left-color: var(--secondary-color);
-}
-
-.quiz-card.private {
-  border-left-color: var(--accent-private);
-}
-
-.quiz-info {
-  flex-grow: 1;
-}
-
-.quiz-category {
-  font-size: 0.8em;
-  font-weight: bold;
-  color: var(--primary-color);
-  background-color: #e8f5e9;
-  padding: 3px 8px;
-  border-radius: 5px;
-  display: inline-block;
-  margin-bottom: 5px;
-}
-
-.quiz-card h3 {
-  margin: 5px 0 8px 0;
-  color: var(--text-color);
-  font-size: 1.3em;
-}
-
-.quiz-meta,
-.quiz-desc {
-  font-size: 0.9em;
-  color: #777;
-}
-
-.quiz-desc {
-  margin-top: 5px;
-}
-
-.quiz-actions {
+.icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: #f0f2f5;
+  color: var(--primary);
   display: flex;
-  gap: 10px;
-  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
 }
 
-.btn-action {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: opacity 0.3s;
+.badges-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.badge-pill {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.btn-action.battle {
-  background-color: var(--secondary-color);
-  color: white;
+.status-badge {
+  background: #f0f0f0;
+  color: #555;
 }
 
-.btn-action.practice {
-  background-color: var(--primary-color);
-  color: white;
+.status-approved .status-badge {
+  background: #e8f5e9;
+  color: var(--status-approved);
 }
 
-.btn-action.edit {
-  background-color: var(--accent-edit);
-  color: var(--text-color);
+.status-pending .status-badge {
+  background: #fff8e1;
+  color: var(--status-pending);
 }
 
-.btn-action.view {
-  background-color: #6C63FF;
-  color: white;
+.status-rejected .status-badge {
+  background: #ffebee;
+  color: var(--status-rejected);
 }
 
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 50px 0;
-  color: #777;
+.visibility-badge {
+  background: #e3f2fd;
+  color: var(--info);
 }
 
-.empty-state i {
-  font-size: 3em;
-  color: #ccc;
-  margin-bottom: 15px;
+.visibility-badge.is-private {
+  background: #f3e5f5;
+  color: #9c27b0;
 }
 
-/* Pagination */
-.pagination {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
+/* Card Body */
+.card-body {
+  flex-grow: 1;
+  margin-bottom: 20px;
 }
 
-.pagination a {
-  text-decoration: none;
-  color: var(--secondary-color);
-  padding: 8px 15px;
-  border: 1px solid var(--secondary-color);
-  border-radius: 5px;
-  margin: 0 5px;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.pagination a.active,
-.pagination a:hover {
-  background-color: var(--secondary-color);
-  color: white;
-}
-
-.pagination {
-  margin-top: 30px;
-  text-align: center;
-}
-
-.pagination a,
-.pagination span {
-  text-decoration: none;
-  color: var(--secondary-color);
-  padding: 8px 14px;
-  border: 1px solid var(--secondary-color);
-  border-radius: 6px;
-  margin: 0 3px;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-.pagination a:hover {
-  background-color: var(--secondary-color);
-  color: #fff;
-}
-
-.pagination a.active {
-  background-color: var(--secondary-color);
-  color: #fff;
-  font-weight: bold;
-}
-
-.pagination a.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.pagination .ellipsis {
-  color: #888;
-  padding: 8px 10px;
-}
-
-.filter-select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 8px;
-}
-
-.badge {
+.category-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  background: #f8f9fb;
   padding: 4px 8px;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.8em;
-  text-transform: uppercase;
 }
 
-.badge-green {
-  background: #dcfce7;
-  color: #15803d;
+.card-title {
+  margin: 10px 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-main);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.badge-yellow {
-  background: #fef9c3;
-  color: #b45309;
+.card-meta {
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-.badge-red {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-.badge-outline{
-
-}
-
-.quiz-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card-desc {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 mark {
-  background-color: red;
-  color: #d32f2f;
+  background: #fff176;
+  color: #333;
   padding: 0 2px;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
-.filter-group h3 {
-  margin-top: 0;
-  color: var(--primary-color);
-  font-size: 1.05em;
-  margin-bottom: 8px;
+/* Card Actions */
+.card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px dashed #eee;
+  padding-top: 15px;
+  margin-top: auto;
 }
 
-.btn-action.delete {
-  background-color: #e11d48; // đỏ tươi
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 0.9rem;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.action-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  background: #eee;
+  color: #999;
+}
+
+.btn-view {
+  background: #eef2ff;
+  color: #5c6bc0;
+}
+
+.btn-view:hover {
+  background: #5c6bc0;
   color: white;
 }
 
-.btn-action.delete:hover {
-  background-color: #be123c;
+.btn-edit {
+  background: #fff8e1;
+  color: #ffa000;
 }
 
-.quiz-actions {
+.btn-edit:not(.disabled):hover {
+  background: #ffa000;
+  color: white;
+}
+
+.btn-delete {
+  background: #ffebee;
+  color: #ef5350;
+}
+
+.btn-delete:not(.disabled):hover {
+  background: #ef5350;
+  color: white;
+}
+
+/* Nút Play/Unlock đặc biệt */
+.btn-play {
+  flex-grow: 1;
+  height: 36px;
+  border-radius: 10px;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 10px rgba(108, 93, 211, 0.3);
+}
+
+.btn-play:not(:disabled):hover {
+  background: var(--primary-dark);
+}
+
+.btn-play:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.unlock-text {
+  color: #ffeaa7;
+}
+
+/* --- PAGINATION & EMPTY STATE --- */
+.pagination-wrapper {
+  margin-top: 40px;
   display: flex;
+  justify-content: center;
   gap: 10px;
 }
 
-.btn-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  padding: 6px 14px;
+.page-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   border: none;
-  border-radius: 6px;
+  background: white;
+  color: var(--text-main);
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: #fff;
+  transition: 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.btn-action.view {
-  background-color: #6366f1; // xanh lam
+.page-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: white;
 }
 
-.btn-action.view:hover {
-  background-color: #4f46e5;
+.page-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 10px rgba(108, 93, 211, 0.4);
 }
 
-.btn-action.edit {
-  background-color: #facc15; // vàng sáng
-  color: #222;
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
-.btn-action.edit:hover {
-  background-color: #eab308;
+.empty-state-card {
+  text-align: center;
+  padding: 50px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  grid-column: 1 / -1;
 }
 
-/* ✅ Khi có quyền sửa */
-.btn-action.editable:hover {
-  background-color: #eab308;
-  transform: translateY(-1px);
+.empty-state-card img {
+  width: 80px;
+  margin-bottom: 20px;
+  opacity: 0.6;
 }
 
-/* ❌ Khi không có quyền sửa */
-.btn-action.disabled {
-  background-color: #d1d5db !important; // xám nhạt
-  color: #555 !important;
-  cursor: not-allowed;
-  opacity: 0.7;
-  transition: none;
+/* Loading */
+.loading-screen {
+  text-align: center;
+  padding: 50px;
 }
 
-.btn-action.disabled:hover {
-  background-color: #9ca3af !important; // xám đậm hơn khi hover
-  transform: none;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
 }
 
-/* Xóa và Luyện */
-.btn-action.delete {
-  background-color: #ef4444;
-}
-
-.btn-action.delete:hover {
-  background-color: #dc2626;
-}
-
-.btn-action.practice {
-  background-color: #22c55e;
-}
-
-.btn-action.practice:hover {
-  background-color: #16a34a;
-}
-
-.btn-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #fff;
-  position: relative;
-}
-
-.btn-action.edit {
-  background-color: #facc15;
-  color: #222;
-}
-
-.btn-action.view {
-  background-color: #6366f1;
-
-  &:hover {
-    transform: translateY(-1px);
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-.btn-action.delete {
-  background-color: #ef4444;
-}
-
-.btn-action.practice {
-  background-color: #22c55e;
-
-  &:hover {
-    transform: translateY(-1px);
+/* Responsive */
+@media (max-width: 900px) {
+  .inventory-layout {
+    grid-template-columns: 1fr;
   }
-}
-
-.btn-action.editable:hover {
-  transform: translateY(-1px);
-}
-
-.btn-action.view:hover {
-  background-color: #4f46e5;
-}
-
-.btn-action.delete:hover {
-  background-color: #dc2626;
-}
-
-.btn-action.practice:hover {
-  background-color: #16a34a;
-}
-
-/* 🚫 Disable trạng thái */
-.btn-action.disabled {
-  background-color: #d1d5db !important;
-  color: #555 !important;
-  cursor: not-allowed;
-  opacity: 0.75;
-}
-
-.btn-action.disabled:hover {
-  background-color: #9ca3af !important;
-  transform: none;
-}
-
-/* 🧩 Tooltip hiệu ứng gọn gàng */
-.btn-action[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #111827;
-  color: #fff;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-  opacity: 0.9;
-  z-index: 1000;
-}
-
-/* 🔒 Icon khóa khi disable */
-.btn-action.disabled i.fa-lock {
-  font-size: 13px;
-  opacity: 0.9;
+  .control-panel {
+    position: relative;
+    top: 0;
+  }
+  .inventory-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  .btn-hero-3d {
+    width: 100%;
+    justify-content: center;
+  }
 }

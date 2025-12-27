@@ -48,4 +48,59 @@ public interface ILichSuTranDauRepository extends JpaRepository<LichSuTranDau, L
             @Param("boCauHoiId") Long boCauHoiId,
             Pageable pageable
     );
+
+    /**
+     * Tìm kiếm lịch sử trận đấu với filter nâng cao
+     */
+    @Query("""
+            SELECT l FROM LichSuTranDau l
+            JOIN l.tranDau td
+            JOIN td.boCauHoi b
+            JOIN l.nguoiDung nd
+            WHERE (:keyword IS NULL OR :keyword = '' 
+                   OR LOWER(td.tenPhong) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(b.tieuDe) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(nd.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(nd.tenDangNhap) LIKE LOWER(CONCAT('%', :keyword, '%')))
+              AND (:loaiTranDau IS NULL OR :loaiTranDau = '' OR td.loaiTranDau = :loaiTranDau)
+              AND (:boCauHoiId IS NULL OR b.id = :boCauHoiId)
+              AND (:from IS NULL OR l.hoanThanhLuc >= :from)
+              AND (:to IS NULL OR l.hoanThanhLuc <= :to)
+            ORDER BY l.hoanThanhLuc DESC
+            """)
+    Page<LichSuTranDau> findAllFiltered(
+            @Param("keyword") String keyword,
+            @Param("loaiTranDau") String loaiTranDau,
+            @Param("boCauHoiId") Long boCauHoiId,
+            @Param("from") Instant from,
+            @Param("to") Instant to,
+            Pageable pageable
+    );
+
+    /**
+     * Tìm kiếm lịch sử trận đấu với filter (không phân trang - cho export)
+     */
+    @Query("""
+            SELECT l FROM LichSuTranDau l
+            JOIN l.tranDau td
+            JOIN td.boCauHoi b
+            JOIN l.nguoiDung nd
+            WHERE (:keyword IS NULL OR :keyword = '' 
+                   OR LOWER(td.tenPhong) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(b.tieuDe) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(nd.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(nd.tenDangNhap) LIKE LOWER(CONCAT('%', :keyword, '%')))
+              AND (:loaiTranDau IS NULL OR :loaiTranDau = '' OR td.loaiTranDau = :loaiTranDau)
+              AND (:boCauHoiId IS NULL OR b.id = :boCauHoiId)
+              AND (:from IS NULL OR l.hoanThanhLuc >= :from)
+              AND (:to IS NULL OR l.hoanThanhLuc <= :to)
+            ORDER BY l.hoanThanhLuc DESC
+            """)
+    List<LichSuTranDau> findAllFilteredList(
+            @Param("keyword") String keyword,
+            @Param("loaiTranDau") String loaiTranDau,
+            @Param("boCauHoiId") Long boCauHoiId,
+            @Param("from") Instant from,
+            @Param("to") Instant to
+    );
 }

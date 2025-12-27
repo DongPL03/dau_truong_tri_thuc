@@ -1,102 +1,226 @@
-<div class="admin-bch-container">
-  <div class="list-header">
-    <div>
-      <h2>Quản lý bộ câu hỏi</h2>
-      <p>Danh sách tất cả bộ câu hỏi trong hệ thống.</p>
-    </div>
+<div class="admin-bch-container animate-fade-down">
 
-    <div class="list-header-actions">
-      <button
-        class="btn"
-        (click)="goToCreateAdminBo()">
-        <i class="fas fa-plus"></i> Thêm bộ câu hỏi (admin)
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Quản lý bộ câu hỏi</h2>
+      <p class="page-subtitle">Kiểm duyệt và quản lý kho tri thức của hệ thống.</p>
+    </div>
+    <button class="btn-create" (click)="goToCreateAdminBo()">
+      <i class="fas fa-plus-circle"></i> Tạo mới
+    </button>
+  </div>
+
+  @if (statistics) {
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="icon"><i class="fas fa-layer-group"></i></div>
+        <div class="info">
+          <span class="lbl">Tổng số</span>
+          <span class="val">{{ statistics.total | number }}</span>
+        </div>
+      </div>
+      <div class="stat-card orange">
+        <div class="icon"><i class="fas fa-clock"></i></div>
+        <div class="info">
+          <span class="lbl">Chờ duyệt</span>
+          <span class="val">{{ statistics.choDuyet | number }}</span>
+        </div>
+      </div>
+      <div class="stat-card green">
+        <div class="icon"><i class="fas fa-check-circle"></i></div>
+        <div class="info">
+          <span class="lbl">Đã duyệt</span>
+          <span class="val">{{ statistics.daDuyet | number }}</span>
+        </div>
+      </div>
+      <div class="stat-card red">
+        <div class="icon"><i class="fas fa-times-circle"></i></div>
+        <div class="info">
+          <span class="lbl">Từ chối</span>
+          <span class="val">{{ statistics.tuChoi | number }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="keyword" placeholder="Tìm kiếm bộ câu hỏi..."
+               (keyup.enter)="page=0; loadData()">
+      </div>
+
+      <select class="filter-select" [(ngModel)]="trangThai" (change)="page=0; loadData()">
+        @for (opt of trangThaiOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+
+      <select class="filter-select" [(ngModel)]="chuDeId" (change)="page=0; loadData()">
+        <option [value]="0">Tất cả chủ đề</option>
+        @for (cd of chuDes; track cd.id) {
+          <option [value]="cd.id">{{ cd.ten }}</option>
+        }
+      </select>
+
+      <button class="btn-icon-text" (click)="showAdvancedFilter = !showAdvancedFilter"
+              [class.active]="showAdvancedFilter">
+        <i class="fas fa-sliders-h"></i> Lọc nâng cao
       </button>
     </div>
+
+    <button class="btn-icon-text" (click)="resetFilters()" title="Đặt lại bộ lọc">
+      <i class="fas fa-undo"></i>
+    </button>
   </div>
 
+  @if (showAdvancedFilter) {
+    <div class="advanced-filter-panel animate-fade-down">
+      <div class="filter-group">
+        <label>Loại sử dụng</label>
+        <select [(ngModel)]="loaiSuDung" (change)="page=0; loadData()">
+          @for (opt of loaiSuDungOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
 
-  <div class="filter-row">
-    <input
-      type="text"
-      [(ngModel)]="keyword"
-      placeholder="Tìm theo tiêu đề..."
-    />
+      <div class="filter-group">
+        <label>Phí tham gia</label>
+        <select [(ngModel)]="muonTaoTraPhi" (change)="page=0; loadData()">
+          @for (opt of loaiOptions; track opt.value) {
+            <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
 
-    <select [(ngModel)]="chuDeId">
-      <option [value]="0">Tất cả chủ đề</option>
-      @for (cd of chuDes; track cd.id) {
-        <option [value]="cd.id">{{ cd.ten }}</option>
-      }
-    </select>
+      <div class="filter-group">
+        <label>Sắp xếp</label>
+        <select [(ngModel)]="sortOrder" (change)="page=0; loadData()">
+          @for (opt of sortOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  }
 
-    <select [(ngModel)]="trangThai">
-      @for (opt of trangThaiOptions; track opt.value) {
-        <option [value]="opt.value">{{ opt.label }}</option>
-      }
-    </select>
+  @if (hasSelection) {
+    <div class="bulk-actions-bar animate-fade-up">
+      <div class="bulk-left">
+        <span class="count">{{ selectedItems.size }}</span> item đang chọn
+        <button class="btn-link" (click)="selectedItems.clear()">Hủy chọn</button>
+      </div>
+      <div class="bulk-right">
+        <button class="btn-bulk approve" (click)="bulkApprove()"><i class="fas fa-check"></i> Duyệt</button>
+        <button class="btn-bulk reject" (click)="bulkReject()"><i class="fas fa-times"></i> Từ chối</button>
+      </div>
+    </div>
+  }
 
-    <button (click)="page = 0; loadData()">Lọc</button>
-  </div>
-
-  @if (!loading) {
-
-    <table class="admin-table">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Tiêu đề</th>
-        <th>Chủ đề</th>
-        <th>Người tạo</th>
-        <th>Chế độ</th>
-        <th>Trạng thái</th>
-        <th>Thao tác</th>
-      </tr>
-      </thead>
-      <tbody>
-        @if (items.length === 0) {
-          <tr>
-            <td colspan="7" class="empty">Không có bộ câu hỏi nào</td>
-          </tr>
-        } @else {
-          @for (quiz of items; track quiz.id) {
+  <div class="table-card custom-scrollbar">
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        Đang tải dữ liệu...
+      </div>
+    } @else {
+      <table class="modern-table">
+        <thead>
+        <tr>
+          <th class="w-check">
+            <input type="checkbox" [checked]="isAllSelected" (change)="toggleSelectAll()">
+          </th>
+          <th class="w-info">Bộ Câu Hỏi</th>
+          <th>Chủ đề</th>
+          <th>Tác giả</th>
+          <th>Thuộc tính</th>
+          <th>Trạng thái</th>
+          <th class="text-right">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+          @if (items.length === 0) {
             <tr>
-              <td>{{ quiz.id }}</td>
-              <td>{{ quiz.tieu_de }}</td>
-              <td>{{ quiz.chu_de || '-' }}</td>
-              <td>{{ quiz.nguoi_tao || '-' }}</td>
-              <td>{{ quiz.che_do_hien_thi }}</td>
-              <td>{{ quiz.trang_thai }}</td>
-              <td class="actions">
-                <button
-                  (click)="approve(quiz)"
-                  [disabled]="quiz.trang_thai !== 'CHO_DUYET'">
-                  Duyệt
-                </button>
+              <td colspan="7" class="empty-state">Không tìm thấy dữ liệu phù hợp.</td>
+            </tr>
+          }
+          @for (quiz of items; track quiz.id) {
+            <tr [class.selected]="selectedItems.has(quiz.id)">
+              <td>
+                <input type="checkbox" [checked]="selectedItems.has(quiz.id)" (change)="toggleSelect(quiz.id)">
+              </td>
+              <td>
+                <div class="quiz-info">
+                  <span class="quiz-title">{{ quiz.tieu_de }}</span>
+                  <div class="quiz-meta">
+                    <span class="q-count"><i class="fas fa-question-circle"></i> {{ quiz.so_cau_hoi || 0 }} câu</span>
+                    <span class="q-date"><i class="far fa-clock"></i> {{ quiz.tao_luc | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td><span class="topic-tag">{{ quiz.chu_de || 'Chưa phân loại' }}</span></td>
+              <td>
+                <div class="author-cell">
+                  <div class="author-avt">{{ (quiz.nguoi_tao || '?')[0] | uppercase }}</div>
+                  <span>{{ quiz.nguoi_tao }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="tags-cell">
+                  @if (quiz.muon_tao_tra_phi) {
+                    <span class="tag gold" title="Trả phí"><i class="fas fa-coins"></i> Premium</span>
+                  } @else {
+                    <span class="tag green" title="Miễn phí"><i class="fas fa-gift"></i> Free</span>
+                  }
 
-                <button
-                  class="danger"
-                  (click)="reject(quiz)"
-                  [disabled]="quiz.trang_thai !== 'CHO_DUYET'">
-                  Từ chối
-                </button>
-                <button (click)="navigateDetail(quiz.id)">Sửa</button>
+                  @if (quiz.loai_su_dung === 'RANKED_ONLY') {
+                    <span class="tag purple" title="Chỉ đấu hạng"><i class="fas fa-trophy"></i> Rank</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="quiz.trang_thai">
+                  {{ getStatusLabel(quiz.trang_thai) }}
+                </span>
+              </td>
+              <td>
+                <div ngbDropdown container="body" placement="bottom-end" class="d-inline-block">
+                  <button class="btn-more" ngbDropdownToggle><i class="fas fa-ellipsis-v"></i></button>
+                  <div ngbDropdownMenu class="custom-dropdown">
+                    <button ngbDropdownItem (click)="navigateDetail(quiz.id)">
+                      <i class="fas fa-eye"></i> Xem chi tiết
+                    </button>
+                    <button ngbDropdownItem (click)="navigateEdit(quiz.id)"><i class="fas fa-edit"></i> Chỉnh sửa
+                    </button>
 
+                    @if (quiz.trang_thai === 'CHO_DUYET') {
+                      <div class="dropdown-divider"></div>
+                      <button ngbDropdownItem class="text-success" (click)="approve(quiz)">
+                        <i class="fas fa-check"></i> Duyệt ngay
+                      </button>
+                      <button ngbDropdownItem class="text-danger" (click)="reject(quiz)">
+                        <i class="fas fa-times"></i> Từ chối
+                      </button>
+                    }
+                  </div>
+                </div>
               </td>
             </tr>
           }
-        }
-      </tbody>
-    </table>
-
-    @if (totalPages > 1) {
-      <div class="pagination">
-        <button (click)="changePage(page - 1)" [disabled]="page === 0">&laquo;</button>
-        <span>Trang {{ page + 1 }} / {{ totalPages }}</span>
-        <button (click)="changePage(page + 1)" [disabled]="page >= totalPages - 1">&raquo;</button>
-      </div>
+        </tbody>
+      </table>
     }
+  </div>
 
-  } @else {
-    <div class="loading-row">Đang tải...</div>
+  @if (totalPages > 1) {
+    <div class="pagination-container">
+      <button class="btn-page" (click)="changePage(page - 1)" [disabled]="page === 0"><i
+        class="fas fa-chevron-left"></i></button>
+      <span class="page-info">Trang {{ page + 1 }} / {{ totalPages }}</span>
+      <button class="btn-page" (click)="changePage(page + 1)" [disabled]="page >= totalPages - 1"><i
+        class="fas fa-chevron-right"></i></button>
+    </div>
   }
 </div>

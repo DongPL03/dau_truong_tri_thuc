@@ -18,7 +18,7 @@ import {finalize} from 'rxjs/operators';
 import {PickerComponent} from '@ctrl/ngx-emoji-mart';
 import {UserResponse} from '../../../responses/nguoidung/user-response';
 import {FriendSummaryResponse} from '../../../responses/banbe/friend_summary_response';
-import {AchievementResponse} from '../../../responses/thanhtich/achievement-response';
+import {UserSummaryResponse} from '../../../responses/nguoidung/user-summary-response';
 
 @Component({
   selector: 'app-chi-tiet-phong',
@@ -108,6 +108,10 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   reward_popup_shown = false;
 
+  // Thêm vào đầu class
+  showComboVFX = false;
+  comboBonusPoints = 0; // Biến lưu điểm cộng thêm để hiển thị
+  userSummary = signal<UserSummaryResponse | null>(null);
 
   constructor() {
     super();
@@ -138,6 +142,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       console.log('💡 Effect tick() được kích hoạt cho câu', s.current_question_index + 1);
       this.tick(endAt);
     });
+
+
   }
 
   ngOnInit(): void {
@@ -227,6 +233,18 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         this.loading.set(false);
         Swal.fire('Lỗi', 'Không thể tải thông tin phòng', 'error').then(() => this.router.navigateByUrl('/home'));
       },
+    });
+  }
+
+  loadUserSummary(user_id: number) {
+    this.userService.getUserSummary(user_id).subscribe({
+      next: (res: ResponseObject<UserSummaryResponse>) => {
+        console.log('✅ Thống kê người dùng tải về:', res.data);
+        this.userSummary.set(res.data!);
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi tải thống kê người dùng:', err);
+      }
     });
   }
 
@@ -475,43 +493,44 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       }
       case 'SCORE_UPDATE':
         const myId = this.userService.getUserId();
-
-        // 1. Kiểm tra nếu không phải mình thì return
-        if (evt.user_id !== myId) {
-          console.log(`📡 SCORE_UPDATE từ người khác (${evt.ho_ten}), bỏ qua popup.`);
-          return;
-        }
-
-        // Tại đây chắc chắn là myId nên cập nhật Signal luôn
+        if (evt.user_id !== myId) return;
         const combo = evt.combo_streak ?? 0;
         this.currentCombo.set(combo);
-        // ------------------------------------
-
-        // 2. Xử lý hiển thị Popup
-        let title = evt.correct ? '✅ Chính xác!' : '❌ Sai mất rồi';
-        let text = `+${evt.gained_points} điểm`;
-
-        if (evt.correct && (evt.combo_streak ?? 0) >= 2) {
-          // Nếu có combo >=2, ưu tiên show combo
-          title = `🔥 Combo x${evt.combo_streak}`;
-          if ((evt.combo_bonus ?? 0) > 0) {
-            text = `+${evt.gained_points} điểm (bao gồm +${evt.combo_bonus} điểm combo)`;
+        const pointsBonus = evt.combo_bonus || 0;
+        const pointsGained = evt.gained_points || 0;
+        this.comboBonusPoints = pointsGained;
+        if (evt.correct) {
+          if (combo >= 2) {
+            this.triggerComboVFX();
+          } else {
+            Swal.fire({
+              icon: 'success',
+              title: `+${pointsGained} điểm`,
+              toast: true, position: 'top', showConfirmButton: false, timer: 1200,
+              background: '#dcfce7', color: '#166534'
+            }).then(r => {
+            });
           }
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Sai rồi!',
+            text: 'Tiếc quá!',
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 1500,
+            background: '#fee2e2', // Nền đỏ nhạt
+            color: '#991b1b'
+          }).then(r => {
+          });
         }
-
-        Swal.fire(title, text, evt.correct ? 'success' : 'error').then(() => {
-          // Xử lý sau khi đóng popup (nếu cần)
-        });
-
-        // 3. Cập nhật tổng điểm sau 1 chút delay (để khớp hiệu ứng UI nếu có)
         setTimeout(() => {
           this.syncState.update(s => s ? {...s, my_total_points: evt.total_points} : s);
         }, 300);
         break;
 
-
       case 'LEADERBOARD_UPDATE':
-        // 🏅 Cập nhật leaderboard
         // @ts-ignore
         this.leaderboard.set(evt.players || []);
         if (evt.players && evt.players.length > 0) {
@@ -519,36 +538,30 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         }
         break;
 
-
       case 'FINISHED': {
-        console.log('🏁 Trận đấu kết thúc', evt);
         this.battle.set({...(this.battle() as TranDauResponse), trang_thai: 'FINISHED'});
-
         const myId = this.userService.getUserId();
-
-        // 🧮 Lưu kết quả tạm để hiển thị ở màn hình summary
         this.finalResult = {
           winner: evt.winner,
           leaderboard: evt.leaderboard as FinishedPlayer[],
           myId,
         };
-
-        // tìm dòng của chính mình
         this.mySummaryRow = this.finalResult.leaderboard.find(p => p.user_id === myId);
         console.log('🏆 Dòng kết quả của tôi:', this.mySummaryRow);
         this.isWinnerMe = !!(this.finalResult.winner && this.finalResult.winner.user_id === myId);
-
-
-        // 🧭 Chuyển trạng thái sang summary view
         this.showSummary.set(true);
         this.clearTimer();
-        this.show_match_reward_popup();
+        if (this.user?.id) {
+          this.loadUserSummary(this.user.id);
+        }
+        setTimeout(() => {
+          this.show_match_reward_popup();
+        }, 1000);
         break;
       }
 
       case 'CHAT_MESSAGE': {
         const meId = this.userService.getUserId();
-
         const msg: ChatMessage = {
           user_id: evt.user_id,
           ho_ten: evt.ho_ten,
@@ -557,20 +570,15 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           timestamp: evt.timestamp,
           is_me: evt.user_id === meId,
         };
-
         this.chatMessages.update(list => [...list, msg]);
-
-        // auto scroll xuống cuối
         setTimeout(() => {
           const box = document.querySelector('.chat-messages');
           if (box) {
             (box as HTMLElement).scrollTop = (box as HTMLElement).scrollHeight;
           }
         }, 50);
-
         break;
       }
-
     }
   }
 
@@ -983,79 +991,155 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   private show_match_reward_popup(): void {
     const row = this.mySummaryRow;
-    if (!row || this.reward_popup_shown) {
+    // Lấy dữ liệu từ signal userSummary vừa load được
+    const summary = this.userSummary();
+
+    if (!row || !summary || this.reward_popup_shown) {
       return;
     }
     this.reward_popup_shown = true;
 
-    const xp = row.xp_gained ?? 0;
-    const gold = row.gold_gained ?? 0;
-    const level_before = row.level_before ?? null;
-    const level_after = row.level_after ?? null;
-    const rank_before = row.rank_tier_before ?? null;
-    const rank_after = row.rank_tier_after ?? null;
-    const achievements: AchievementResponse[] = row.new_achievements || [];
+    const xpGained = row.xp_gained ?? 0;
+    const goldGained = row.gold_gained ?? 0;
 
-    const title = this.isWinnerMe
-      ? '🏆 Chiến thắng! Phần thưởng của bạn'
-      : '🎁 Phần thưởng trận đấu';
+    // --- TÍNH TOÁN THANH XP (Dựa trên logic trang Home của bạn) ---
+    const currentXP = summary.xp_in_current_level;
+    const remainingXP = summary.xp_next_level;
+    const totalLevelXP = currentXP + remainingXP; // Tổng XP cần của level hiện tại
 
-    let html = `
-    <div class="reward-popup">
-      <div class="reward-main">
-        <div class="reward-block">
-          <div class="reward-label">EXP nhận được</div>
-          <div class="reward-value xp">+${xp} XP</div>
+    // 1. Phần trăm hiện tại (Sau khi đã cộng)
+    // Nếu totalLevelXP = 0 (tránh chia cho 0) thì set là 100%
+    const percentNew = totalLevelXP > 0 ? (currentXP / totalLevelXP) * 100 : 100;
+
+    // 2. Phần trăm cũ (Trước khi cộng)
+    // Nếu vừa lên cấp (level_after > level_before), coi như thanh cũ là 0% để chạy từ đầu cho đẹp
+    const isLevelUp = (row.level_after ?? 0) > (row.level_before ?? 0);
+
+    let percentOld = 0;
+    let percentGainedWidth = 0;
+
+    if (isLevelUp) {
+      // Trường hợp Lên cấp:
+      // Thanh cũ = 0%, Thanh mới chạy từ 0 -> percentNew
+      percentOld = 0;
+      percentGainedWidth = percentNew;
+    } else {
+      // Trường hợp bình thường:
+      // Tính XP trước đó = XP hiện tại - XP vừa nhận
+      const xpBefore = Math.max(0, currentXP - xpGained);
+      percentOld = totalLevelXP > 0 ? (xpBefore / totalLevelXP) * 100 : 0;
+
+      // Độ rộng của đoạn XP vừa nhận
+      percentGainedWidth = percentNew - percentOld;
+    }
+
+    // --- RENDER HTML ---
+    let htmlContent = `
+    <div class="victory-card-container">
+
+      <div class="victory-header-cartoon">
+        <img src="${this.isWinnerMe
+      ? 'https://cdn-icons-png.flaticon.com/512/2583/2583344.png'
+      : 'https://cdn-icons-png.flaticon.com/512/1055/1055666.png'}"
+          class="victory-icon-img">
+      </div>
+
+      <div class="victory-title-cartoon">${this.isWinnerMe ? 'VICTORY' : 'COMPLETED'}</div>
+      <div style="margin-bottom: 20px; color: #cbd5e1; font-size: 0.9rem;">
+        ${isLevelUp ? 'Chúc mừng bạn đã lên cấp mới!' : 'Bạn đã làm rất tốt!'}
+      </div>
+
+      <div class="rewards-cartoon-row">
+        <div class="r-item">
+          <span class="r-icon">⚡</span>
+          <span class="r-val xp-txt">+${xpGained}</span>
+          <span class="r-label">Kinh nghiệm</span>
         </div>
-        <div class="reward-block">
-          <div class="reward-label">Vàng nhận được</div>
-          <div class="reward-value gold">+${gold} 🪙</div>
+        <div class="r-item">
+          <span class="r-icon">🪙</span>
+          <span class="r-val gold-txt">+${goldGained}</span>
+          <span class="r-label">Vàng</span>
         </div>
       </div>
+
+      <div class="xp-bar-wrapper">
+        <div class="xp-bar-labels">
+          <span>Level ${summary.level}</span>
+          <span class="xp-val">${currentXP} / ${totalLevelXP} XP</span>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill-old" style="width: ${percentOld}%"></div>
+
+          <div id="anim-xp-new" class="progress-fill-new"
+               style="width: 0%; left: ${percentOld}%">
+          </div>
+        </div>
+
+        <div style="text-align:right; font-size:10px; color:#fbbf24; margin-top:4px; font-weight:bold;">
+          +${xpGained} XP vừa nhận!
+        </div>
+      </div>
+
+    </div>
   `;
 
-    if (level_before != null && level_after != null) {
-      html += `
-      <div class="reward-extra">
-        <div class="reward-level">
-          Level: <strong>${level_before}</strong> → <strong>${level_after}</strong>
-        </div>
-      </div>
-    `;
-    }
-
-    if (rank_before && rank_after && rank_before !== rank_after) {
-      html += `
-      <div class="reward-rank">
-        Rank: <strong>${rank_before}</strong> → <span class="rank-up">${rank_after}</span>
-      </div>
-    `;
-    }
-    if (achievements.length > 0) {
-      html += `
-      <hr/>
-      <div class="reward-achievements">
-        <div class="reward-label">Thành tích mới mở khoá</div>
-        <ul class="achievement-list">
-          ${achievements
-        .map(a => `
-              <li>
-                <div class="ach-title">${a.title}</div>
-                <div class="ach-desc">${a.description}</div>
-              </li>
-            `)
-        .join('')}
-        </ul>
-      </div>
-      `;
-    }
-    html += `</div>`;
     Swal.fire({
-      title,
-      html,
-      confirmButtonText: 'OK',
-    }).then(r => {
+      html: htmlContent,
+      showConfirmButton: true,
+      confirmButtonText: 'NHẬN QUÀ NGAY',
+      background: 'transparent',
+      backdrop: `rgba(15, 23, 42, 0.9)`,
+      customClass: {
+        confirmButton: 'btn-cartoon-ok',
+        popup: 'game-victory-popup'
+      },
+      didOpen: () => {
+        // Kích hoạt Animation sau 300ms
+        setTimeout(() => {
+          const bar = document.getElementById('anim-xp-new');
+          if (bar) {
+            // Set width thực tế để CSS transition chạy
+            bar.style.width = `${percentGainedWidth}%`;
+          }
+        }, 300);
+      }
+    }).then(() => {
     });
   }
 
+  triggerComboVFX() {
+    this.showComboVFX = true;
+    // Tự động tắt sau 1.5 giây
+    setTimeout(() => {
+      this.showComboVFX = false;
+    }, 1500);
+  }
+
+// Thêm các getter này vào class ChiTietPhong
+
+// Lấy Top 3 để đưa lên bục
+  get topThree() {
+    const list = this.summary_leaderboard;
+    // Đảm bảo mảng đủ 3 phần tử (để render slot trống nếu ít người)
+    return [
+      list[0] || null, // Top 1
+      list[1] || null, // Top 2
+      list[2] || null  // Top 3
+    ];
+  }
+
+// Lấy danh sách còn lại (từ hạng 4 trở đi)
+  get restPlayers() {
+    return this.summary_leaderboard.slice(3);
+  }
+
+  getAvatarUrl(user_id: number) {
+    const player = this.leaderboard().find(p => p.user_id === user_id);
+    if (player && player.avatar_url) {
+      return this.image_base_url + player.avatar_url;
+    }
+    return this.default_avatar;
+
+  }
 }

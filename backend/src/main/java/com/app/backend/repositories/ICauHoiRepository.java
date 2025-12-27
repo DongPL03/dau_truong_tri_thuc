@@ -34,5 +34,7 @@ public interface ICauHoiRepository extends JpaRepository<CauHoi, Long> {
     Page<CauHoi> findByBoCauHoiId(Long boCauHoiId, Pageable pageable);
 
     List<CauHoi> findByBoCauHoiId(Long boCauHoiId);
+
+    List<CauHoi> findByBoCauHoi_Id(Long id);
 }
 

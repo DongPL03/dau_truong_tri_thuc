@@ -4,8 +4,8 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/dau_truong_tri_thuc?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_ROOT_PASSWORD}
+    username: root
+    password: dongle170503
   jpa:
     show-sql: true
     hibernate:

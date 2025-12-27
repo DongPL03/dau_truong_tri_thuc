@@ -20,7 +20,7 @@
   background-color: var(--bg-body);
   min-height: 100vh;
   padding: 30px;
-  font-family: 'Nunito', 'Segoe UI', sans-serif; /* Khuyên dùng font tròn trịa */
+  font-family: 'Nunito', sans-serif;
   color: var(--text-main);
 }
 
@@ -279,7 +279,7 @@
 /* Các nút phụ */
 .sub-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
 }
 
@@ -514,4 +514,125 @@
   background: #f9f9f9;
   border-radius: 20px;
   border: 2px dashed #eee;
+}
+
+/* --- ROOM LIST (PHÒNG CHỜ) --- */
+
+/* 1. Container danh sách */
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Khoảng cách giữa các phòng */
+  max-height: 300px; /* Giới hạn chiều cao nếu danh sách dài */
+  overflow-y: auto; /* Cho phép cuộn nếu quá nhiều phòng */
+  padding-right: 5px; /* Tránh thanh cuộn đè nội dung */
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp */
+.room-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.room-list::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+/* 2. Từng dòng phòng (Room Item) */
+.room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa; /* Nền xám rất nhạt */
+  border: 1px solid #edf2f7;
+  border-radius: 16px; /* Bo góc tròn trịa */
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hiệu ứng khi rê chuột vào phòng */
+.room-item:hover {
+  background: #ffffff;
+  border-color: var(--primary); /* Viền chuyển màu tím */
+  transform: translateX(5px); /* Trượt nhẹ sang phải */
+  box-shadow: 0 4px 15px rgba(108, 93, 211, 0.15); /* Đổ bóng tím */
+}
+
+/* Đường trang trí bên trái item khi hover */
+.room-item:hover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary);
+}
+
+/* 3. Mã phòng (Room ID) */
+.room-id {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: #eef2ff; /* Nền tím nhạt */
+  color: var(--primary);
+  padding: 6px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Thêm icon hashtag bằng CSS giả lập nếu muốn */
+.room-id::before {
+  content: '#';
+  opacity: 0.6;
+}
+
+/* 4. Nút "Vào ngay" */
+.btn-sm.btn-join {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #20bf6b, #0eb87f); /* Gradient xanh lá */
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(32, 191, 107, 0.3);
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.btn-sm.btn-join:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(32, 191, 107, 0.5);
+  filter: brightness(1.1);
+}
+
+/* 5. Trạng thái trống (Empty State) */
+.empty-text {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 30px 0;
+  background: #fcfcfc;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Thêm icon radar cho sinh động */
+.empty-text::before {
+  content: '📡';
+  font-size: 2rem;
+  opacity: 0.5;
+  margin-bottom: 5px;
 }

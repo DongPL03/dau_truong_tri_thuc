@@ -189,4 +189,90 @@ public class BattleWsPublisher {
 
         messagingTemplate.convertAndSend("/topic/battle." + tranDauId, payload);
     }
+
+    /* ==================== ADMIN EVENTS ==================== */
+
+    /**
+     * Admin đóng phòng
+     */
+    public void sendRoomClosed(Long tranDauId, String reason) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "ROOM_CLOSED");
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("reason", reason);
+        payload.put("timestamp", Instant.now());
+        safeSend(tranDauId, payload);
+    }
+
+    /**
+     * Admin kick người chơi
+     */
+    public void sendPlayerKicked(Long tranDauId, Long userId, String reason) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "PLAYER_KICKED");
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("user_id", userId);
+        payload.put("reason", reason);
+        payload.put("timestamp", Instant.now());
+        safeSend(tranDauId, payload);
+    }
+
+    /* ==================== POWER-UPS / ITEMS ==================== */
+
+    /**
+     * Broadcast sự kiện chung (generic) cho power-ups, items, etc.
+     */
+    public void publishGeneric(Long tranDauId, String eventType, Object data) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", eventType);
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("data", data);
+        payload.put("timestamp", Instant.now());
+        safeSend(tranDauId, payload);
+    }
+
+    /**
+     * Broadcast khi ai đó dùng vật phẩm
+     */
+    public void publishItemUsed(Long tranDauId, Long userId, String hoTen,
+                                 String loaiVatPham, String tenVatPham,
+                                 Object hieuUng) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "ITEM_USED");
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("user_id", userId);
+        payload.put("ho_ten", hoTen);
+        payload.put("loai_vat_pham", loaiVatPham);
+        payload.put("ten_vat_pham", tenVatPham);
+        payload.put("hieu_ung", hieuUng);
+        payload.put("timestamp", Instant.now());
+        safeSend(tranDauId, payload);
+    }
+
+    /**
+     * Broadcast hiệu ứng 50/50 (các đáp án bị loại)
+     */
+    public void publish5050Effect(Long tranDauId, Long userId, List<String> dapAnBiLoai) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "EFFECT_50_50");
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("user_id", userId);
+        payload.put("dap_an_bi_loai", dapAnBiLoai);
+        payload.put("timestamp", Instant.now());
+        safeSend(tranDauId, payload);
+    }
+
+    /**
+     * Broadcast khi có người kích hoạt x2/x3 điểm
+     */
+    public void publishMultiplierActive(Long tranDauId, Long userId, String hoTen, double multiplier) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "MULTIPLIER_ACTIVE");
+        payload.put("tran_dau_id", tranDauId);
+        payload.put("user_id", userId);
+        payload.put("ho_ten", hoTen);
+        payload.put("multiplier", multiplier);
+        payload.put("timestamp", Instant.now());
+        safeSend(tranDauId, payload);
+    }
 }

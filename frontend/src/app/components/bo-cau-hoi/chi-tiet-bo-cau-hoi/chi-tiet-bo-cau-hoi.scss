@@ -1,272 +1,636 @@
-.quiz-detail-container {
-  max-width: 1000px;
-  margin: 30px auto;
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+:host {
+  --primary: #6c5dd3;
+  --primary-dark: #5b4cc4;
+  --accent: #ff754c;
+  --bg-body: #f0f2f5;
+  --text-main: #11142d;
+  --text-muted: #808191;
+  --success: #4caf50;
+  --gold: #ffc107;
+
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
-.quiz-header {
+.detail-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text-main);
+  padding-bottom: 100px;
+}
+
+/* --- 1. HERO HEADER --- */
+.hero-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 2px solid #eee;
-  margin-bottom: 20px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid white;
 }
 
-.quiz-header h1 {
-  margin: 0;
-  color: #2196f3;
+.hero-bg-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
 }
 
-.header-actions {
+.hero-content {
+  flex: 1;
+  padding-right: 30px;
+}
+
+.hero-badges {
   display: flex;
-  gap: 10px;
-}
-
-.btn {
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-green {
-  background: #4caf50;
-  color: #fff;
-}
-
-.btn-gray {
-  background: #ccc;
-  color: #333;
-}
-
-.question-list {
-  margin-top: 30px;
-}
-
-.question-card {
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 15px 20px;
-  margin-bottom: 15px;
-}
-
-.question-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.topic-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+  background: #f3f0ff;
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 
 .badge {
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 0.8em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 
-.badge.easy {
+.badge-approved {
   background: #e8f5e9;
-  color: #388e3c;
+  color: #2e7d32;
 }
 
-.badge.medium {
+.badge-pending {
   background: #fff8e1;
-  color: #f9a825;
+  color: #f57f17;
 }
 
-.badge.hard {
+.badge-rejected {
   background: #ffebee;
-  color: #d32f2f;
+  color: #c62828;
 }
 
-.options {
-  list-style: none;
-  padding-left: 0;
-  margin-top: 10px;
-}
-
-.options li {
-  padding: 8px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  background: #fff;
-  border: 1px solid #eee;
-}
-
-.options li.correct {
-  border-color: #4caf50;
-  background: #e8f5e9;
-  font-weight: 600;
-}
-
-.question-media img {
-  max-width: 400px;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.explanation {
+.badge-mode {
   background: #e3f2fd;
-  border-left: 4px solid #2196f3;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 10px;
-  font-size: 0.95em;
-  color: #333;
-}
-
-.empty-state {
-  text-align: center;
-  color: #888;
-  padding: 40px;
-}
-
-.loading {
-  text-align: center;
-  color: #555;
-  font-style: italic;
-}
-
-/*
- * CSS CHO CÁC NÚT HÀNH ĐỘNG CỦA CARD CÂU HỎI
- * (Dán vào cuối file .css của bạn)
- */
-
-/* * 1. Định dạng vùng chứa nút
- * (Căn phải, tạo khoảng cách)
- */
-.question-actions {
+  color: #1976d2;
   display: flex;
-  justify-content: flex-end; /* Đẩy các nút về bên phải */
-  gap: 10px; /* Khoảng cách giữa hai nút */
-  margin-top: 15px; /* Khoảng cách với nội dung bên trên (phần giải thích) */
-  padding-top: 15px; /* Thêm khoảng cách nếu nội dung trên quá sát */
-  border-top: 1px solid #eee; /* Thêm 1 đường kẻ mờ để phân tách */
-}
-
-/* * 2. Kiểu chung cho cả hai nút
- * (Kích thước, bo góc, icon)
- */
-.btn-edit,
-.btn-delete {
-  display: inline-flex;
   align-items: center;
-  gap: 6px; /* Khoảng cách giữa icon và chữ */
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px; /* Bo góc giống các nút trên header */
-  border: 1px solid transparent; /* Đặt border trong suốt để không bị "nhảy" khi hover */
+  gap: 6px;
+}
+
+.badge-mode.private {
+  background: #f3e5f5;
+  color: #9c27b0;
+}
+
+.quiz-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+.quiz-desc {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.alert-box {
+  margin-top: 15px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert-box.info {
+  background: #e1f5fe;
+  color: #0288d1;
+  border: 1px solid #b3e5fc;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 170px;
+}
+
+.btn-glass {
+  background: #f7f7f7;
+  color: var(--text-muted);
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.2s;
 }
 
-/* * 3. Kiểu riêng cho nút "Chỉnh sửa" (Màu xanh dương)
- * Dùng kiểu "outline" để trông nhẹ nhàng, ít xung đột với màu xanh lá của đáp án.
- */
-.btn-edit {
-  background-color: #e3f2fd; /* Nền xanh nhạt (giống ô giải thích) */
-  color: #2196f3; /* Chữ xanh đậm (giống tiêu đề) */
-  border-color: #2196f3;
+.btn-glass:hover {
+  background: #eee;
+  color: var(--text-main);
 }
 
-.btn-edit:hover {
-  background-color: #2196f3; /* Khi hover thì đổi thành nền đặc */
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+.btn-3d-primary {
+  background: linear-gradient(135deg, var(--primary), #8c7ae6);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 0 var(--primary-dark), 0 10px 10px rgba(108, 93, 211, 0.3);
+  transition: 0.1s;
 }
 
-/* * 4. Kiểu riêng cho nút "Xóa" (Màu đỏ)
- * Dùng màu đỏ đặc để cảnh báo hành động nguy hiểm.
- */
-.btn-delete {
-  background-color: #f44336;
-  color: #fff;
+.btn-3d-primary:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--primary-dark);
 }
 
-.btn-delete:hover {
-  background-color: #d32f2f; /* Đậm hơn khi hover (giống màu badge "Khó") */
-  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+/* --- 2. QUESTION LIST --- */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
-/* UI Locked: Hiển thị khi bộ cần unlock nhưng chưa unlock */
-.locked-container {
-  text-align: center;
-  padding: 60px 30px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-  border-radius: 16px;
-  margin: 30px 0;
-  border: 2px dashed #cbd5e1;
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
 }
 
-.locked-icon {
-  font-size: 4rem;
-  color: #94a3b8;
+.count-badge {
+  background: var(--text-main);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.question-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Q-CARD */
+.q-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: var(--card-shadow);
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.q-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.q-header {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.locked-container h2 {
-  color: #334155;
-  margin-bottom: 12px;
-  font-size: 1.5rem;
+.q-index {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: white;
+  background: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 
-.locked-message {
-  color: #64748b;
-  font-size: 1rem;
-  margin-bottom: 24px;
+.difficulty-badge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
 }
 
-.locked-info {
-  background: white;
+.difficulty-badge.DE {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.difficulty-badge.TRUNG_BINH {
+  background: #fef9c3;
+  color: #b45309;
+}
+
+.difficulty-badge.KHO {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.q-text {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 25px 0;
+  line-height: 1.4;
+}
+
+/* Media */
+.media-box {
+  margin-bottom: 25px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fafafa;
+  border: 2px solid #f0f2f5;
+}
+
+.media-box.image img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
+
+.media-box.audio {
   padding: 20px;
-  border-radius: 12px;
-  margin: 24px auto;
-  max-width: 400px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: center;
 }
 
-.locked-info p {
-  margin: 8px 0;
+.media-box.audio audio {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Options */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.opt-item {
+  background: white;
+  border: 2px solid #e4e5ee;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.2s;
+}
+
+.opt-label {
+  background: #e4e5ee;
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+/* Correct Answer Highlight */
+.opt-item.correct {
+  border-color: var(--success);
+  background: #f0fdf4;
+  color: var(--success);
+}
+
+.opt-item.correct .opt-label {
+  background: var(--success);
+  color: white;
+}
+
+/* Explanation */
+.explanation-box {
+  background: #eef2ff;
+  border-left: 4px solid var(--primary);
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.exp-icon {
+  color: var(--primary);
+  font-size: 1.2rem;
+}
+
+.exp-content {
+  font-size: 0.95rem;
+  color: #4338ca;
+  line-height: 1.5;
+}
+
+/* Admin Actions */
+.q-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px dashed #eee;
+}
+
+.btn-action {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.btn-action.edit {
+  background: #fff8e1;
+  color: #ffa000;
+}
+
+.btn-action.edit:hover {
+  background: #ffa000;
+  color: white;
+}
+
+.btn-action.delete {
+  background: #ffebee;
+  color: #ef5350;
+}
+
+.btn-action.delete:hover {
+  background: #ef5350;
+  color: white;
+}
+
+/* --- 3. LOCKED & PREVIEW STATE --- */
+.locked-section {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: var(--card-shadow);
+}
+
+.lock-icon-3d {
+  width: 80px;
+  height: 80px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--text-muted);
+  margin: 0 auto 20px;
+  box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.05);
+}
+
+.lock-msg {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+}
+
+.unlock-price-tag {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff8e1;
+  padding: 10px 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid #ffe082;
+}
+
+.unlock-price-tag span {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #ff8f00;
+}
+
+.unlock-price-tag strong {
+  font-size: 1.5rem;
+  color: #ff6f00;
+}
+
+.btn-unlock-big {
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: #5d4037;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(255, 152, 0, 0.3);
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-unlock-big:hover {
+  transform: scale(1.05);
+}
+
+.btn-unlock-big:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+}
+
+/* Preview Overlay (Khi xem thử 3 câu) */
+.preview-lock-overlay {
+  margin-top: 40px;
+  padding: 60px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #f0f2f5 20%);
+  border-radius: 0 0 24px 24px;
+  text-align: center;
+}
+
+.lock-content {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+  border: 1px solid #eee;
+}
+
+.lock-icon-small {
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 15px;
+}
+
+/* CTA khóa học ở cuối bộ câu hỏi thuộc khóa */
+.course-cta-card {
+  margin-top: 24px;
+  padding: 20px 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+
+.course-cta-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #4f46e5;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.course-cta-content h3 {
+  margin: 0 0 4px 0;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.course-cta-content p {
+  margin: 0;
+  font-size: 0.9rem;
   color: #475569;
 }
 
-.locked-description {
-  font-style: italic;
-  color: #94a3b8;
-  margin-top: 12px;
-}
-
-.unlock-btn {
-  padding: 14px 32px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  color: white;
+.course-cta-button {
+  margin-left: auto;
   border: none;
+  border-radius: 999px;
+  background: #f97316;
+  color: #fff;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 6px 12px rgba(249, 115, 22, 0.35);
 }
 
-.unlock-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
-  color: red;
+.course-cta-button:hover {
+  background: #ea580c;
 }
 
-.unlock-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Empty & Loading */
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-muted);
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+.empty-state img {
+  width: 100px;
+  opacity: 0.5;
+  margin-bottom: 20px;
+}
+
+.btn-ghost-primary {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.btn-ghost-primary:hover {
+  background: var(--primary);
   color: white;
+}
+
+.loading-screen {
+  text-align: center;
+  padding: 100px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #eee;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-card {
+    flex-direction: column;
+  }
+  .hero-actions {
+    width: 100%;
+    flex-direction: row;
+    margin-top: 20px;
+  }
+  .hero-actions button {
+    flex: 1;
+  }
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
 }

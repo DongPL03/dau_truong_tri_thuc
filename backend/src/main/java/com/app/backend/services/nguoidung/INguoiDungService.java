@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface INguoiDungService {
@@ -53,4 +54,16 @@ public interface INguoiDungService {
 
     Long findIdVaiTroByTenDangNhap(String tenDangNhap);
 
+    // ================== ADMIN METHODS ==================
+    /** Lấy thống kê user cho admin dashboard */
+    Map<String, Object> getAdminUserStats();
+    
+    /** Lấy danh sách user (bao gồm cả đã xóa, block) cho admin */
+    Page<NguoiDung> findAllForAdmin(String keyword, Pageable pageable);
+    
+    /** Soft delete user bởi admin */
+    void adminSoftDeleteUser(Long userId) throws Exception;
+    
+    /** Export CSV danh sách user */
+    String exportUsersCsv(String keyword);
 }

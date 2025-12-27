@@ -12,10 +12,13 @@ export class BoCauHoiDTO {
   @IsString()
   che_do_hien_thi: string;// "PUBLIC" | "PRIVATE"
 
+  muon_tao_tra_phi?: boolean; // User muốn tạo bộ câu hỏi trả phí hay không
+
   constructor(data: Partial<BoCauHoiDTO>) {
     this.tieu_de = data.tieu_de ?? '';
     this.mo_ta = data.mo_ta ?? '';
     this.chu_de_id = data.chu_de_id ?? 0;
     this.che_do_hien_thi = data.che_do_hien_thi ?? 'PUBLIC';
+    this.muon_tao_tra_phi = data.muon_tao_tra_phi ?? false;
   }
 }

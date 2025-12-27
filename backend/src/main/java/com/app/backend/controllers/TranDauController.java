@@ -331,4 +331,142 @@ public class TranDauController {
                         .build()
         );
     }
+
+    // ===================== ADMIN ENDPOINTS =====================
+
+    /**
+     * Admin - Lấy thống kê trận đấu
+     */
+    @GetMapping("/admin/stats")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getAdminStats() {
+        var stats = tranDauService.getAdminBattleStats();
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy thống kê trận đấu thành công")
+                        .data(stats)
+                        .build()
+        );
+    }
+
+    /**
+     * Admin - Lấy lịch sử trận đấu với filter nâng cao
+     */
+    @GetMapping("/admin/history")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getAdminHistoryFiltered(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String loaiTranDau,
+            @RequestParam(required = false) Long boCauHoiId,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
+    ) {
+        var result = tranDauService.getAdminHistoryFiltered(
+                page, limit, keyword, loaiTranDau, boCauHoiId, fromDate, toDate
+        );
+        PageResponse<LichSuTranDauResponse> pageRes = PageResponse.fromPage(result);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy lịch sử trận đấu thành công")
+                        .data(pageRes)
+                        .build()
+        );
+    }
+
+    /**
+     * Admin - Đóng/hủy phòng đang chờ
+     */
+    @DeleteMapping("/admin/room/{tranDauId}/close")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> closeRoom(
+            @PathVariable("tranDauId") Long tranDauId
+    ) throws Exception {
+        tranDauService.adminCloseRoom(tranDauId);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Đã đóng phòng thành công")
+                        .build()
+        );
+    }
+
+    /**
+     * Admin - Kick người chơi khỏi phòng
+     */
+    @DeleteMapping("/admin/room/{tranDauId}/kick/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> kickPlayer(
+            @PathVariable("tranDauId") Long tranDauId,
+            @PathVariable("userId") Long userId
+    ) throws Exception {
+        tranDauService.adminKickPlayer(tranDauId, userId);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Đã kick người chơi khỏi phòng")
+                        .build()
+        );
+    }
+
+    /**
+     * Admin - Xóa lịch sử trận đấu
+     */
+    @DeleteMapping("/admin/history/{lichSuId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> deleteHistory(
+            @PathVariable("lichSuId") Long lichSuId
+    ) throws Exception {
+        tranDauService.adminDeleteHistory(lichSuId);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Đã xóa lịch sử trận đấu")
+                        .build()
+        );
+    }
+
+    /**
+     * Admin - Lấy chi tiết phòng đang chờ
+     */
+    @GetMapping("/admin/room/{tranDauId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getRoomDetail(
+            @PathVariable("tranDauId") Long tranDauId
+    ) throws Exception {
+        var detail = tranDauService.adminGetRoomDetail(tranDauId);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy chi tiết phòng thành công")
+                        .data(detail)
+                        .build()
+        );
+    }
+
+    /**
+     * Admin - Export lịch sử trận đấu ra CSV
+     */
+    @GetMapping("/admin/history/export")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<byte[]> exportHistoryCsv(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String loaiTranDau,
+            @RequestParam(required = false) Long boCauHoiId,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
+    ) {
+        byte[] csvData = tranDauService.exportHistoryCsv(
+                keyword, loaiTranDau, boCauHoiId, fromDate, toDate
+        );
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .header("Content-Disposition", "attachment; filename=\"history_tran_dau.csv\"")
+                .body(csvData);
+    }
 }

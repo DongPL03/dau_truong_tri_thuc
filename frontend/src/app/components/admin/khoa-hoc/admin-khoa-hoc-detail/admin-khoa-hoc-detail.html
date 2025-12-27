@@ -1,0 +1,183 @@
+<div class="detail-container"
+  *ngIf="!loading && detail; else loadingTpl">
+  <div class="header">
+    <button class="btn ghost" (click)="back()"><i
+        class="fas fa-arrow-left"></i> Quay lại</button>
+    <div class="actions">
+      <button class="btn primary" (click)="navigateToEdit()"><i
+          class="fas fa-pen"></i> Sửa</button>
+      <button class="btn danger" (click)="deleteKhoaHoc()"><i
+          class="fas fa-trash"></i> Xóa</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>{{ detail.khoa_hoc.tieu_de }}</h2>
+    <p class="muted">Chủ đề: {{ detail.khoa_hoc.chu_de || 'N/A' }}</p>
+    <p>{{ detail.khoa_hoc.mo_ta || 'Chưa có mô tả' }}</p>
+
+    <div class="meta-grid">
+      <div><strong>Trạng thái:</strong> {{ detail.khoa_hoc.trang_thai
+        }}</div>
+      <div><strong>Thứ tự:</strong> {{ detail.khoa_hoc.thu_tu }}</div>
+      <div><strong>Giá mở khóa:</strong> {{
+        detail.khoa_hoc.gia_mo_khoa || 0 }} vàng</div>
+      <div><strong>Số bộ câu hỏi:</strong> {{
+        detail.khoa_hoc.so_bo_cau_hoi || 0 }}</div>
+      <div><strong>Người tạo:</strong> {{ detail.khoa_hoc.nguoi_tao ||
+        'N/A' }}</div>
+      <div><strong>Chủ đề ID:</strong> {{ detail.khoa_hoc.chu_de_id }}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Danh sách bộ câu hỏi</h3>
+      <button class="btn primary" (click)="openAddModal()">
+        <i class="fas fa-plus"></i> Thêm bộ câu hỏi
+      </button>
+    </div>
+    @if (boCauHoiList.length > 0) {
+    <div class="table">
+      <div class="table-head">
+        <div>#</div>
+        <div>Tiêu đề</div>
+        <div>Số câu</div>
+        <div>Thứ tự</div>
+        <div>Điểm tối thiểu</div>
+        <div>Bắt buộc</div>
+        <div>Thao tác</div>
+      </div>
+      @for (item of boCauHoiList; track item.id; let i = $index) {
+      <div class="table-row">
+        <div>{{ i + 1 }}</div>
+        <div>{{ item.tieu_de }}</div>
+        <div>{{ item.so_cau_hoi || 0 }}</div>
+        <div>{{ item.thu_tu }}</div>
+        <div>{{ item.diem_toi_thieu || 0 }}</div>
+        <div>
+          @if (item.is_bat_buoc) {
+          <span class="badge badge-success">Bắt buộc</span>
+          } @else {
+          <span class="badge badge-info">Tùy chọn</span>
+          }
+        </div>
+        <div class="actions">
+          <button class="btn-icon btn-edit"
+            (click)="openEditModal(item)" title="Sửa">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-icon btn-delete"
+            (click)="removeBoCauHoi(item)" title="Xóa">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    } @else {
+    <p class="muted">Chưa có bộ câu hỏi nào được gắn vào khóa học này.
+    </p>
+    }
+  </div>
+
+  <!-- Modal thêm bộ câu hỏi -->
+  @if (showAddModal) {
+  <div class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Thêm bộ câu hỏi vào khóa học</h3>
+        <button class="btn-close" (click)="closeAddModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Bộ câu hỏi *</label>
+          @if (loadingBoCauHoi) {
+          <p>Đang tải...</p>
+          } @else {
+          <select [(ngModel)]="addForm.bo_cau_hoi_id"
+            class="form-control">
+            <option [value]="0">-- Chọn bộ câu hỏi --</option>
+            @for (bo of availableBoCauHoi; track bo.id) {
+            <option [value]="bo.id">{{ bo.tieu_de }} ({{ bo.so_cau_hoi
+              || 0 }} câu)</option>
+            }
+          </select>
+          }
+        </div>
+        <div class="form-group">
+          <label>Thứ tự *</label>
+          <input type="number" [(ngModel)]="addForm.thu_tu" min="1"
+            class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Điểm tối thiểu</label>
+          <input type="number" [(ngModel)]="addForm.diem_toi_thieu"
+            min="0" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox"
+              [(ngModel)]="addForm.is_bat_buoc" />
+            Bắt buộc
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary"
+          (click)="closeAddModal()">Hủy</button>
+        <button class="btn primary"
+          (click)="submitAdd()">Thêm</button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Modal sửa bộ câu hỏi -->
+  @if (showEditModal && editingItem) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Sửa bộ câu hỏi: {{ editingItem.tieu_de }}</h3>
+        <button class="btn-close" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Thứ tự *</label>
+          <input type="number" [(ngModel)]="editForm.thu_tu" min="1"
+            class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Điểm tối thiểu</label>
+          <input type="number" [(ngModel)]="editForm.diem_toi_thieu"
+            min="0" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox"
+              [(ngModel)]="editForm.is_bat_buoc" />
+            Bắt buộc
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary"
+          (click)="closeEditModal()">Hủy</button>
+        <button class="btn primary" (click)="submitEdit()">Cập
+          nhật</button>
+      </div>
+    </div>
+  </div>
+  }
+</div>
+
+<ng-template #loadingTpl>
+  <div class="detail-container">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+</ng-template>

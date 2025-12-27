@@ -1,0 +1,64 @@
+<div class="form-container" *ngIf="!loading; else loadingTpl">
+  <h2>Chỉnh sửa khóa học</h2>
+
+  <div class="form-group">
+    <label>Tiêu đề *</label>
+    <input [(ngModel)]="dto.tieu_de" placeholder="Nhập tiêu đề" />
+  </div>
+
+  <div class="form-group">
+    <label>Mô tả</label>
+    <textarea [(ngModel)]="dto.mo_ta" rows="3" placeholder="Mô tả ngắn"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Hình ảnh (URL)</label>
+    <input [(ngModel)]="dto.hinh_anh" placeholder="https://..." />
+  </div>
+
+  <div class="form-group">
+    <label>Chủ đề *</label>
+    <select [(ngModel)]="dto.chu_de_id">
+      <option [value]="0">-- Chọn chủ đề --</option>
+      @for (cd of chuDes; track cd.id) {
+        <option [value]="cd.id">{{ cd.ten }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group inline">
+    <div>
+      <label>Trạng thái</label>
+      <select [(ngModel)]="dto.trang_thai">
+        <option value="DRAFT">DRAFT</option>
+        <option value="PUBLISHED">PUBLISHED</option>
+        <option value="ARCHIVED">ARCHIVED</option>
+      </select>
+    </div>
+    <div>
+      <label>Thứ tự</label>
+      <input type="number" [(ngModel)]="dto.thu_tu" />
+    </div>
+  </div>
+
+  <div class="form-group inline">
+    <div>
+      <label>Giá mở khóa (vàng)</label>
+      <input type="number" [(ngModel)]="dto.gia_mo_khoa" />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" (click)="submit()" [disabled]="saving">
+      <i class="fas" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+      {{ saving ? 'Đang lưu...' : 'Lưu' }}
+    </button>
+    <button class="btn secondary" (click)="router.navigate(['/admin/khoa-hoc'])" [disabled]="saving">Hủy</button>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="form-container">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+</ng-template>

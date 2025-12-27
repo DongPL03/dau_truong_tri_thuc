@@ -9,6 +9,7 @@ import {Base} from '../base/base';
 import {UserSummaryResponse} from '../../responses/nguoidung/user-summary-response';
 import {LichSuTranDauResponse as LichSuTranDauShort} from '../../responses/lichsutrandau/lich_su_tran_dau_response';
 import Swal from 'sweetalert2';
+import {ThamGiaTranDauDTO} from '../../dtos/tran-dau/thamgiatrandau-dto';
 
 @Component({
   selector: 'app-home',
@@ -121,6 +122,54 @@ export class Home extends Base implements OnInit {
     });
   }
 
+  async tryJoinRoom(room: TranDauResponse) {
+    // TRƯỜNG HỢP 1: Phòng công khai -> Vào xem luôn, chưa gọi API tham gia
+    if (room.cong_khai) {
+      await this.router.navigate(['/tran-dau/phong', room.id]);
+      return;
+    }
+
+    // TRƯỜNG HỢP 2: Phòng riêng tư -> Nhập PIN -> Gọi API tham gia -> Thành công mới chuyển trang
+    const res = await Swal.fire({
+      title: 'Nhập mã PIN',
+      input: 'text',
+      inputLabel: 'Phòng riêng tư',
+      inputPlaceholder: 'Mã PIN…',
+      confirmButtonText: 'Tham gia',
+      showCancelButton: true
+    });
+
+    if (!res.isConfirmed) return;
+
+    const maPin = (res.value || '').trim();
+    if (!maPin) {
+      await Swal.fire('Thiếu PIN', 'Bạn cần nhập mã PIN để vào phòng này', 'warning');
+      return;
+    }
+
+    const dto: ThamGiaTranDauDTO = {tran_dau_id: room.id, ma_pin: maPin};
+
+    // Gọi API Join
+    this.tranDauService.joinBattle(dto).subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Thành công',
+          text: 'Bạn đã tham gia phòng',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        // Join xong thì chuyển trang
+        this.router.navigate(['/tran-dau/phong', room.id], {
+          state: {joined: true}
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Mã PIN không đúng hoặc phòng đã đầy';
+        Swal.fire('Không thể tham gia', msg, 'error');
+      }
+    });
+  }
 
   navigateQuiz() {
     this.router.navigate(['/bo-cau-hoi/danh-sach-bo-cau-hoi']).then(r => {
@@ -140,6 +189,10 @@ export class Home extends Base implements OnInit {
   navigatePractice() {
     this.router.navigate(['/luyen-tap']).then(r => {
     });
+  }
+
+  navigateRecommendation() {
+    this.router.navigate(['/goi-y-hoc-tap']).then(() => {});
   }
 
   navigateFriend(): void {

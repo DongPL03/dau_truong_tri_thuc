@@ -1,226 +1,414 @@
-/* --- COPY TẤT CẢ TỪ ĐÂY TRỞ XUỐNG --- */
-
-/* 1. Biến màu toàn cục (Lấy từ file CSS xịn của bạn) */
 :host {
-  --primary-color: #4caf50;
-  --secondary-color: #2196f3;
-  --accent-warning: #ffc107;
-  --bg-color: #f7f9fc;
-  --card-bg: #ffffff;
-  --border-color: #e0e0e0;
-  --text-color: #333;
-  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --admin-option-bg: #fffbe6;
+  --primary: #6C5DD3;
+  --primary-dark: #5b4cc4;
+  --accent: #00E5FF; /* Màu xanh neon mới cho Edit */
+  --bg-body: #F0F2F5;
+  --text-main: #11142D;
+  --text-muted: #808191;
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
-/* 2. Style cho layout (Đã đổi tên .page-wrapper -> .page) */
-.page {
-  background-color: var(--bg-color);
-  margin: 0;
-  padding: 20px;
-  color: var(--text-color);
+.edit-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text-main);
+}
+
+/* --- 1. HERO HEADER --- */
+.edit-header {
   display: flex;
-  justify-content: center;
-  min-height: 100vh; /* Thêm này để background full trang */
-}
-
-/* 3. Container (Lấy từ file CSS xịn) */
-.page-container {
-  max-width: 800px; /* Dùng 800px cho giống file xịn */
-  width: 100%;
-}
-
-/* 4. Header (Lấy từ file CSS xịn và điều chỉnh) */
-.page-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: 15px;
+  gap: 20px;
   margin-bottom: 30px;
+  padding-left: 10px;
 }
 
-.page-header h1 {
-  color: var(--primary-color); /* Style h1 giống file xịn */
+.header-icon-3d {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #29b6f6, #0288d1);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: white;
+  box-shadow: 0 10px 20px rgba(41, 182, 246, 0.3);
+  transform: rotate(-5deg);
+}
+
+.header-content h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 5px 0;
+  color: var(--text-main);
+}
+
+.header-content p {
   margin: 0;
-  font-size: 2em;
-}
-
-/* Style cho nút "Quay lại" trong header (giống cái link trong ảnh) */
-.page-header .btn-secondary {
-  background: none;
-  color: #777;
-  font-weight: 600;
-  padding: 5px;
-  border: none;
-  font-size: 1em; /* Thêm cho nhất quán */
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-header .btn-secondary:hover {
-  background: none;
-  color: var(--secondary-color);
-  text-decoration: underline;
-}
-
-/* 5. Form (Đã đổi tên .form-card -> .form-layout) */
-.form-layout {
-  background-color: var(--card-bg);
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: var(--shadow-light);
-}
-
-/* 6. Inputs & Labels (Lấy từ file CSS xịn) */
-label {
-  display: block;
-  font-weight: 600;
-  color: #555;
+  color: var(--text-muted);
+  font-size: 1.1rem;
   margin-bottom: 8px;
-  margin-top: 20px; /* Thêm margin-top cho thống nhất */
 }
 
-/* Cần override label bên trong radio-group */
-.radio-group label {
-  margin-top: 0;
-  margin-bottom: 0;
-  font-weight: 500;
+/* Status Badge */
+.badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge.approved {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge.pending {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.badge.rejected {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* --- 2. MAIN CARD --- */
+.edit-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid white;
+}
+
+.form-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* Section Title */
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed #f0f0f0;
+}
+
+.section-title i {
+  color: #29b6f6;
+}
+
+/* Icon xanh dương */
+
+/* Form Group */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  font-size: 0.95rem;
 }
 
 .required {
-  color: #f44336;
-  margin-left: 5px;
+  color: #ff4757;
+  margin-left: 3px;
 }
 
-input[type="text"],
-select,
-textarea {
+/* Custom Inputs (Giống trang Tạo mới) */
+.input-wrapper, .select-wrapper, .textarea-wrapper {
+  position: relative;
+  background: #F8F9FB;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.input-wrapper:focus-within, .select-wrapper:focus-within, .textarea-wrapper:focus-within {
+  background: white;
+  border-color: #29b6f6;
+  box-shadow: 0 0 0 4px rgba(41, 182, 246, 0.1);
+}
+
+.select-wrapper select {
+  /* Xóa mũi tên mặc định trên Chrome, Safari, Edge, Opera */
+  -webkit-appearance: none;
+
+  /* Xóa mũi tên mặc định trên Firefox */
+  -moz-appearance: none;
+
+  /* Thuộc tính chuẩn */
+  appearance: none;
+
+  /* Tùy chọn: Xóa background mặc định để trong suốt (nếu cần) */
+  background-color: transparent;
+  border: none; /* Nếu bạn muốn xóa cả viền */
   width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-sizing: border-box;
-  font-size: 1em;
-  transition: border-color 0.3s;
-  margin-top: 5px; /* Giữ lại từ code cũ của bạn */
+  padding-right: 30px; /* Tạo khoảng trống để không đè lên icon custom của bạn */
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--secondary-color);
+/* Fix riêng cho IE 10/11 (nếu bạn còn cần hỗ trợ trình duyệt cũ này) */
+.select-wrapper select::-ms-expand {
+  display: none;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.textarea-icon {
+  top: 20px;
+  transform: none;
+}
+
+input, select, textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 14px 14px 14px 45px;
+  font-size: 1rem;
+  color: var(--text-main);
+  font-weight: 600;
   outline: none;
+  font-family: inherit;
 }
 
 textarea {
-  min-height: 100px;
   resize: none;
+  line-height: 1.5;
 }
 
-/* 7. Radio Buttons (Style lại cho khớp HTML mới) */
-.radio-group {
-  margin-top: 10px;
+.arrow-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* --- 3. VISUAL RADIO CARDS --- */
+.visibility-options {
   display: flex;
-  gap: 25px; /* Khoảng cách giữa các nút radio */
+  flex-direction: column;
+  gap: 15px;
 }
 
-.radio-group label {
+.visual-card {
   display: flex;
   align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 2px solid #E4E5EE;
+  border-radius: 16px;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background: white;
+  position: relative;
 }
 
-.radio-group input[type="radio"] {
-  width: auto; /* Thu nhỏ radio button */
-  margin-right: 8px; /* Khoảng cách giữa nút và chữ */
-  margin-top: 0; /* Reset margin */
+.visual-card:hover {
+  border-color: #d1d1db;
+  transform: translateX(5px);
 }
 
-/* 8. Form Actions (Lấy từ file CSS xịn) */
-.form-actions {
+.visual-card.selected {
+  border-color: #29b6f6;
+  background: #e1f5fe;
+  box-shadow: 0 4px 15px rgba(41, 182, 246, 0.1);
+}
+
+.visual-card.selected .check-circle {
+  transform: scale(1);
+}
+
+.card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.public-card .card-icon {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.private-card .card-icon {
+  background: #ffebee;
+  color: #ef5350;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-name {
+  display: block;
+  font-weight: 800;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.card-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.check-circle {
+  width: 24px;
+  height: 24px;
+  background: #29b6f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transform: scale(0);
+  transition: 0.2s cubic-bezier(0.5, 0, 0, 1.5);
+}
+
+/* Warning Box */
+.warning-box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff3e0;
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #e65100;
+  border-left: 4px solid #ffb74d;
+}
+
+.warn-icon {
+  color: #ff9800;
+  font-size: 1.2rem;
+}
+
+.warning-box p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* --- 4. FOOTER ACTIONS --- */
+.form-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 15px;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  padding-top: 30px;
+  border-top: 1px dashed #E4E5EE;
 }
 
-/*
- * 9. Các nút bấm (Lấy style từ .btn-primary và .btn-secondary)
- */
-
-/* Nút chính (Style cho .btn-green giống .btn-primary) */
-.btn-green {
-  padding: 12px 25px;
-  border-radius: 8px;
-  font-weight: bold;
+.btn-ghost {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: 0.2s;
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--primary-color);
+}
+
+.btn-ghost:hover {
+  background: #f5f5f5;
+  color: var(--text-main);
+}
+
+.btn-save-3d {
+  padding: 16px 40px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #29b6f6, #0288d1);
   color: white;
-  border: none;
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: 0 6px 0 #01579b, 0 10px 20px rgba(2, 136, 209, 0.3);
+  cursor: pointer;
+  transition: 0.1s;
+  letter-spacing: 0.5px;
 }
 
-.btn-green:hover {
-  background-color: #388e3c; /* Darken của primary-color */
+.btn-save-3d:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 #01579b;
 }
 
-.btn-green:disabled {
-  background-color: #a5d6a7; /* Màu nhạt hơn khi disable */
+.btn-save-3d:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: #ccc;
 }
 
-
-/* Nút phụ (Hủy) */
-.btn-secondary {
-  padding: 12px 25px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #ccc;
-  color: var(--text-color);
-  border: none;
-}
-
-.btn-secondary:hover {
-  background-color: #bbb;
-}
-
-/* 10. Loading (Lấy từ code mới cho hoàn chỉnh) */
-.loading {
+/* Loading */
+.loading-screen {
   text-align: center;
-  padding: 40px;
-  font-style: italic;
-  font-size: 1.1em;
-  color: #777;
+  padding: 100px;
 }
 
-.btn {
-  border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #eee;
+  border-top-color: #29b6f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
 
-  &.btn-gray {
-    background: #e5e7eb;
-    color: #374151;
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
-    &:hover {
-      background: #d1d5db;
-    }
+/* Responsive */
+@media (max-width: 768px) {
+  .form-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .form-footer {
+    flex-direction: column-reverse;
+  }
+  .btn-save-3d, .btn-ghost {
+    width: 100%;
+    justify-content: center;
   }
 }

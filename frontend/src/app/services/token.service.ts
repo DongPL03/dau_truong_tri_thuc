@@ -53,9 +53,6 @@ export class TokenService {
 
     const decodedToken = this.jwtHelper.decodeToken(token);
 
-    // 🛑 LOG ĐỂ DEBUG: Bật F12 lên xem nó in ra cái gì khi reload
-    console.log('🔍 Decoded Token:', decodedToken);
-
     if (!decodedToken) return 0;
 
     // Kiểm tra các trường có thể chứa ID (Backend thường dùng 'sub', 'id', hoặc 'userId')

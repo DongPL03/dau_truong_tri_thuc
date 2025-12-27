@@ -1,402 +1,306 @@
-<!-- src/app/components/Practice/luyen-tap-ca-nhan/luyen-tap-ca-nhan.html -->
+<div class="practice-page">
+  <div class="bg-decor-1"></div>
+  <div class="bg-decor-2"></div>
 
-<div class="page">
-  <div class="container">
+  <div class="container animate-fade-down">
 
-    <header class="header">
-      <div>
-        <h1>Luyện tập cá nhân</h1>
-        <p class="subtitle">
-          Chọn bộ câu hỏi và số lượng câu, sau đó luyện tập giống như trong trận đấu.
-        </p>
-      </div>
-    </header>
-
-    <!-- FORM START -->
-    <section class="start-card">
-      <form #f="ngForm" (ngSubmit)="onStart(f)">
-        <div class="form-row">
-          <label>Bộ câu hỏi</label>
-          <select
-            name="bo_cau_hoi_id"
-            [(ngModel)]="bo_cau_hoi_id"
-          >
-            <option [ngValue]="null">— Chọn bộ câu hỏi —</option>
-
-            @for (bo of bo_cau_hoi_options(); track bo.id) {
-              <option [ngValue]="bo.id">
-                {{ bo.tieu_de }}
-              </option>
-            }
-          </select>
-
-          @if (loading_sets()) {
-            <p class="hint">Đang tải danh sách bộ câu hỏi...</p>
-          }
-        </div>
-        <div class="actions">
-          <button class="btn primary" type="submit" [disabled]="loading()">
-            {{ loading() ? 'Đang bắt đầu...' : 'Bắt đầu luyện tập' }}
-          </button>
-          <button
-            class="btn secondary"
-            type="button"
-            (click)="onStartFromMemo()"
-            [disabled]="loading() || !bo_cau_hoi_id">
-            Luyện tập lại từ thẻ ghi nhớ
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <!-- KHU VỰC CHƠI -->
-
-    @if (playing() && currentQuestion(); as q) {
-      <section class="practice-area">
-        <div class="practice-header">
-          <div>
-            <h2>{{ practice_data()?.bo_cau_hoi }}</h2>
-            <p class="small">
-              Câu {{ current_index() + 1 }}/{{ practice_data()?.tong_cau_hoi }}
-              – Thời gian còn lại: <strong>{{ remaining_seconds() }}s</strong>
-              @if (practice_from_memo()) {
-                <span class="badge-memo">Từ thẻ ghi nhớ</span>
-              }
-            </p>
+    @if (!playing() && !finished()) {
+      <header class="training-hero">
+        <div class="hero-left">
+          <div class="icon-dojo">🥋</div>
+          <div class="text-content">
+            <h1>Trung Tâm Huấn Luyện</h1>
+            <p>Rèn luyện kỹ năng, chinh phục đỉnh cao tri thức mỗi ngày.</p>
           </div>
         </div>
 
-        <div class="question-card">
+        <div class="control-panel card-3d">
+          <form #f="ngForm" (ngSubmit)="onStart(f)" class="control-form">
+            <div class="input-group">
+              <label><i class="fas fa-book"></i> Chọn bộ đề:</label>
+              <div class="select-wrapper">
+                <select name="bo_cau_hoi_id" [(ngModel)]="bo_cau_hoi_id">
+                  <option [ngValue]="null">-- Chọn bộ câu hỏi --</option>
+                  @for (bo of bo_cau_hoi_options(); track bo.id) {
+                    <option [ngValue]="bo.id">{{ bo.tieu_de }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down arrow"></i>
+              </div>
+            </div>
 
-          <div class="question-text">
-            {{ q.noi_dung }}
-          </div>
+            <div class="action-buttons">
+              <button class="btn-start" type="submit" [disabled]="loading() || !bo_cau_hoi_id">
+                @if (loading()) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-play"></i> BẮT ĐẦU NGAY
+                }
+              </button>
 
-          @if (q.duong_dan_tep && q.loai_noi_dung !== 'VAN_BAN') {
-
-            @switch (q.loai_noi_dung) {
-              @case ('HINH_ANH') {
-                <div class="media">
-                  <img
-                    [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep"
-                    alt="Câu hỏi hình ảnh"
-                  />
-                </div>
-              }
-              @case ('AM_THANH') {
-                <div class="media">
-                  <audio
-                    controls
-                    [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep">
-                  </audio>
-                </div>
-              }
-              @case ('VIDEO') {
-                <div class="media">
-                  <video
-                    controls
-                    [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep">
-                  </video>
-                </div>
-              }
-
-            }
-          }
-
-          <div class="choices">
-            <button
-              type="button"
-              class="choice"
-              [class.active]="currentAnswer() === 'A'"
-              (click)="selectAnswer('A')"
-            >
-              <strong>A.</strong> {{ q.lua_chon_a }}
-            </button>
-
-            <button
-              type="button"
-              class="choice"
-              [class.active]="currentAnswer() === 'B'"
-              (click)="selectAnswer('B')"
-            >
-              <strong>B.</strong> {{ q.lua_chon_b }}
-            </button>
-
-            <button
-              type="button"
-              class="choice"
-              [class.active]="currentAnswer() === 'C'"
-              (click)="selectAnswer('C')"
-            >
-              <strong>C.</strong> {{ q.lua_chon_c }}
-            </button>
-
-            <button
-              type="button"
-              class="choice"
-              [class.active]="currentAnswer() === 'D'"
-              (click)="selectAnswer('D')"
-            >
-              <strong>D.</strong> {{ q.lua_chon_d }}
-            </button>
-          </div>
-
-          <div class="practice-footer">
-            <div class="left">
-              <button type="button" (click)="goPrev()" [disabled]="current_index() === 0">
-                ← Câu trước
+              <button class="btn-memo" type="button" (click)="onStartFromMemo()"
+                      [disabled]="loading() || !bo_cau_hoi_id">
+                <i class="fas fa-brain"></i> Ôn từ thẻ nhớ
               </button>
             </div>
-            <div class="center">
-              <span>Câu {{ current_index() + 1 }} / {{ practice_data()?.tong_cau_hoi }}</span>
-            </div>
-            <div class="right">
-              <button type="button" (click)="goNext()"
-                      [disabled]="current_index() >= (practice_data()?.tong_cau_hoi || 1) - 1">
-                Câu tiếp →
-              </button>
-            </div>
-          </div>
-
-          <div class="submit-row">
-            <button
-              class="btn primary"
-              type="button"
-              (click)="submitCurrentQuestion()"
-              [disabled]="submitting()"
-            >
-              {{
-                current_index() >= (practice_data()?.tong_cau_hoi || 1) - 1
-                  ? (submitting() ? 'Đang nộp & xem kết quả...' : 'Nộp câu cuối & xem kết quả')
-                  : 'Nộp câu hiện tại'
-              }}
-            </button>
-          </div>
-
-
+          </form>
         </div>
-      </section>
-    }
+      </header>
 
-    <!-- KẾT QUẢ -->
-    @if (finished() && result(); as r) {
-      <section class="summary">
-        <div class="summary-card">
-          <h2>Kết quả luyện tập</h2>
-          <p class="summary-main">
-            Điểm: <strong>{{ r.diem_so }}</strong> —
-            Đúng: <strong>{{ r.so_cau_dung }}/{{ r.tong_so_cau }}</strong> —
-            Độ chính xác: <strong>{{ r.do_chinh_xac }}%</strong>
-          </p>
-          <p class="summary-sub">
-            Thời gian trung bình: {{ r.thoi_gian_tb_ms }} ms / câu
-          </p>
+      <div class="stats-area animate-fade-up">
 
-          <div class="summary-actions">
-            <button class="btn" type="button" (click)="current_index.set(0); playing.set(true); finished.set(false)">
-              Xem lại câu hỏi
-            </button>
-
+        <section class="section-card">
+          <div class="section-header">
+            <h3><i class="fas fa-history"></i> Lịch sử đấu tập</h3>
+            <div class="filters">
+              <select [(ngModel)]="filterBoCauHoiId" (change)="loadHistory(0)" class="mini-select">
+                <option [ngValue]="null">Tất cả bộ đề</option>
+                @for (bo of bo_cau_hoi_options(); track bo.id) {
+                  <option [ngValue]="bo.id">{{ bo.tieu_de }}</option>
+                }
+              </select>
+            </div>
           </div>
 
-          <div class="detail-table">
-            <h3>Chi tiết từng câu</h3>
-            <table>
+          <div class="table-responsive custom-scrollbar">
+            <table class="modern-table">
               <thead>
               <tr>
-                <th>#</th>
-                <th>Câu hỏi</th>
-                <th>Đáp án chọn</th>
-                <th>Đáp án đúng</th>
-                <th>Kết quả</th>
-                <th>Giải thích</th>
+                <th>Thời gian</th>
+                <th>Bộ đề</th>
+                <th class="text-center">Điểm</th>
+                <th class="text-center">Kết quả</th>
+                <th class="text-center">Độ chính xác</th>
+                <th></th>
               </tr>
               </thead>
               <tbody>
-                @for (d of r.chi_tiet; track $index; let i = $index) {
+                @if (history_items().length === 0) {
                   <tr>
-                    <td>{{ i + 1 }}</td>
-
-                    <td>{{ practice_data()?.cau_hoi_list?.[i]?.noi_dung }}</td>
-
-                    <!-- Đáp án chọn -->
-                    <td [class.correct]="d.dung_hay_sai" [class.wrong]="!d.dung_hay_sai">
-                      {{ d.lua_chon || '—' }}
-                    </td>
-
-                    <!-- Đáp án đúng -->
+                    <td colspan="6" class="text-center text-muted">Chưa có lịch sử luyện tập</td>
+                  </tr>
+                }
+                @for (h of history_items(); track h.phien_id) {
+                  <tr>
                     <td>
-                      {{ d.dap_an_dung || '—' }}
+                      <div class="date-col">
+                        <span class="d-date">{{ h.ngay_tao | date:'dd/MM' }}</span>
+                        <span class="d-time">{{ h.ngay_tao | date:'HH:mm' }}</span>
+                      </div>
                     </td>
-
-                    <!-- Kết quả -->
-                    <td><span [class.correct]="d.dung_hay_sai"
-                              [class.wrong]="!d.dung_hay_sai">{{ d.dung_hay_sai ? 'Đúng' : 'Sai' }}</span>
+                    <td class="title-col">{{ h.bo_cau_hoi }}</td>
+                    <td class="text-center font-bold text-primary">{{ h.diem_so }}</td>
+                    <td class="text-center">{{ h.so_cau_dung }}/{{ h.tong_cau_hoi }}</td>
+                    <td class="text-center">
+                      <span class="accuracy-badge" [ngClass]="getAccuracyClass(h.do_chinh_xac)">{{ h.do_chinh_xac }}
+                        %</span>
                     </td>
-
-                    <!-- Giải thích -->
-                    <td class="explain-cell">
-                      {{ d.giai_thich || '—' }}
+                    <td class="text-right">
+                      <button class="btn-retry" (click)="retryHistory(h)" title="Luyện tập lại bộ này">
+                        <i class="fas fa-redo"></i> Luyện lại
+                      </button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
-        </div>
-      </section>
-    }
-    <!-- ================== LỊCH SỬ LUYỆN TẬP ================== -->
-    <section class="history-section">
-      <h2>Lịch sử luyện tập gần đây</h2>
+          @if (totalPagesHistory > 1) {
+            <div class="pagination-simple">
+              <button (click)="changePage(pageHistory - 1)" [disabled]="pageHistory === 0"><i
+                class="fas fa-chevron-left"></i></button>
+              <span>{{ pageHistory + 1 }} / {{ totalPagesHistory }}</span>
+              <button (click)="changePage(pageHistory + 1)" [disabled]="pageHistory === totalPagesHistory - 1"><i
+                class="fas fa-chevron-right"></i></button>
+            </div>
+          }
+        </section>
 
-      @if (loading_history()) {
-        <p>Đang tải lịch sử...</p>
-      } @else if (history_items().length === 0) {
-        <p>Chưa có phiên luyện tập nào.</p>
-      } @else {
-        <div class="history-table-wrapper">
-          <table class="history-table">
-            <thead>
-            <tr>
-              <th>Thời gian</th>
-              <th>Bộ câu hỏi</th>
-              <th>Điểm</th>
-              <th>Đúng / Tổng</th>
-              <th>Độ chính xác</th>
-            </tr>
-            </thead>
-            <tbody>
-              @for (h of history_items(); track h.phien_id) {
-                <tr>
-                  <td>{{ h.ngay_tao | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>{{ h.bo_cau_hoi }}</td>
-                  <td>{{ h.diem_so }}</td>
-                  <td>{{ h.so_cau_dung }}/{{ h.tong_cau_hoi }}</td>
-                  <td>{{ h.do_chinh_xac }}%</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <!--        <div class="history-pagination">-->
-          <!--          <button type="button"-->
-          <!--                  (click)="prevHistoryPage()"-->
-          <!--                  [disabled]="history_page() === 0">-->
-          <!--            Trang trước-->
-          <!--          </button>-->
-          <!--          <span>-->
-          <!--        Trang {{ history_page() + 1 }} / {{ history_total_pages() || 1 }}-->
-          <!--      </span>-->
-          <!--          <button type="button"-->
-          <!--                  (click)="nextHistoryPage()"-->
-          <!--                  [disabled]="history_page() >= (history_total_pages() - 1)">-->
-          <!--            Trang sau-->
-          <!--          </button>-->
-          <!--        </div>-->
-        @if (totalPagesHistory > 1) {
-          <div class="pagination">
-            <!-- Nút Previous -->
-            <a (click)="changePage(pageHistory - 1)" [class.disabled]="pageHistory === 0">&laquo;</a>
-
-            <!-- Dải trang động -->
-            @for (p of getVisiblePages(); track $index) {
-              @if (p >= 0) {
-                <a [class.active]="p === pageHistory" (click)="changePage(p)">
-                  {{ p + 1 }}
-                </a>
-              } @else {
-                <span class="ellipsis">...</span>
-              }
-            }
-
-            <!-- Nút Next -->
-            <a (click)="changePage(pageHistory + 1)"
-               [class.disabled]="pageHistory === totalPagesHistory - 1">&raquo;</a>
+        <section class="section-card mt-4">
+          <div class="section-header">
+            <h3><i class="fas fa-lightbulb"></i> Thẻ ghi nhớ (Flashcards)</h3>
+            <p class="subtitle">Những câu hỏi bạn làm sai sẽ xuất hiện ở đây để ôn tập</p>
           </div>
-        }
-      }
-    </section>
-    <!-- ================== THẺ GHI NHỚ ================== -->
-    <section class="memo-section">
-      <h2>Thẻ ghi nhớ</h2>
 
-      @if (loading_memos()) {
-        <p>Đang tải thẻ ghi nhớ...</p>
-      } @else if (memo_items().length === 0) {
-        <p>Chưa có thẻ ghi nhớ nào. Các câu sai trong luyện tập sẽ được tự động thêm vào đây.</p>
-      } @else {
-        <div class="memo-table-wrapper">
-          <table class="memo-table">
-            <thead>
-            <tr>
-              <th>Thời gian</th>
-              <th>Bộ câu hỏi</th>
-              <th>Câu hỏi</th>
-              <th>Đáp án đúng</th>
-              <th>Giải thích</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
+          @if (memo_items().length === 0) {
+            <div class="empty-memo">
+              <img src="assets/images/empty-box.png" onerror="this.style.display='none'">
+              <p>Hộp thẻ ghi nhớ đang trống. Bạn đã làm rất tốt!</p>
+            </div>
+          } @else {
+            <div class="flashcard-grid">
               @for (m of memo_items(); track m.memo_id) {
-                <tr>
-                  <td>{{ m.tao_luc | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>{{ m.bo_cau_hoi }}</td>
-                  <td>{{ m.cau_hoi }}</td>
-                  <td>{{ m.dap_an_dung }}</td>
-                  <td class="explain-cell">
-                    <div class="custom-tooltip-wrapper">
-                      <div class="truncate-text">
-                        {{ m.giai_thich || '—' }}
-                      </div>
-                      @if (m.giai_thich) {
-                        <span class="tooltip-content">{{ m.giai_thich }}</span>
-                      }
+                <div class="flash-card">
+                  <div class="fc-header">
+                    <span class="fc-date">{{ m.tao_luc | date:'dd/MM' }}</span>
+                    <button class="btn-icon-del" (click)="deleteMemoConfirm(m)" title="Xóa thẻ">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="fc-body">
+                    <h4 class="fc-question">{{ m.cau_hoi }}</h4>
+                    <div class="fc-answer">
+                      <span class="lbl">Đáp án:</span> {{ m.dap_an_dung }}
                     </div>
-                  </td>
-                  <td class="actions">
-                    <button type="button" (click)="practiceSingleFromMemo(m)">
-                      Luyện câu này
-                    </button>
-                    <button type="button" (click)="practiceSetFromMemo(m)">
-                      Luyện bộ này
-                    </button>
-                    <button type="button" (click)="deleteMemoConfirm(m)">
-                      Xoá
-                    </button>
-                  </td>
-
-                </tr>
+                    @if (m.giai_thich) {
+                      <div class="fc-explain"><i class="fas fa-info-circle"></i> {{ m.giai_thich }}</div>
+                    }
+                  </div>
+                  <div class="fc-footer">
+                    <button class="btn-practice-one" (click)="practiceSingleFromMemo(m)">Luyện câu này</button>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+            @if (totalPagesMemo > 1) {
+              <div class="pagination-simple">
+                <button (click)="changePageMemo(pageMemo - 1)" [disabled]="pageMemo === 0"><i
+                  class="fas fa-chevron-left"></i></button>
+                <span>{{ pageMemo + 1 }} / {{ totalPagesMemo }}</span>
+                <button (click)="changePageMemo(pageMemo + 1)" [disabled]="pageMemo === totalPagesMemo - 1"><i
+                  class="fas fa-chevron-right"></i></button>
+              </div>
+            }
+          }
+        </section>
+      </div>
+    }
+
+    @if (playing() && currentQuestion(); as q) {
+      <div class="gameplay-wrapper animate-scale-up">
+
+        <div class="game-header">
+          <div class="game-info">
+            <span class="game-set">{{ practice_data()?.bo_cau_hoi }}</span>
+            <div class="game-progress">
+              Câu <span class="current">{{ current_index() + 1 }}</span> / {{ practice_data()?.tong_cau_hoi }}
+            </div>
+          </div>
+          <div class="game-timer" [class.urgent]="remaining_seconds() <= 5">
+            <i class="far fa-clock"></i> {{ remaining_seconds() }}s
+          </div>
         </div>
 
-        @if (totalPagesMemo > 1) {
-          <div class="pagination">
-            <!-- Nút Previous -->
-            <a (click)="changePageMemo(pageMemo - 1)" [class.disabled]="pageMemo === 0">&laquo;</a>
+        <div class="game-card">
+          <div class="q-content">
+            <h3 class="q-text">{{ q.noi_dung }}</h3>
 
-            <!-- Dải trang động -->
-            @for (p of getVisiblePagesMemo(); track $index) {
-              @if (p >= 0) {
-                <a [class.active]="p === pageMemo" (click)="changePageMemo(p)">
-                  {{ p + 1 }}
-                </a>
-              } @else {
-                <span class="ellipsis">...</span>
-              }
+            @if (q.duong_dan_tep && q.loai_noi_dung !== 'VAN_BAN') {
+              <div class="q-media">
+                @switch (q.loai_noi_dung) {
+                  @case ('HINH_ANH') {
+                    <img [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep">
+                  }
+                  @case ('AM_THANH') {
+                    <audio controls [src]="environment.apiBaseUrl + '/cauHoi/media/' + q.duong_dan_tep"></audio>
+                  }
+                }
+              </div>
             }
-
-            <!-- Nút Next -->
-            <a (click)="changePageMemo(pageMemo + 1)" [class.disabled]="pageMemo === totalPagesMemo - 1">&raquo;</a>
           </div>
-        }
-      }
-    </section>
 
+          <div class="q-choices">
+            <button class="choice-btn" [class.selected]="currentAnswer() === 'A'" (click)="selectAnswer('A')">
+              <span class="label">A</span>
+              <span class="text">{{ q.lua_chon_a }}</span>
+            </button>
+            <button class="choice-btn" [class.selected]="currentAnswer() === 'B'" (click)="selectAnswer('B')">
+              <span class="label">B</span>
+              <span class="text">{{ q.lua_chon_b }}</span>
+            </button>
+            <button class="choice-btn" [class.selected]="currentAnswer() === 'C'" (click)="selectAnswer('C')">
+              <span class="label">C</span>
+              <span class="text">{{ q.lua_chon_c }}</span>
+            </button>
+            <button class="choice-btn" [class.selected]="currentAnswer() === 'D'" (click)="selectAnswer('D')">
+              <span class="label">D</span>
+              <span class="text">{{ q.lua_chon_d }}</span>
+            </button>
+          </div>
+
+          <div class="game-footer">
+            <button class="btn-nav prev" (click)="goPrev()" [disabled]="current_index() === 0">
+              <i class="fas fa-arrow-left"></i> Trước
+            </button>
+
+            <button class="btn-submit" (click)="submitCurrentQuestion()" [disabled]="submitting()">
+              @if (current_index() >= (practice_data()?.tong_cau_hoi || 1) - 1) {
+                <i class="fas fa-flag-checkered"></i> NỘP BÀI
+              } @else {
+                Tiếp theo <i class="fas fa-arrow-right"></i>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (finished() && result(); as r) {
+      <div class="result-container animate-fade-down">
+        <div class="result-card">
+          <div class="result-header">
+            <h2>Tổng Kết Phiên Luyện Tập</h2>
+            <div class="score-circle">
+              <span class="score-val">{{ r.diem_so }}</span>
+              <span class="score-lbl">Điểm</span>
+            </div>
+          </div>
+
+          <div class="result-stats">
+            <div class="rs-item success">
+              <i class="fas fa-check-circle"></i>
+              <span>Đúng: {{ r.so_cau_dung }}/{{ r.tong_so_cau }}</span>
+            </div>
+            <div class="rs-item info">
+              <i class="fas fa-crosshairs"></i>
+              <span>Chính xác: {{ r.do_chinh_xac }}%</span>
+            </div>
+            <div class="rs-item warning">
+              <i class="fas fa-stopwatch"></i>
+              <span>Tốc độ: {{ (r.thoi_gian_tb_ms || 0) / 1000 | number:'1.1-1' }}s/câu</span>
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <button class="btn-primary"
+                    (click)="current_index.set(0); playing.set(false); finished.set(false); loadHistory(0); loadMemos(0)">
+              <i class="fas fa-home"></i> Quay về trang chủ
+            </button>
+            <button class="btn-outline" (click)="current_index.set(0); playing.set(true); finished.set(false)">
+              <i class="fas fa-redo"></i> Xem lại bài làm
+            </button>
+          </div>
+
+          <div class="result-details">
+            <h3>Chi tiết đáp án</h3>
+            <div class="rd-list">
+              @for (d of r.chi_tiet; track $index) {
+                <div class="rd-row" [class.correct]="d.dung_hay_sai" [class.wrong]="!d.dung_hay_sai">
+                  <span class="rd-idx">#{{ $index + 1 }}</span>
+                  <div class="rd-info">
+                    <p class="rd-q">{{ practice_data()?.cau_hoi_list?.[$index]?.noi_dung }}</p>
+                    <div class="rd-ans">
+                      <span class="your-ans">Bạn chọn: <strong>{{ d.lua_chon || 'Bỏ qua' }}</strong></span>
+                      <span class="real-ans">Đáp án: <strong>{{ d.dap_an_dung }}</strong></span>
+                    </div>
+                    @if (!d.dung_hay_sai && d.giai_thich) {
+                      <p class="rd-explain"><i class="fas fa-lightbulb"></i> {{ d.giai_thich }}</p>
+                    }
+                  </div>
+                  <div class="rd-icon">
+                    @if (d.dung_hay_sai) {
+                      <i class="fas fa-check"></i>
+                    } @else {
+                      <i class="fas fa-times"></i>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
 
   </div>
 </div>

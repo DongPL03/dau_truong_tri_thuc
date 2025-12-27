@@ -24,7 +24,8 @@ export class BoCauHoiCreate extends Base implements OnInit {
     tieu_de: '',
     mo_ta: '',
     chu_de_id: 0,
-    che_do_hien_thi: 'PUBLIC'
+    che_do_hien_thi: 'PUBLIC',
+    muon_tao_tra_phi: false // Mặc định là miễn phí
   };
 
 

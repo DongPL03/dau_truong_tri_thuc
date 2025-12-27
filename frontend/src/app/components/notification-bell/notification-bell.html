@@ -1,76 +1,98 @@
-<div class="notif-wrapper" (click)="$event.stopPropagation()">
-  <button class="notif-btn" (click)="toggleDropdown()">
-    <span class="icon">🔔</span>
+<div class="notification-wrapper" (clickOutside)="show_dropdown = false">
+
+  <button class="btn-bell" [class.has-new]="unread_count > 0" (click)="toggleDropdown($event)">
+    <i class="fas fa-bell"></i>
     @if (unread_count > 0) {
-      <span class="badge">{{ unread_count > 9 ? '9+' : unread_count }}</span>
+      <span class="badge-count animate-pop">{{ unread_count > 99 ? '99+' : unread_count }}</span>
     }
   </button>
 
   @if (show_dropdown) {
-    <div class="notif-dropdown">
-      <div class="notif-header">
-        <span>Thông báo</span>
-        <div class="notif-header-actions">
-          <button class="link" (click)="markAllRead()" [disabled]="unread_count === 0">
-            Đánh dấu đã đọc hết
+    <div class="dropdown-panel animate-fade-down">
+
+      <div class="panel-header">
+        <h3>Thông báo</h3>
+        <div class="header-actions">
+          <button class="btn-link" (click)="markAllRead()" [disabled]="unread_count === 0" title="Đánh dấu đã đọc">
+            <i class="fas fa-check-double"></i>
           </button>
-          <a routerLink="/notifications" class="link">Xem tất cả</a>
+          <a routerLink="danh-sach-thong-bao" class="btn-link" title="Xem tất cả">
+            <i class="fas fa-expand"></i>
+          </a>
         </div>
       </div>
 
-
-      @if (loading && notifications.length === 0) {
-        <div class="notif-empty">Đang tải...</div>
-      } @else {
-        @if (notifications.length === 0) {
-          <div class="notif-empty">Chưa có thông báo nào.</div>
+      <div class="panel-body custom-scrollbar">
+        @if (loading && notifications.length === 0) {
+          <div class="loading-state">
+            <div class="spinner-sm"></div>
+            Đang tải...
+          </div>
         } @else {
-          <ul class="notif-list">
-            @for (n of notifications; track n.thong_bao_id) {
-              <li class="notif-item"
-                  [class.unread]="!n.da_doc"
-                  (click)="onClickItem(n)">
-                <div class="notif-title">
-                  <strong>{{ n.nguoi_gui_ten }}</strong>
-                  <span class="notif-type">• {{ n.loai }}</span>
-                </div>
-                <div class="notif-body">
-                  {{ n.noi_dung }}
-                </div>
-                <div class="notif-time">
-                  {{ n.tao_luc | date:'dd/MM/yyyy HH:mm' }}
-                </div>
-              </li>
-            }
-          </ul>
+          @if (notifications.length === 0) {
+            <div class="empty-state">
+              <img src="assets/images/empty-bell.png" onerror="this.style.display='none'">
+              <p>Bạn không có thông báo nào</p>
+            </div>
+          } @else {
+            @for (notif of notifications; track notif.thong_bao_id) {
+              <div class="notif-item"
+                   [class.unread]="!notif.da_doc"
+                   (click)="onClickItem(notif)">
 
-          @if (has_more && !loading) {
-            <button class="load-more" (click)="loadMore()">Tải thêm</button>
-          }
-          @if (loading && notifications.length > 0) {
-            <div class="notif-loading-more">Đang tải thêm...</div>
+                <div class="notif-icon" [ngClass]="getIconClass(notif)">
+                  <i [class]="getIcon(notif)"></i>
+                </div>
+
+                <div class="notif-content">
+                  <p class="notif-text">
+                    <strong class="actor">{{ notif.nguoi_gui_ten }}</strong>
+                    {{ notif.noi_dung }}
+                  </p>
+
+                  @if (getGoldReward(notif)) {
+                    <div class="extra-info gold">
+                      <i class="fas fa-coins"></i> +{{ getGoldReward(notif) }} vàng
+                    </div>
+                  }
+
+                  <span class="notif-time">{{ notif.tao_luc | date:'dd/MM HH:mm' }}</span>
+                </div>
+
+                @if (!notif.da_doc) {
+                  <div class="dot-unread"></div>
+                }
+              </div>
+            }
+
+            @if (has_more && !loading) {
+              <button class="btn-load-more" (click)="loadMore()">Xem thêm cũ hơn</button>
+            }
           }
         }
-      }
+      </div>
     </div>
   }
 </div>
+
 @if (battle_invite_toast) {
-  <div class="battle-invite-toast" (click)="$event.stopPropagation()">
-    <div class="toast-title">
-      📣 Lời mời tham gia phòng đấu
+  <div class="battle-invite-toast animate-slide-in">
+    <div class="toast-icon">
+      <div class="swords-icon"><i class="fas fa-swords"></i></div>
     </div>
-    <div class="toast-body">
-      <strong>{{ battle_invite_toast.nguoi_gui_ten }}</strong>
-      <span> đã mời bạn vào phòng </span>
-      @if (battle_invite_ma_phong) {
-        <span class="room-code">#{{ battle_invite_ma_phong }}</span>
-      }
+    <div class="toast-content">
+      <h4>Lời mời thách đấu!</h4>
+      <p>
+        <strong>{{ battle_invite_toast.nguoi_gui_ten }}</strong> muốn so tài cùng bạn.
+        @if (battle_invite_ma_phong) {
+          <span class="room-code">#{{ battle_invite_ma_phong }}</span>
+        }
+      </p>
     </div>
     <div class="toast-actions">
-      <button class="btn-ghost" (click)="dismissBattleInvite()">Để sau</button>
-      <button class="btn-primary" (click)="acceptBattleInvite()">Tham gia ngay</button>
+      <button class="btn-reject" (click)="dismissBattleInvite()">Bỏ qua</button>
+      <button class="btn-accept" (click)="acceptBattleInvite()">Chấp nhận</button>
     </div>
+    <div class="toast-progress"></div>
   </div>
 }
-

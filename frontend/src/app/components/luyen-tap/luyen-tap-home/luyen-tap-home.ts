@@ -1,33 +1,32 @@
-import {Component, computed, OnDestroy, OnInit, signal, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {Component, computed, OnDestroy, OnInit, signal, ViewChild} from '@angular/core';
 import {FormsModule, NgForm} from '@angular/forms';
-import {Base} from '../../base/base';
-import {ResponseObject} from '../../../responses/response-object';
-import {BatDauLuyenTapResponse, CauHoiPracticeItem} from '../../../responses/luyentap/bat_dau_luyen_tap-response';
-import Swal from 'sweetalert2';
-import {SubmitLuyenTapResponse} from '../../../responses/luyentap/submit_luyen_tap-response';
 import {environment} from 'src/app/environments/environment';
+import Swal from 'sweetalert2';
 import {BatDauLuyenTapRequest} from '../../../dtos/luyen-tap/bat_dau_luyen_tap-request';
-import {CauTraLoiPracticeDTO, TraLoiCauHoiPracticeDTO} from '../../../dtos/luyen-tap/tra-loi-cau-hoi-dto';
+import {CauTraLoiPracticeDTO, TraLoiCauHoiPracticeDTO,} from '../../../dtos/luyen-tap/tra-loi-cau-hoi-dto';
 import {BoCauHoiResponse} from '../../../responses/bocauhoi/bocauhoi-response';
-import {PageResponse} from '../../../responses/page-response';
+import {KhoaHoiResponse} from '../../../responses/khoahoc/khoa-hoi-response';
+import {BatDauLuyenTapResponse, CauHoiPracticeItem,} from '../../../responses/luyentap/bat_dau_luyen_tap-response';
 import {LichSuLuyenTapItem} from '../../../responses/luyentap/lich_su_luyen_tap-item';
+import {SubmitLuyenTapResponse} from '../../../responses/luyentap/submit_luyen_tap-response';
 import {TheGhiNhoResponse} from '../../../responses/luyentap/the_ghi_nho-response';
-
+import {PageResponse} from '../../../responses/page-response';
+import {ResponseObject} from '../../../responses/response-object';
+import {Base} from '../../base/base';
 
 interface LocalAnswerState {
   lua_chon?: 'A' | 'B' | 'C' | 'D' | null;
-  start_time_ms: number;   // thời điểm bắt đầu câu
-  elapsed_ms?: number;     // thời gian đã trả lời (ms)
+  start_time_ms: number; // thời điểm bắt đầu câu
+  elapsed_ms?: number; // thời gian đã trả lời (ms)
 }
-
 
 @Component({
   selector: 'app-luyen-tap-home',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './luyen-tap-home.html',
-  styleUrl: './luyen-tap-home.scss'
+  styleUrl: './luyen-tap-home.scss',
 })
 export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
   @ViewChild('f') f!: NgForm;
@@ -56,9 +55,9 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
   private questionTimer?: ReturnType<typeof setInterval>;
 
   bo_cau_hoi_id: number | null = null;
-// không dùng nữa, cho về 0
+  // không dùng nữa, cho về 0
 
-// danh sách bộ câu hỏi
+  // danh sách bộ câu hỏi
   bo_cau_hoi_options = signal<BoCauHoiResponse[]>([]);
   loading_sets = signal<boolean>(false);
 
@@ -71,6 +70,9 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
   loading_history = signal<boolean>(false);
   totalPagesHistory = 0;
   pageHistory = 0;
+  filterKhoaHocId: number | null = null;
+  filterBoCauHoiId: number | null = null;
+  khoa_hoc_options = signal<KhoaHoiResponse[]>([]);
 
   // 🆕 Thẻ ghi nhớ
   memo_items = signal<TheGhiNhoResponse[]>([]);
@@ -80,13 +82,13 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
   totalPagesMemo = 0;
   pageMemo = 0;
 
-
   protected readonly environment = environment;
 
   ngOnInit(): void {
     this.loadPracticeSets();
+    this.loadKhoaHocOptions();
 
-    this.route.queryParamMap.subscribe(params => {
+    this.route.queryParamMap.subscribe((params) => {
       const idParam = params.get('bo_cau_hoi_id');
       const parsed = idParam ? Number(idParam) : NaN;
 
@@ -100,10 +102,9 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     this.loadMemos(0);
   }
 
-
   onStart(form?: NgForm) {
     if (!this.bo_cau_hoi_id) {
-      Swal.fire('Thiếu thông tin', 'Vui lòng chọn bộ câu hỏi', 'info').then(r => {
+      Swal.fire('Thiếu thông tin', 'Vui lòng chọn bộ câu hỏi', 'info').then((r) => {
       });
       return;
     }
@@ -112,43 +113,44 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     this.practice_from_memo.set(false);
     this.dto = {
       bo_cau_hoi_id: this.bo_cau_hoi_id,
-      so_luong: 0   // 0 = lấy hết câu trong bộ
+      so_luong: 0, // 0 = lấy hết câu trong bộ
     };
 
-    this.luyenTapService.startPractice(this.dto)
-      .subscribe({
-        next: (res: ResponseObject<BatDauLuyenTapResponse>) => {
-          this.loading.set(false);
-          const data = res.data!;
-          if (!data || !data.cau_hoi_list || data.cau_hoi_list.length === 0) {
-            Swal.fire('Không có câu hỏi', 'Bộ câu hỏi này chưa có câu hỏi', 'info').then(r => {
-            });
-            return;
-          }
-
-          this.practice_data.set(data);
-          this.current_index.set(0);
-          this.answers_map.clear();
-          this.answers_version.update(v => v + 1);
-          this.result.set(null);
-          this.playing.set(true);
-          this.finished.set(false);
-
-          // bắt đầu từ câu 0
-          this.startQuestion(0);
-          this.setupPracticeSession(data)
-        },
-        error: err => {
-          this.loading.set(false);
-          Swal.fire('Lỗi', err?.error?.message || 'Không thể bắt đầu luyện tập', 'error').then(r => {
+    this.luyenTapService.startPractice(this.dto).subscribe({
+      next: (res: ResponseObject<BatDauLuyenTapResponse>) => {
+        this.loading.set(false);
+        const data = res.data!;
+        if (!data || !data.cau_hoi_list || data.cau_hoi_list.length === 0) {
+          Swal.fire('Không có câu hỏi', 'Bộ câu hỏi này chưa có câu hỏi', 'info').then((r) => {
           });
+          return;
         }
-      });
+
+        this.practice_data.set(data);
+        this.current_index.set(0);
+        this.answers_map.clear();
+        this.answers_version.update((v) => v + 1);
+        this.result.set(null);
+        this.playing.set(true);
+        this.finished.set(false);
+
+        // bắt đầu từ câu 0
+        this.startQuestion(0);
+        this.setupPracticeSession(data);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        Swal.fire('Lỗi', err?.error?.message || 'Không thể bắt đầu luyện tập', 'error').then(
+          (r) => {
+          }
+        );
+      },
+    });
   }
 
   onStartFromMemo() {
     if (!this.bo_cau_hoi_id) {
-      Swal.fire('Thiếu thông tin', 'Vui lòng chọn bộ câu hỏi trước', 'info').then(r => {
+      Swal.fire('Thiếu thông tin', 'Vui lòng chọn bộ câu hỏi trước', 'info').then((r) => {
       });
       return;
     }
@@ -161,7 +163,11 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
         this.loading.set(false);
         const data = res.data!;
         if (!data || !data.cau_hoi_list || data.cau_hoi_list.length === 0) {
-          Swal.fire('Không có thẻ ghi nhớ', 'Bạn chưa có thẻ ghi nhớ nào cho bộ câu hỏi này', 'info').then(r => {
+          Swal.fire(
+            'Không có thẻ ghi nhớ',
+            'Bạn chưa có thẻ ghi nhớ nào cho bộ câu hỏi này',
+            'info'
+          ).then((r) => {
           });
           this.practice_from_memo.set(false);
           return;
@@ -170,20 +176,24 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
         this.practice_data.set(data);
         this.current_index.set(0);
         this.answers_map.clear();
-        this.answers_version.update(v => v + 1);
+        this.answers_version.update((v) => v + 1);
         this.result.set(null);
         this.playing.set(true);
         this.finished.set(false);
 
         this.startQuestion(0);
-        this.setupPracticeSession(data)
+        this.setupPracticeSession(data);
       },
-      error: err => {
+      error: (err) => {
         this.loading.set(false);
         this.practice_from_memo.set(false);
-        Swal.fire('Lỗi', err?.error?.message || 'Không thể bắt đầu luyện tập từ thẻ ghi nhớ', 'error').then(r => {
+        Swal.fire(
+          'Lỗi',
+          err?.error?.message || 'Không thể bắt đầu luyện tập từ thẻ ghi nhớ',
+          'error'
+        ).then((r) => {
         });
-      }
+      },
     });
   }
 
@@ -192,7 +202,7 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     this.practice_data.set(data);
     this.current_index.set(0);
     this.answers_map.clear();
-    this.answers_version.update(v => v + 1);
+    this.answers_version.update((v) => v + 1);
     this.result.set(null);
     this.playing.set(true);
     this.finished.set(false);
@@ -203,10 +213,9 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     const firstQ = data.cau_hoi_list[0];
     this.answers_map.set(firstQ.id, {
       lua_chon: null,
-      start_time_ms: Date.now()
+      start_time_ms: Date.now(),
     });
   }
-
 
   ngOnDestroy() {
     this.clearTimer();
@@ -218,14 +227,32 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
       next: (res: ResponseObject<PageResponse<BoCauHoiResponse>>) => {
         this.loading_sets.set(false);
         const page = res.data!;
-        const list = page?.items ?? [];  // nếu PageResponse dùng 'items'
+        const list = page?.items ?? []; // nếu PageResponse dùng 'items'
         this.bo_cau_hoi_options.set(list);
       },
-      error: err => {
+      error: (err) => {
         this.loading_sets.set(false);
-        Swal.fire('Lỗi', err?.error?.message || 'Không lấy được danh sách bộ câu hỏi', 'error').then(r => {
+        Swal.fire(
+          'Lỗi',
+          err?.error?.message || 'Không lấy được danh sách bộ câu hỏi',
+          'error'
+        ).then((r) => {
         });
-      }
+      },
+    });
+  }
+
+  /** Load danh sách khóa học để filter lịch sử */
+  private loadKhoaHocOptions() {
+    // Lấy tối đa 50 khóa học published để filter
+    this.khoaHocService.getAll('', 0, 'PUBLISHED', 'NEWEST', 0, 50).subscribe({
+      next: (res: ResponseObject<PageResponse<KhoaHoiResponse>>) => {
+        const page = res.data!;
+        this.khoa_hoc_options.set(page?.items ?? []);
+      },
+      error: (err) => {
+        console.error('Không lấy được danh sách khóa học để filter lịch sử', err);
+      },
     });
   }
 
@@ -234,21 +261,25 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     this.loading_history.set(true);
     const size = 5;
 
-    this.luyenTapService.getHistory(page, size).subscribe({
-      next: (res: ResponseObject<PageResponse<LichSuLuyenTapItem>>) => {
-        this.loading_history.set(false);
-        const pageData = res.data!;
-        this.history_items.set(pageData?.items ?? []);
-        this.history_page.set(pageData?.currentPage ?? 0);
-        this.totalPagesHistory = pageData.totalPages;
-        this.history_total_pages.set(pageData?.totalPages ?? 0);
-      },
-      error: err => {
-        this.loading_history.set(false);
-        Swal.fire('Lỗi', err?.error?.message || 'Không lấy được lịch sử luyện tập', 'error').then(r => {
-        });
-      }
-    });
+    this.luyenTapService
+      .getHistory(page, size, this.filterKhoaHocId || undefined, this.filterBoCauHoiId || undefined)
+      .subscribe({
+        next: (res: ResponseObject<PageResponse<LichSuLuyenTapItem>>) => {
+          this.loading_history.set(false);
+          const pageData = res.data!;
+          this.history_items.set(pageData?.items ?? []);
+          this.history_page.set(pageData?.currentPage ?? 0);
+          this.totalPagesHistory = pageData.totalPages;
+          this.history_total_pages.set(pageData?.totalPages ?? 0);
+        },
+        error: (err) => {
+          this.loading_history.set(false);
+          Swal.fire('Lỗi', err?.error?.message || 'Không lấy được lịch sử luyện tập', 'error').then(
+            (r) => {
+            }
+          );
+        },
+      });
   }
 
   // 🆕 load danh sách thẻ ghi nhớ
@@ -265,11 +296,15 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
         this.totalPagesMemo = pageData.totalPages;
         this.memo_total_pages.set(pageData?.totalPages ?? 0);
       },
-      error: err => {
+      error: (err) => {
         this.loading_memos.set(false);
-        Swal.fire('Lỗi', err?.error?.message || 'Không lấy được danh sách thẻ ghi nhớ', 'error').then(r => {
+        Swal.fire(
+          'Lỗi',
+          err?.error?.message || 'Không lấy được danh sách thẻ ghi nhớ',
+          'error'
+        ).then((r) => {
         });
-      }
+      },
     });
   }
 
@@ -393,7 +428,7 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     if (!existed) {
       this.answers_map.set(q.id, {
         lua_chon: null,
-        start_time_ms: now
+        start_time_ms: now,
       });
     } else {
       existed.start_time_ms = now;
@@ -430,7 +465,6 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     this.answers_map.set(q.id, st);
   }
 
-
   private clearTimer() {
     if (this.questionTimer) {
       clearInterval(this.questionTimer);
@@ -444,7 +478,7 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
 
     const answer = this.currentAnswer();
     if (!answer) {
-      Swal.fire('Chưa chọn đáp án', 'Hãy chọn A/B/C/D trước khi nộp', 'info').then(r => {
+      Swal.fire('Chưa chọn đáp án', 'Hãy chọn A/B/C/D trước khi nộp', 'info').then((r) => {
       });
       return;
     }
@@ -488,7 +522,7 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     if (!existed) {
       this.answers_map.set(q.id, {
         lua_chon: opt,
-        start_time_ms: Date.now()
+        start_time_ms: Date.now(),
       });
     } else {
       existed.lua_chon = opt;
@@ -496,9 +530,8 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     }
 
     // 👇 báo cho computed biết state đã đổi
-    this.answers_version.update(v => v + 1);
+    this.answers_version.update((v) => v + 1);
   }
-
 
   goPrev() {
     const data = this.practice_data();
@@ -522,18 +555,18 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
 
     const phien_id = data.phien_id;
 
-    const cau_tra_loi_list: CauTraLoiPracticeDTO[] = data.cau_hoi_list.map(q => {
+    const cau_tra_loi_list: CauTraLoiPracticeDTO[] = data.cau_hoi_list.map((q) => {
       const st = this.answers_map.get(q.id);
       return {
         cau_hoi_id: q.id,
-        lua_chon: st?.lua_chon ?? null,      // có thể null nếu hết giờ chưa chọn
-        thoi_gian_ms: st?.elapsed_ms ?? null // thời gian trả lời (ms)
+        lua_chon: st?.lua_chon ?? null, // có thể null nếu hết giờ chưa chọn
+        thoi_gian_ms: st?.elapsed_ms ?? null, // thời gian trả lời (ms)
       };
     });
 
     const dto: TraLoiCauHoiPracticeDTO = {
       phien_id,
-      cau_tra_loi_list
+      cau_tra_loi_list,
     };
 
     this.submitting.set(true);
@@ -543,14 +576,16 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
         this.result.set(res.data!);
         this.finished.set(true);
         this.playing.set(false);
-        Swal.fire('Hoàn thành', 'Bạn đã nộp bài luyện tập', 'success').then(r => {
+        Swal.fire('Hoàn thành', 'Bạn đã nộp bài luyện tập', 'success').then((r) => {
         });
       },
-      error: err => {
+      error: (err) => {
         this.submitting.set(false);
-        Swal.fire('Lỗi', err?.error?.message || 'Không thể nộp bài luyện tập', 'error').then(r => {
-        });
-      }
+        Swal.fire('Lỗi', err?.error?.message || 'Không thể nộp bài luyện tập', 'error').then(
+          (r) => {
+          }
+        );
+      },
     });
   }
 
@@ -561,20 +596,22 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Xoá',
-      cancelButtonText: 'Huỷ'
-    }).then(result => {
+      cancelButtonText: 'Huỷ',
+    }).then((result) => {
       if (result.isConfirmed) {
         this.luyenTapService.deleteMemo(memo.memo_id).subscribe({
           next: () => {
-            Swal.fire('Đã xoá', 'Đã xoá thẻ ghi nhớ.', 'success').then(r => {
+            Swal.fire('Đã xoá', 'Đã xoá thẻ ghi nhớ.', 'success').then((r) => {
             });
             // load lại current page
             this.loadMemos(this.memo_page());
           },
-          error: err => {
-            Swal.fire('Lỗi', err?.error?.message || 'Không xoá được thẻ ghi nhớ', 'error').then(r => {
-            });
-          }
+          error: (err) => {
+            Swal.fire('Lỗi', err?.error?.message || 'Không xoá được thẻ ghi nhớ', 'error').then(
+              (r) => {
+              }
+            );
+          },
         });
       }
     });
@@ -584,14 +621,14 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
   practiceSingleFromMemo(memo: TheGhiNhoResponse) {
     // 1. Tìm bộ câu hỏi tương ứng trong danh sách practice_sets
     const list = this.bo_cau_hoi_options();
-    const found = list.find(b => b.tieu_de === memo.bo_cau_hoi);
+    const found = list.find((b) => b.tieu_de === memo.bo_cau_hoi);
 
     if (!found) {
       Swal.fire(
         'Không tìm thấy bộ câu hỏi',
         'Bộ câu hỏi của thẻ ghi nhớ này không còn khả dụng để luyện tập.',
         'info'
-      ).then(r => {
+      ).then((r) => {
       });
       return;
     }
@@ -607,21 +644,23 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
         this.loading.set(false);
         const data = res.data!;
         if (!data || !data.cau_hoi_list || data.cau_hoi_list.length === 0) {
-          Swal.fire('Không có câu hỏi', 'Không tìm thấy câu hỏi để luyện tập.', 'info').then(r => {
-          });
+          Swal.fire('Không có câu hỏi', 'Không tìm thấy câu hỏi để luyện tập.', 'info').then(
+            (r) => {
+            }
+          );
           this.practice_from_memo.set(false);
           return;
         }
 
         // 3. Lọc theo nội dung câu hỏi (memo.cau_hoi)
-        const filtered = data.cau_hoi_list.filter(q => q.noi_dung === memo.cau_hoi);
+        const filtered = data.cau_hoi_list.filter((q) => q.noi_dung === memo.cau_hoi);
 
         if (!filtered.length) {
           Swal.fire(
             'Không tìm thấy câu hỏi',
             'Câu hỏi trong thẻ ghi nhớ không còn tồn tại trong bộ.',
             'info'
-          ).then(r => {
+          ).then((r) => {
           });
           this.practice_from_memo.set(false);
           return;
@@ -631,36 +670,36 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
         const filteredData: BatDauLuyenTapResponse = {
           ...data,
           tong_cau_hoi: filtered.length,
-          cau_hoi_list: filtered
+          cau_hoi_list: filtered,
         };
 
         // 5. Khởi tạo phiên luyện tập như bình thường
         this.setupPracticeSession(filteredData);
       },
-      error: err => {
+      error: (err) => {
         this.loading.set(false);
         this.practice_from_memo.set(false);
         Swal.fire(
           'Lỗi',
           err?.error?.message || 'Không thể bắt đầu luyện tập từ thẻ ghi nhớ',
           'error'
-        ).then(r => {
+        ).then((r) => {
         });
-      }
+      },
     });
   }
 
   // 🔁 Luyện lại từ tất cả thẻ ghi nhớ của bộ này (reuse onStartFromMemo)
   practiceSetFromMemo(memo: TheGhiNhoResponse) {
     const list = this.bo_cau_hoi_options();
-    const found = list.find(b => b.tieu_de === memo.bo_cau_hoi);
+    const found = list.find((b) => b.tieu_de === memo.bo_cau_hoi);
 
     if (!found) {
       Swal.fire(
         'Không tìm thấy bộ câu hỏi',
         'Bộ câu hỏi của thẻ ghi nhớ này không còn khả dụng để luyện tập.',
         'info'
-      ).then(r => {
+      ).then((r) => {
       });
       return;
     }
@@ -670,12 +709,27 @@ export class LuyenTapHomeComponent extends Base implements OnInit, OnDestroy {
     this.onStartFromMemo();
   }
 
-
   // Sau này dùng cho nút "Luyện tập lại"
   restartWithSameSet() {
     const data = this.practice_data();
     if (!data) return;
     this.bo_cau_hoi_id = this.bo_cau_hoi_id ?? null;
     this.onStart({} as NgForm);
+  }
+
+  retryHistory(h: any) {
+    if (!h.bo_cau_hoi_id) {
+      Swal.fire('Lỗi', 'Không tìm thấy thông tin bộ câu hỏi này', 'error');
+      return;
+    }
+    this.bo_cau_hoi_id = h.bo_cau_hoi_id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.onStart();
+  }
+
+  getAccuracyClass(acc: number): string {
+    if (acc >= 80) return 'high'; // Xanh
+    if (acc >= 50) return 'med';  // Vàng
+    return 'low';                 // Đỏ
   }
 }

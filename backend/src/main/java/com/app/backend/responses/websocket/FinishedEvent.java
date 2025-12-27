@@ -50,6 +50,8 @@ public class FinishedEvent {
         private Long userId;
         @JsonProperty("ho_ten")
         private String hoTen;
+        @JsonProperty("avatar_url")
+        private String avatarUrl;
         @JsonProperty("so_cau_dung")
         private int soCauDung;
         @JsonProperty("diem")
@@ -88,6 +90,8 @@ public class FinishedEvent {
         private Long userId;
         @JsonProperty("ho_ten")
         private String hoTen;
+        @JsonProperty("avatar_url")
+        private String avatarUrl;
         @JsonProperty("diem")
         private int diem;
         @JsonProperty("so_cau_dung")

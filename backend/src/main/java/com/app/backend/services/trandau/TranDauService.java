@@ -422,14 +422,30 @@ public class TranDauService implements ITranDauService {
                 comboMultiplier = 1.0;
             }
 
+            // c) ⚡ Power-up multiplier (x2, x3...)
+            double powerupMultiplier = state.getActiveMultipliers().getOrDefault(currentUserId, 1.0);
+            if (powerupMultiplier > 1.0) {
+                // Áp dụng power-up multiplier và reset
+                comboMultiplier *= powerupMultiplier;
+                state.getActiveMultipliers().remove(currentUserId);
+            }
+
             gained = (int) Math.round(basePoints * comboMultiplier);
             comboBonus = gained - basePoints;
         } else {
-            // Sai → reset combo đã làm ở updateCombo(...), gained=0
+            // Sai → kiểm tra khiên bảo vệ
+            if (state.getShieldedPlayers().contains(currentUserId)) {
+                // Có khiên: không reset combo, xóa khiên
+                state.getShieldedPlayers().remove(currentUserId);
+                // Giữ nguyên combo (không gọi updateCombo với correct=false)
+            }
+            // reset combo đã làm ở updateCombo(...), gained=0
             gained = 0;
             basePoints = 0;
             comboBonus = 0;
             comboMultiplier = 0.0;
+            // Reset power-up multiplier nếu có (không được dùng vì trả lời sai)
+            state.getActiveMultipliers().remove(currentUserId);
         }
 
         // 7️⃣ Cập nhật điểm tổng (trong RAM)
@@ -658,6 +674,7 @@ public class TranDauService implements ITranDauService {
         FinishedEvent.Winner winData = FinishedEvent.Winner.builder()
                 .userId(winnerPlayer.getNguoiDung().getId())
                 .hoTen(winnerPlayer.getNguoiDung().getHoTen())
+                .avatarUrl(winnerPlayer.getNguoiDung().getAvatarUrl())
                 .diem(winnerPlayer.getDiem())
                 .soCauDung(winnerPlayer.getSoCauDung())
                 .build();
@@ -686,6 +703,7 @@ public class TranDauService implements ITranDauService {
                             return FinishedEvent.Player.builder()
                                     .userId(uid)
                                     .hoTen(p.getNguoiDung().getHoTen())
+                                    .avatarUrl(p.getNguoiDung().getAvatarUrl())
                                     .diem(p.getDiem())
                                     .soCauDung(p.getSoCauDung())
                                     .xepHang(p.getXepHang())
@@ -765,96 +783,6 @@ public class TranDauService implements ITranDauService {
                         : 0)
                 .build();
     }
-
-    //    private void updateRankingAfterBattle(TranDau td,
-//                                          Map<Long, Integer> scores,
-//                                          Set<Long> winnerIds) {
-//        if (!com.app.backend.models.constant.LoaiTranDau.RANKED.equals(td.getLoaiTranDau())) {
-//            return;
-//        }
-//        for (var e : scores.entrySet()) {
-//            Long userId = e.getKey();
-//
-//            // Không cho điểm âm ảnh hưởng BXH
-//            int rawScore = e.getValue() != null ? e.getValue() : 0;
-//            int diemTranNay = Math.max(0, rawScore);
-//
-//            Long boCauHoiId = td.getBoCauHoi().getId();
-//
-//            // 1. Lấy record best-score hiện tại (nếu có)
-//            ThanhTichBoCauHoi thanhTich = thanhTichBoCauHoiRepository
-//                    .findByNguoiDung_IdAndBoCauHoi_Id(userId, boCauHoiId)
-//                    .orElse(null);
-//
-//            int oldBest = (thanhTich != null) ? thanhTich.getDiemCaoNhat() : 0;
-//            int delta = 0;
-//
-//            if (thanhTich == null) {
-//                // Chưa từng chơi bộ này => best-score mới
-//                delta = diemTranNay;
-//
-//                thanhTich = ThanhTichBoCauHoi.builder()
-//                        .nguoiDung(nguoiDungRepository.getReferenceById(userId))
-//                        .boCauHoi(td.getBoCauHoi())
-//                        .diemCaoNhat(diemTranNay)
-//                        .tranDau(td) // trận đầu tiên cũng là best
-//                        .build();
-//            } else if (diemTranNay > oldBest) {
-//                // Cải thiện kỷ lục
-//                delta = diemTranNay - oldBest;
-//                thanhTich.setDiemCaoNhat(diemTranNay);
-//                thanhTich.setTranDau(td);
-//            } else {
-//                // Không cải thiện => không cộng điểm rank
-//                delta = 0;
-//            }
-//
-//            thanhTichBoCauHoiRepository.save(thanhTich);
-//
-//            // 2. Cập nhật bảng xếp hạng tổng
-//            BangXepHang bxh = bangXepHangRepository.findByNguoiDung_Id(userId)
-//                    .orElse(BangXepHang.builder()
-//                            .nguoiDung(nguoiDungRepository.getReferenceById(userId))
-//                            .tongDiem(0)
-//                            .tongTran(0)
-//                            .soTranThang(0)
-//                            .soTranThua(0)
-//                            .xepHang(0)
-//                            .build());
-//
-//            // Mỗi lần kết thúc trận -> +1 tổng trận
-//            bxh.setTongTran(bxh.getTongTran() + 1);
-//
-//            // cộng delta (nếu > 0) vào tổng điểm
-//            if (delta > 0) {
-//                bxh.setTongDiem(bxh.getTongDiem() + delta);
-//            }
-//
-//            // --- Thắng / thua / AFK ---
-//            // Người thắng: thuộc winnerIds
-//            boolean isWinner = winnerIds != null && winnerIds.contains(userId);
-//
-//            // AFK/0 điểm: không tính là thua để thống kê đẹp hơn
-//            if (isWinner) {
-//                bxh.setSoTranThang(bxh.getSoTranThang() + 1);
-//            } else if (diemTranNay > 0) {
-//                // chỉ những người có >0 điểm mới tính là thua
-//                bxh.setSoTranThua(bxh.getSoTranThua() + 1);
-//            }
-//            // còn lại (0 điểm, không thuộc winner) -> coi như tham gia nhưng ko +thắng cũng ko +thua
-//
-//            //cap nhat truong xep hang
-////            long betterPlayersCount = bangXepHangRepository
-////                    .countByTongDiemGreaterThanAndNguoiDung_IdNot(bxh.getTongDiem(), userId);
-////
-////            bxh.setXepHang((int) betterPlayersCount + 1);
-//            bangXepHangRepository.save(bxh);
-//            bangXepHangRepository.updateAllRankings();
-//        }
-//    }
-    // TranDauService.java
-
-    // trước: private void updateRankingAfterBattle(...)
     private Map<Long, MatchRewardResponse> updateRankingAfterBattle(
             TranDau tranDau,
             Map<Long, Integer> scores,
@@ -1260,6 +1188,259 @@ public class TranDauService implements ITranDauService {
                 noiDung,
                 metadataJson
         );
+    }
+
+    // ===================== ADMIN METHODS =====================
+
+    @Override
+    public Map<String, Object> getAdminBattleStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Tổng số trận
+        long totalBattles = tranDauRepository.count();
+        stats.put("totalBattles", totalBattles);
+
+        // Số trận đang chờ
+        long pendingBattles = tranDauRepository.countByTrangThai(TrangThaiTranDau.PENDING);
+        stats.put("pendingBattles", pendingBattles);
+
+        // Số trận đang diễn ra
+        long ongoingBattles = tranDauRepository.countByTrangThai(TrangThaiTranDau.ONGOING);
+        stats.put("ongoingBattles", ongoingBattles);
+
+        // Số trận đã hoàn thành
+        long finishedBattles = tranDauRepository.countByTrangThai(TrangThaiTranDau.FINISHED);
+        stats.put("finishedBattles", finishedBattles);
+
+        // Số trận hôm nay
+        Instant startOfToday = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.DAYS);
+        List<Object[]> todayStats = tranDauRepository.countBattlesByDaySince(startOfToday);
+        long todayBattles = todayStats.isEmpty() ? 0 : ((Number) todayStats.get(0)[1]).longValue();
+        stats.put("todayBattles", todayBattles);
+
+        // Tổng số lịch sử trận đấu
+        long totalHistories = lichSuTranDauRepository.count();
+        stats.put("totalHistories", totalHistories);
+
+        return stats;
+    }
+
+    @Override
+    public Page<LichSuTranDauResponse> getAdminHistoryFiltered(
+            int page, int limit, String keyword, String loaiTranDau,
+            Long boCauHoiId, String fromDate, String toDate
+    ) {
+        PageRequest pageRequest = PageRequest.of(page, limit);
+
+        // Parse dates
+        Instant from = null;
+        Instant to = null;
+        if (fromDate != null && !fromDate.isBlank()) {
+            from = Instant.parse(fromDate + "T00:00:00Z");
+        }
+        if (toDate != null && !toDate.isBlank()) {
+            to = Instant.parse(toDate + "T23:59:59Z");
+        }
+
+        Page<LichSuTranDau> result = lichSuTranDauRepository.findAllFiltered(
+                keyword, loaiTranDau, boCauHoiId, from, to, pageRequest
+        );
+
+        return result.map(LichSuTranDauResponse::fromEntity);
+    }
+
+    @Override
+    @Transactional
+    public void adminCloseRoom(Long tranDauId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        if (!TrangThaiTranDau.PENDING.equals(td.getTrangThai())) {
+            throw new IllegalStateException("Chỉ có thể đóng phòng đang ở trạng thái chờ");
+        }
+
+        // Xóa tất cả người chơi trong phòng
+        List<NguoiChoiTranDau> players = nguoiChoiTranDauRepository.findAllByTranDau_Id(tranDauId);
+        nguoiChoiTranDauRepository.deleteAll(players);
+
+        // Cập nhật trạng thái thành CANCELLED
+        td.setTrangThai(TrangThaiTranDau.CANCELLED);
+        tranDauRepository.save(td);
+
+        // Notify via WebSocket
+        wsPublisher.sendRoomClosed(tranDauId, "Phòng đã bị đóng bởi Admin");
+    }
+
+    @Override
+    @Transactional
+    public void adminKickPlayer(Long tranDauId, Long userId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        if (!TrangThaiTranDau.PENDING.equals(td.getTrangThai())) {
+            throw new IllegalStateException("Chỉ có thể kick người chơi khi phòng đang ở trạng thái chờ");
+        }
+
+        // Không cho kick chủ phòng
+        if (td.getChuPhong().getId().equals(userId)) {
+            throw new IllegalArgumentException("Không thể kick chủ phòng");
+        }
+
+        NguoiChoiTranDau player = nguoiChoiTranDauRepository
+                .findByTranDau_IdAndNguoiDung_Id(tranDauId, userId)
+                .orElseThrow(() -> new DataNotFoundException("Người chơi không có trong phòng"));
+
+        nguoiChoiTranDauRepository.delete(player);
+
+        // Notify via WebSocket
+        wsPublisher.sendPlayerKicked(tranDauId, userId, "Bạn đã bị kick bởi Admin");
+    }
+
+    @Override
+    @Transactional
+    public void adminDeleteHistory(Long lichSuId) throws Exception {
+        LichSuTranDau lichSu = lichSuTranDauRepository.findById(lichSuId)
+                .orElseThrow(() -> new DataNotFoundException("Lịch sử trận đấu không tồn tại"));
+
+        // Xóa các câu trả lời liên quan (dựa trên tranDau và nguoiDung)
+        traLoiTranDauRepository.deleteByTranDau_IdAndNguoiDung_Id(
+                lichSu.getTranDau().getId(), 
+                lichSu.getNguoiDung().getId()
+        );
+
+        // Xóa lịch sử
+        lichSuTranDauRepository.delete(lichSu);
+    }
+
+    @Override
+    public Map<String, Object> adminGetRoomDetail(Long tranDauId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", td.getId());
+        result.put("ma_phong", td.getMaPhong());
+        result.put("ten_phong", td.getTenPhong());
+        result.put("trang_thai", td.getTrangThai());
+        result.put("loai_tran_dau", td.getLoaiTranDau());
+        result.put("cong_khai", td.getCongKhai());
+        result.put("gioi_han_nguoi_choi", td.getGioiHanNguoiChoi());
+        result.put("tao_luc", td.getTaoLuc());
+
+        // Thông tin chủ phòng
+        NguoiDung chuPhong = td.getChuPhong();
+        Map<String, Object> hostInfo = new HashMap<>();
+        hostInfo.put("id", chuPhong.getId());
+        hostInfo.put("username", chuPhong.getUsername());
+        hostInfo.put("ho_ten", chuPhong.getHoTen());
+        hostInfo.put("avatar", chuPhong.getAvatarUrl());
+        result.put("chu_phong", hostInfo);
+
+        // Thông tin bộ câu hỏi
+        BoCauHoi bo = td.getBoCauHoi();
+        Map<String, Object> boInfo = new HashMap<>();
+        boInfo.put("id", bo.getId());
+        boInfo.put("tieu_de", bo.getTieuDe());
+        boInfo.put("chu_de", bo.getChuDe() != null ? bo.getChuDe().getTen() : null);
+        result.put("bo_cau_hoi", boInfo);
+
+        // Danh sách người chơi
+        List<NguoiChoiTranDau> players = nguoiChoiTranDauRepository.findAllByTranDau_Id(tranDauId);
+        List<Map<String, Object>> playerList = new ArrayList<>();
+        for (NguoiChoiTranDau p : players) {
+            Map<String, Object> pInfo = new HashMap<>();
+            pInfo.put("id", p.getNguoiDung().getId());
+            pInfo.put("username", p.getNguoiDung().getUsername());
+            pInfo.put("ho_ten", p.getNguoiDung().getHoTen());
+            pInfo.put("avatar", p.getNguoiDung().getAvatarUrl());
+            pInfo.put("is_host", p.getNguoiDung().getId().equals(chuPhong.getId()));
+            playerList.add(pInfo);
+        }
+        result.put("nguoi_choi", playerList);
+        result.put("so_nguoi_choi", players.size());
+
+        return result;
+    }
+
+    @Override
+    public byte[] exportHistoryCsv(String keyword, String loaiTranDau, Long boCauHoiId,
+                                   String fromDate, String toDate) {
+        // Parse dates
+        Instant from = null;
+        Instant to = null;
+        if (fromDate != null && !fromDate.isBlank()) {
+            from = Instant.parse(fromDate + "T00:00:00Z");
+        }
+        if (toDate != null && !toDate.isBlank()) {
+            to = Instant.parse(toDate + "T23:59:59Z");
+        }
+
+        // Lấy tất cả dữ liệu (không phân trang)
+        List<LichSuTranDau> allHistories = lichSuTranDauRepository.findAllFilteredList(
+                keyword, loaiTranDau, boCauHoiId, from, to
+        );
+
+        StringBuilder csv = new StringBuilder();
+        // BOM for UTF-8
+        csv.append('\ufeff');
+        // Header
+        csv.append("ID Lịch sử,ID Trận,Tên phòng,Mã phòng,Bộ câu hỏi,Loại trận,Người chơi,Điểm,Số câu đúng,Thời gian (ms),Xếp hạng,Hoàn thành lúc\n");
+
+        for (LichSuTranDau h : allHistories) {
+            TranDau td = h.getTranDau();
+            NguoiDung nd = h.getNguoiDung();
+
+            csv.append(h.getId()).append(",");
+            csv.append(td.getId()).append(",");
+            csv.append(escapeCsv(td.getTenPhong())).append(",");
+            csv.append(escapeCsv(td.getMaPhong())).append(",");
+            csv.append(escapeCsv(td.getBoCauHoi() != null ? td.getBoCauHoi().getTieuDe() : "")).append(",");
+            csv.append(escapeCsv(td.getLoaiTranDau())).append(",");
+            csv.append(escapeCsv(nd.getHoTen())).append(",");
+            csv.append(h.getTongDiem()).append(",");
+            csv.append(h.getSoCauDung()).append(",");
+            csv.append(h.getTongThoiGianMs()).append(",");
+            csv.append(h.getXepHang()).append(",");
+            csv.append(h.getHoanThanhLuc()).append("\n");
+        }
+
+        return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
+    // ================== POWER-UPS / ITEMS METHODS ==================
+
+    /**
+     * Lấy BattleState hiện tại của trận đấu
+     */
+    public BattleState getState(Long tranDauId) {
+        return battleStateManager.get(tranDauId);
+    }
+
+    /**
+     * Broadcast sự kiện khi một người chơi sử dụng vật phẩm
+     */
+    public void broadcastItemUsed(Long tranDauId, Long userId,
+                                   com.app.backend.responses.SuDungVatPhamResponse response) {
+        NguoiDung user = nguoiDungRepository.findById(userId).orElse(null);
+        String hoTen = user != null ? user.getHoTen() : "Người chơi";
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "ITEM_USED");
+        payload.put("user_id", userId);
+        payload.put("ho_ten", hoTen);
+        payload.put("loai_vat_pham", response.getLoaiVatPham());
+        payload.put("ten_vat_pham", response.getTenVatPham());
+        payload.put("hieu_ung", response.getHieuUng());
+
+        wsPublisher.publishGeneric(tranDauId, "ITEM_USED", payload);
     }
 
 }

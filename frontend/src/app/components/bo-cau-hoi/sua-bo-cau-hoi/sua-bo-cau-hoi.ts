@@ -27,6 +27,8 @@ export class BoCauHoiEdit extends Base implements OnInit {
   saving = false;
   chuDes: ChuDe[] = [];
 
+  currentStatus: string = '';
+
   ngOnInit(): void {
     this.boCauHoiId = Number(this.route.snapshot.paramMap.get('id'));
     this.fetchChuDes();
@@ -57,6 +59,7 @@ export class BoCauHoiEdit extends Base implements OnInit {
           chu_de_id: d.chu_de_id,
           che_do_hien_thi: d.che_do_hien_thi
         };
+        this.currentStatus = d.trang_thai;
         this.loading = false;
       },
       error: () => {

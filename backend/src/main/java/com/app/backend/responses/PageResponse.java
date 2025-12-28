@@ -17,6 +17,11 @@ public class PageResponse<T> {
     private long totalItems;
     private int pageSize;
 
+    // Alias for items (backward compatibility)
+    public static <T> PageResponseBuilder<T> contentBuilder() {
+        return PageResponse.builder();
+    }
+
     public static <T> PageResponse<T> fromPage(Page<T> page) {
         return PageResponse.<T>builder()
                 .items(page.getContent())

@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +23,8 @@ public class VatPhamService {
     private final VatPhamRepository vatPhamRepository;
     private final VatPhamNguoiDungRepository vatPhamNguoiDungRepository;
     private final SuDungVatPhamTranDauRepository suDungVatPhamTranDauRepository;
-    private final NguoiDungRepository nguoiDungRepository;
-    private final TranDauRepository tranDauRepository;
+    private final INguoiDungRepository nguoiDungRepository;
+    private final ITranDauRepository tranDauRepository;
 
     /**
      * Lấy danh sách inventory của user
@@ -221,7 +220,7 @@ public class VatPhamService {
                 // Hiển thị đáp án đúng (rất hiếm)
                 CauHoi q = state.getCurrentQuestion();
                 if (q != null) {
-                    builder.dapAnDung(q.getDapAn());
+                    builder.dapAnDung(String.valueOf(q.getDapAnDung()));
                 }
                 break;
         }
@@ -234,7 +233,7 @@ public class VatPhamService {
      */
     private List<String> getWrongAnswers(CauHoi cauHoi) {
         List<String> wrong = new ArrayList<>();
-        String correct = cauHoi.getDapAn();
+        String correct = String.valueOf(cauHoi.getDapAnDung());
         for (String opt : Arrays.asList("A", "B", "C", "D")) {
             if (!opt.equals(correct)) {
                 wrong.add(opt);

@@ -1,0 +1,527 @@
+<div class="post-detail-page">
+  <!-- Loading -->
+  @if (isLoading) {
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải bài viết...</p>
+  </div>
+  }
+
+  @if (post && !isLoading) {
+  <div class="content-wrapper">
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb">
+        <a routerLink="/community">
+          <i class="fa-solid fa-home"></i>
+          Cộng đồng
+        </a>
+        <i class="fa-solid fa-chevron-right"></i>
+        @if (post.tags?.length) {
+        <a [routerLink]="['/community']"
+          [queryParams]="{tag: post.tags![0].id}">
+          {{ post.tags![0].ten }}
+        </a>
+        <i class="fa-solid fa-chevron-right"></i>
+        }
+        <span class="current">{{ post.tieuDe }}</span>
+      </nav>
+
+      <!-- Post Card -->
+      <article class="post-article">
+        <!-- Pinned Badge -->
+        @if (post.ghim) {
+        <div class="pinned-badge">
+          <i class="fa-solid fa-thumbtack"></i>
+          Bài viết được ghim
+        </div>
+        }
+
+        <!-- Post Header -->
+        <header class="post-header">
+          <div class="author-section">
+            <a class="author-avatar"
+              [routerLink]="['/profile', post.nguoiDang?.id]">
+              <img [src]="getAvatarUrl(post.nguoiDang?.anhDaiDien)"
+                [alt]="post.nguoiDang?.ten">
+              <span class="level-badge">Lv.{{
+                post.nguoiDang?.capDo || 1
+                }}</span>
+            </a>
+            <div class="author-info">
+              <div class="author-name-row">
+                <a class="author-name"
+                  [routerLink]="['/profile', post.nguoiDang?.id]">
+                  {{
+                  post.nguoiDang?.ten || 'Người dùng'
+                  }}
+                </a>
+                <span class="post-type"
+                  [style.background]="getTypeColor(post.loai)">
+                  <i class="fa-solid"
+                    [ngClass]="getTypeIcon(post.loai)"></i>{{
+                  getTypeLabel(post.loai) }}</span>
+              </div>
+              <div class="post-meta">
+                <span class="time"><i
+                    class="fa-regular fa-clock"></i>{{ post.ngayTao |
+                  date:'dd/MM/yyyy' }} {{ post.ngayTao | date:'HH:mm'
+                  }}</span>
+                @if (post.daSua) {
+                <span class="edited">
+                  <i class="fa-solid fa-pen"></i>
+                  Đã chỉnh sửa
+                </span>
+                }
+                <span class="views">
+                  <i class="fa-regular fa-eye"></i>
+                  {{ post.luotXem }} lượt xem
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Menu -->
+          <div class="post-menu" ngbDropdown container="body"
+            placement="bottom-end">
+            <button class="btn-menu" ngbDropdownToggle>
+              <i class="fa-solid fa-ellipsis"></i>
+            </button>
+            <div ngbDropdownMenu class="dropdown-menu-custom">
+              @if (post.laCuaToi) {
+              <a ngbDropdownItem class="menu-item"
+                [routerLink]="['/community/edit', post.id]">
+                <i class="fa-solid fa-edit"></i>
+                Chỉnh sửa
+              </a>
+              <button ngbDropdownItem class="menu-item danger"
+                (click)="deletePost()">
+                <i class="fa-solid fa-trash"></i>
+                Xóa bài viết
+              </button>
+              } @else {
+              <button ngbDropdownItem class="menu-item"
+                (click)="openReportModal('post', post.id)">
+                <i class="fa-solid fa-flag"></i>
+                Báo cáo
+              </button>
+              }
+            </div>
+          </div>
+        </header>
+
+        <!-- Post Title -->
+        <h1 class="post-title">{{ post.tieuDe }}</h1>
+
+        <!-- Tags -->
+        @if (post.tags?.length) {
+        <div class="post-tags">
+          @for (tag of post.tags; track tag.id) {
+          <a class="tag" [routerLink]="['/community']"
+            [queryParams]="{tag: tag.id}"
+            [style.--tag-color]="tag.mauSac || '#6b7280'">
+            <i class="tag-icon fa-solid"
+              [ngClass]="tag.icon || 'fa-tag'"></i>
+            {{ tag.ten }}
+          </a>
+          }
+        </div>
+        }
+
+        <!-- Post Content -->
+        <div class="post-content" [innerHTML]="post.noiDung">
+        </div>
+
+        <!-- Post Images -->
+        @if (post.hinhAnh?.length) {
+        <div class="post-images"
+          [ngClass]="(post.hinhAnh?.length || 0) === 1 ? 'single' : 'grid'">
+          @for (img of post.hinhAnh; track img.id) {
+          <div class="image-item">
+            <img [src]="'http://localhost:8088/api/v1/posts/images/'+ img.duongDan" [alt]="img.moTa || 'Hình ảnh'">
+          </div>
+          }
+        </div>
+        }
+
+        <!-- Post Actions -->
+        <div class="post-actions">
+          <button class="btn-action" [class.active]="post.daThich"
+            (click)="toggleLike()">
+            <i class="fa-solid fa-heart"></i>
+            <span>{{ post.soLuotThich }} Thích</span>
+          </button>
+          <button class="btn-action" [class.active]="post.daLuu"
+            (click)="toggleSave()">
+            <i class="fa-solid fa-bookmark"></i>
+            <span>{{
+              post.daLuu ? 'Đã lưu' : 'Lưu'
+              }}</span>
+          </button>
+          <button class="btn-action" (click)="sharePost()">
+            <i class="fa-solid fa-share"></i>
+            <span>Chia sẻ</span>
+          </button>
+        </div>
+      </article>
+
+      <!-- Comments Section -->
+      <section class="comments-section">
+        <h2 class="section-title">
+          <i class="fa-solid fa-comments"></i>
+          Bình luận ({{ post.soLuotBinhLuan }})
+        </h2>
+
+        <!-- Comment Form -->
+        <div class="comment-form">
+          <div class="form-avatar">
+            <img [src]="currentUserAvatar" alt="Avatar">
+
+          </div>
+          <div class="form-input-wrapper">
+            <textarea [(ngModel)]="newComment"
+              placeholder="Viết bình luận của bạn..." rows="3"
+              [disabled]="isSubmittingComment"></textarea>
+            <div class="form-actions">
+              <button class="btn-submit"
+                [disabled]="!newComment.trim() || isSubmittingComment"
+                (click)="submitComment()">
+                @if (isSubmittingComment) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                } @else {
+                <i class="fa-solid fa-paper-plane"></i>
+                }
+                Gửi bình luận
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments List -->
+        <div class="comments-list">
+          @for (comment of comments; track comment.id) {
+          <div class="comment-item">
+            <div class="comment-main">
+              <a class="comment-avatar"
+                [routerLink]="['/profile', comment.nguoiDang?.id]">
+                <img
+                  [src]="getAvatarUrl(comment.nguoiDang?.anhDaiDien)"
+                  [alt]="comment.nguoiDang?.ten">
+              </a>
+              <div class="comment-content">
+                <div class="comment-header">
+                  <a class="author-name"
+                    [routerLink]="['/profile', comment.nguoiDang?.id]">
+                    {{
+                    comment.nguoiDang?.ten ||
+                    'Người dùng'
+                    }}
+                  </a>
+                  <span class="comment-time">{{ comment.ngayTao |
+                    date:'dd/MM/yyyy' }}</span>
+                  @if (comment.daSua) {
+                  <span class="edited">(đã
+                    sửa)</span>
+                  }
+                </div>
+
+                @if (editingComment === comment.id) {
+                <div class="edit-form">
+                  <textarea [(ngModel)]="editContent"
+                    rows="3"></textarea>
+                  <div class="edit-actions">
+                    <button class="btn-cancel"
+                      (click)="cancelEditComment()">Hủy
+                    </button>
+                    <button class="btn-save"
+                      (click)="saveEditComment(comment)">Lưu
+                    </button>
+                  </div>
+                </div>
+                } @else {
+                <div class="comment-body">{{
+                  comment.noiDung
+                  }}
+                </div>
+                }
+
+                <div class="comment-actions">
+                  <button class="btn-like"
+                    [class.active]="comment.daThich"
+                    (click)="toggleLikeComment(comment)">
+                    <i class="fa-solid fa-heart"></i>
+                    {{ comment.soLuotThich || 0 }}
+                  </button>
+                  <button class="btn-reply"
+                    (click)="startReply(comment.id)">
+                    <i class="fa-solid fa-reply"></i>
+                    Trả lời
+                  </button>
+                </div>
+
+                <!-- Reply Form -->
+                @if (replyingTo === comment.id) {
+                <div class="reply-form">
+                  <textarea [(ngModel)]="replyContent"
+                    placeholder="Viết câu trả lời..."
+                    rows="2"></textarea>
+                  <div class="reply-actions">
+                    <button class="btn-cancel"
+                      (click)="cancelReply()">Hủy
+                    </button>
+                    <button class="btn-submit"
+                      (click)="submitReply()">Gửi
+                    </button>
+                  </div>
+                </div>
+                }
+              </div>
+
+              <!-- Comment Menu -->
+              <div class="comment-menu" ngbDropdown container="body"
+                placement="bottom-end">
+                <button class="btn-menu" ngbDropdownToggle>
+                  <i class="fa-solid fa-ellipsis"></i>
+                </button>
+                <div ngbDropdownMenu class="dropdown-menu-custom">
+                  @if (comment.laCuaToi) {
+                  <button ngbDropdownItem class="menu-item"
+                    (click)="startEditComment(comment)">
+                    <i class="fa-solid fa-edit"></i>
+                    Chỉnh sửa
+                  </button>
+                  <button ngbDropdownItem class="menu-item danger"
+                    (click)="deleteComment(comment)">
+                    <i class="fa-solid fa-trash"></i>
+                    Xóa
+                  </button>
+                  } @else {
+                  <button ngbDropdownItem class="menu-item"
+                    (click)="openReportModal('comment', comment.id)">
+                    <i class="fa-solid fa-flag"></i>
+                    Báo cáo
+                  </button>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Replies -->
+            @if (comment.binhLuanCon?.length) {
+            <div class="replies">
+              @for (reply of comment.binhLuanCon; track
+              reply.id) {
+              <div class="comment-item reply">
+                <div class="comment-main">
+                  <a class="comment-avatar"
+                    [routerLink]="['/profile', reply.nguoiDang?.id]">
+                    <img
+                      [src]="getAvatarUrl(reply.nguoiDang?.anhDaiDien)"
+                      [alt]="reply.nguoiDang?.ten">
+                  </a>
+                  <div class="comment-content">
+                    <div class="comment-header">
+                      <a class="author-name"
+                        [routerLink]="['/profile', reply.nguoiDang?.id]">
+                        {{
+                        reply.nguoiDang?.ten
+                        || 'Người dùng'
+                        }}
+                      </a>
+                      <span class="comment-time">{{ reply.ngayTao |
+                        date:'dd/MM/yyyy' }}</span>
+                      @if (reply.daSua) {
+                      <span class="edited">(đã
+                        sửa)</span>
+                      }
+                    </div>
+
+                    @if (editingComment ===
+                    reply.id) {
+                    <div class="edit-form">
+                      <textarea [(ngModel)]="editContent"
+                        rows="2"></textarea>
+                      <div class="edit-actions">
+                        <button class="btn-cancel"
+                          (click)="cancelEditComment()">Hủy
+                        </button>
+                        <button class="btn-save"
+                          (click)="saveEditComment(reply)">Lưu
+                        </button>
+                      </div>
+                    </div>
+                    } @else {
+                    <div class="comment-body">{{
+                      reply.noiDung
+                      }}
+                    </div>
+                    }
+
+                    <div class="comment-actions">
+                      <button class="btn-like"
+                        [class.active]="reply.daThich"
+                        (click)="toggleLikeComment(reply)">
+                        <i class="fa-solid fa-heart"></i>
+                        {{
+                        reply.soLuotThich
+                        || 0
+                        }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Reply Menu -->
+                  <div class="comment-menu" ngbDropdown
+                    container="body" placement="bottom-end">
+                    <button class="btn-menu" ngbDropdownToggle>
+                      <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                    <div ngbDropdownMenu class="dropdown-menu-custom">
+                      @if (reply.laCuaToi) {
+                      <button ngbDropdownItem class="menu-item"
+                        (click)="startEditComment(reply)">
+                        <i class="fa-solid fa-edit"></i>
+                        Chỉnh sửa
+                      </button>
+                      <button ngbDropdownItem class="menu-item danger"
+                        (click)="deleteComment(reply, comment.id)">
+                        <i class="fa-solid fa-trash"></i>
+                        Xóa
+                      </button>
+                      } @else {
+                      <button ngbDropdownItem class="menu-item"
+                        (click)="openReportModal('comment', reply.id)">
+                        <i class="fa-solid fa-flag"></i>
+                        Báo cáo
+                      </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+
+          @if (!comments.length) {
+          <div class="empty-comments">
+            <i class="fa-regular fa-comment-dots"></i>
+            <p>Chưa có bình luận nào</p>
+            <span>Hãy là người đầu tiên bình luận!</span>
+          </div>
+          }
+        </div>
+      </section>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Author Info -->
+      <div class="sidebar-card author-card">
+        <h3 class="card-title">Tác giả</h3>
+        <div class="author-profile">
+          <a class="profile-avatar"
+            [routerLink]="['/profile', post.nguoiDang?.id]">
+            <img [src]="getAvatarUrl(post.nguoiDang?.anhDaiDien)"
+              [alt]="post.nguoiDang?.ten">
+            <span class="level">Lv.{{
+              post.nguoiDang?.capDo || 1
+              }}</span>
+          </a>
+          <a class="profile-name"
+            [routerLink]="['/profile', post.nguoiDang?.id]">
+            {{ post.nguoiDang?.ten || 'Người dùng' }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Related Posts -->
+      @if (relatedPosts.length) {
+      <div class="sidebar-card">
+        <h3 class="card-title">Bài viết liên quan</h3>
+        <div class="related-list">
+          @for (related of relatedPosts; track related.id) {
+          <a class="related-item"
+            [routerLink]="['/community', related.id]">
+            <span class="related-type"
+              [style.background]="getTypeColor(related.loai)">
+              <i class="fa-solid"
+                [ngClass]="getTypeIcon(related.loai)"></i>
+            </span>
+            <div class="related-info">
+              <h4>{{ related.tieuDe }}</h4>
+              <span class="related-meta">
+                {{ related.soLuotThich }} thích • {{
+                related.soLuotBinhLuan
+                }} bình luận
+              </span>
+            </div>
+          </a>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Back to Community -->
+      <a class="btn-back" routerLink="/community">
+        <i class="fa-solid fa-arrow-left"></i>
+        Quay lại cộng đồng
+      </a>
+    </aside>
+  </div>
+  }
+</div>
+
+<!-- Report Modal -->
+@if (showReportModal) {
+<div class="modal-overlay" (click)="closeReportModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Báo cáo {{
+        reportTarget === 'post' ? 'bài viết' :
+        'bình luận'
+        }}</h3>
+      <button class="btn-close" (click)="closeReportModal()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="report-info">
+        Hãy cho chúng tôi biết lý do bạn muốn báo cáo nội dung
+        này:
+      </p>
+      <div class="report-options">
+        @for (option of reportOptions; track option.value) {
+        <label class="report-option"
+          [class.selected]="selectedReportType === option.value">
+          <input type="radio" name="reportType" [value]="option.value"
+            [(ngModel)]="selectedReportType">
+          <span class="option-icon">{{ option.icon }}</span>
+          <span class="option-label">{{
+            option.label
+            }}</span>
+        </label>
+        }
+      </div>
+      <textarea class="report-detail" [(ngModel)]="reportDetail"
+        placeholder="Mô tả chi tiết (tùy chọn)..."
+        rows="3"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeReportModal()">Hủy
+      </button>
+      <button class="btn-submit"
+        [disabled]="!selectedReportType || isSubmittingReport"
+        (click)="submitReport()">
+        @if (isSubmittingReport) {
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        }
+        Gửi báo cáo
+      </button>
+    </div>
+  </div>
+</div>
+}

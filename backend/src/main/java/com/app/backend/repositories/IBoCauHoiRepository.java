@@ -121,7 +121,7 @@ public interface IBoCauHoiRepository extends JpaRepository<BoCauHoi, Long> {
               AND (
                     :isAdmin = true
                     OR b.taoBoi.id = :userId
-                    OR b.cheDoHienThi = 'PUBLIC'
+                    OR b.cheDoHienThi = 'PRIVATE'
               )
             """)
     List<BoCauHoi> findCasualBattleSets(@Param("userId") Long userId, @Param("isAdmin") boolean isAdmin);

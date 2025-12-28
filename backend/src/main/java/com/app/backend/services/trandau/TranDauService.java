@@ -202,7 +202,7 @@ public class TranDauService implements ITranDauService {
         wsPublisher.publishPlayerLeft(tranDau.getId(), nctd.getNguoiDung().getId(), nctd.getNguoiDung().getHoTen(), soNguoi);
 
 //        // Nếu không còn ai trong phòng → xoá phòng
-//        long remain = nguoiChoiTranDauRepository.countByTranDau_Id(tranDau.getId());
+        long remain = nguoiChoiTranDauRepository.countByTranDau_Id(tranDau.getId());
 
         if (Objects.equals(tranDau.getChuPhong().getId(), currentUserId) && soNguoi > 0) {
             nguoiChoiTranDauRepository.findFirstByTranDau_IdOrderByIdAsc(tranDau.getId())
@@ -1441,6 +1441,36 @@ public class TranDauService implements ITranDauService {
         payload.put("hieu_ung", response.getHieuUng());
 
         wsPublisher.publishGeneric(tranDauId, "ITEM_USED", payload);
+    }
+
+    // ================== PLAYERS IN ROOM ==================
+
+    /**
+     * Lấy danh sách người chơi trong phòng (trước khi trận đấu bắt đầu)
+     */
+    @Override
+    public List<NguoiChoiTrongPhongResponse> getPlayersInRoom(Long tranDauId) throws Exception {
+        TranDau td = tranDauRepository.findById(tranDauId)
+                .orElseThrow(() -> new DataNotFoundException("Trận đấu không tồn tại"));
+
+        List<NguoiChoiTranDau> players = nguoiChoiTranDauRepository.findAllByTranDau_Id(tranDauId);
+
+        // Lấy ID chủ phòng
+        Long chuPhongId = td.getChuPhong() != null ? td.getChuPhong().getId() : null;
+
+        return players.stream()
+                .map(p -> {
+                    NguoiDung nd = p.getNguoiDung();
+                    return NguoiChoiTrongPhongResponse.builder()
+                            .userId(nd.getId())
+                            .hoTen(nd.getHoTen())
+                            .avatarUrl(nd.getAvatarUrl())
+                            .laChuPhong(nd.getId().equals(chuPhongId))
+                            .daSanSang(true) // có thể thêm logic ready nếu cần
+                            .thamGiaLuc(p.getThamGiaLuc() != null ? p.getThamGiaLuc().toString() : null)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,4 +1,3 @@
-// src/app/services/chat-ws.service.ts
 import {Injectable} from '@angular/core';
 import {Client, IMessage, Stomp} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';

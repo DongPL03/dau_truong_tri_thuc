@@ -1,26 +1,30 @@
 @use '@ctrl/ngx-emoji-mart/picker';
 
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
 :root {
   /* Font Families */
-  --font-main: 'Nunito', sans-serif; /* Font chính cho toàn web: Tròn, dễ đọc */
-  --font-display: 'Orbitron', sans-serif; /* Font phụ cho Logo/Tiêu đề game: Mạnh mẽ */
+  --font-main: 'Nunito', sans-serif;
+  --font-display: 'Orbitron', sans-serif;
 
   /* Palette: Modern Slate & Indigo */
   --c-bg-body: #f0f2f5;
   --c-bg-card: #ffffff;
-
-  --c-primary: #6C5DD3; /* Tím game chủ đạo (đồng bộ với component) */
+  --c-primary: #6C5DD3;
   --c-primary-light: #eef2ff;
+  --c-primary-hover: #5b4cc4; /* Thêm màu hover */
 
   --c-text-main: #11142D;
   --c-text-secondary: #808191;
   --c-border: #e2e8f0;
 
-  --bg-color: #f0f2f5;
+  /* Aliases (Dùng chung tên biến để dễ nhớ) */
+  --bg-color: var(--c-bg-body);
   --secondary-color: #2196f3;
 
   /* Radius */
-  --radius-md: 16px; /* Tăng độ bo tròn cho mượt */
+  --radius-md: 16px;
   --radius-sm: 10px;
 }
 
@@ -30,21 +34,22 @@
 
 body {
   margin: 0;
-  /* 👇 ÁP DỤNG FONT MỚI Ở ĐÂY */
+  padding: 0;
   font-family: var(--font-main);
   background-color: var(--bg-color);
-  color: var(--c-text-main); /* Đổi màu chữ mặc định cho đỡ bị xanh lè */
+  color: var(--c-text-main);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* Tránh thanh cuộn ngang không mong muốn */
 }
 
-/* Các tiêu đề lớn H1, H2 muốn ngầu thì dùng font Display */
 h1, h2, .logo {
   font-weight: 800;
-  /* Nếu muốn tiêu đề cũng tròn thì xóa dòng dưới, muốn ngầu thì giữ lại */
   /* font-family: var(--font-display); */
 }
 
-/* Scrollbar đẹp */
+/* =========================================
+   2. SCROLLBAR
+   ========================================= */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -55,18 +60,21 @@ h1, h2, .logo {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c7c9d9; /* Màu thanh cuộn nhạt hơn cho tinh tế */
+  background: #c7c9d9;
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6C5DD3; /* Hover vào hiện màu tím chủ đạo */
+  background: var(--c-primary);
 }
 
-/* Các class tiện ích dùng chung */
+/* =========================================
+   3. UTILITY CLASSES (Btn, Badge...)
+   ========================================= */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center; /* Căn giữa nội dung */
   gap: 8px;
   padding: 10px 20px;
   border-radius: var(--radius-sm);
@@ -75,16 +83,17 @@ h1, h2, .logo {
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  text-decoration: none; /* Cho thẻ a */
 
   &.btn-primary {
     background: var(--c-primary);
     color: white;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(108, 93, 211, 0.3); /* Dùng màu tím làm bóng */
 
-    //&:hover {
-    //  background: var(--c-primary-hover);
-    //  transform: translateY(-1px);
-    //}
+    &:hover {
+      background: var(--c-primary-hover);
+      transform: translateY(-1px);
+    }
   }
 
   &.btn-outline {
@@ -95,49 +104,112 @@ h1, h2, .logo {
     &:hover {
       border-color: var(--c-text-main);
       color: var(--c-text-main);
+      background: #fff;
     }
   }
 
   &.btn-icon {
     padding: 8px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.05); /* Tối hơn xíu để thấy trên nền trắng */
     color: var(--c-text-secondary);
 
-    //&:hover {
-    //  background: var(--c-primary);
-    //  color: white;
-    //}
+    &:hover {
+      background: var(--c-primary);
+      color: white;
+    }
   }
 }
 
 .badge {
+  display: inline-block;
   padding: 4px 10px;
   border-radius: 99px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1;
 
   &.success {
     background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
+    color: #10b981;
   }
 
   &.warning {
     background: rgba(245, 158, 11, 0.15);
-    color: #fbbf24;
+    color: #f59e0b;
   }
 
   &.danger {
     background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    color: #ef4444;
+  }
+
+  &.info {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
   }
 }
 
-/* --- GLOBAL STYLES (Dán vào styles.scss hoặc bọc ::ng-deep trong component) --- */
+/* =========================================
+   4. CUSTOM DROPDOWN (NgbDropdown Global)
+   ========================================= */
+.dropdown-menu-custom {
+  min-width: 160px !important;
+  padding: 0.5rem 0 !important;
+  background: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  overflow: hidden;
+  margin-top: 5px !important;
+  z-index: 1056 !important; /* Đảm bảo nổi lên trên các thành phần khác */
+
+  .menu-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 10px 16px !important;
+    background: transparent !important;
+    border: none !important;
+    text-align: left !important;
+    color: #4b5563 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: all 0.2s;
+
+    &:hover, &:focus {
+      background-color: #f3f4f6 !important;
+      color: #1f2937 !important;
+      outline: none;
+    }
+
+    &.danger {
+      color: #ef4444 !important;
+
+      &:hover {
+        background-color: #fef2f2 !important;
+      }
+    }
+
+    /* Fix icon */
+    i, svg {
+      width: 20px;
+      min-width: 20px;
+      text-align: center;
+      font-size: 1rem;
+      display: inline-block;
+    }
+  }
+}
 
 /* =========================================
-   1. COMBO VFX (GIỮ NGUYÊN - ĐÃ TỐT)
+   5. GAME VFX (COMBO & VICTORY)
    ========================================= */
+
+/* --- Combo VFX --- */
 .combo-vfx {
   position: absolute;
   top: 45%;
@@ -189,7 +261,275 @@ h1, h2, .logo {
   animation: popIn 0.3s ease-out;
 }
 
-/* Animations */
+/* --- Victory Popup (SweetAlert Override) --- */
+.game-victory-popup {
+  padding: 0 !important;
+  border-radius: 30px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  max-width: 450px !important;
+  width: 95% !important; /* Responsive hơn trên mobile */
+  font-family: inherit;
+}
+
+.victory-card-container {
+  background: linear-gradient(180deg, #2e1065 0%, #0f172a 100%);
+  border-radius: 30px;
+  padding: 30px 20px;
+  border: 4px solid #fbbf24;
+  box-shadow: 0 0 0 8px #d97706, 0 20px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+  color: white;
+  text-align: center;
+  overflow: visible;
+
+  /* Glow Background */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+.victory-header-cartoon {
+  position: relative;
+  z-index: 1;
+  margin-top: -50px;
+  margin-bottom: 20px;
+  animation: bounceHead 1s infinite alternate;
+}
+
+.victory-icon-img {
+  width: 100px;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+}
+
+.victory-title-cartoon {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0 #b45309;
+  margin-top: 10px;
+}
+
+.rewards-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.reward-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  min-width: 100px;
+  transition: transform 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .r-icon {
+    font-size: 2rem;
+    margin-bottom: 5px;
+  }
+
+  .r-val {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .r-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  &.xp .r-val {
+    color: #38bdf8;
+    text-shadow: 0 0 10px #0ea5e9;
+  }
+
+  &.gold .r-val {
+    color: #facc15;
+    text-shadow: 0 0 10px #ca8a04;
+  }
+}
+
+/* --- XP Bar & Level Up --- */
+.xp-bar-wrapper {
+  margin: 0 10px 25px 10px;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+}
+
+.xp-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.xp-val {
+  font-family: monospace;
+}
+
+.progress-track {
+  height: 12px;
+  background: #1e293b;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  border: 1px solid #475569;
+}
+
+.progress-fill-old {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #6C5DD3, #a29bfe);
+  z-index: 1;
+}
+
+.progress-fill-new {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  z-index: 2;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.level-up-banner {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6);
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  color: white;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 5px 15px rgba(236, 72, 153, 0.4);
+  position: relative;
+  z-index: 1;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+
+  .lvl-old {
+    opacity: 0.7;
+    font-size: 14px;
+  }
+
+  .lvl-new {
+    font-size: 24px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .lvl-text {
+    font-size: 10px;
+    position: absolute;
+    top: -10px;
+    background: #fff;
+    color: #db2777;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 900;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.achievements-list {
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 15px;
+  margin-top: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.ach-head {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.ach-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  .ach-icon {
+    font-size: 20px;
+  }
+
+  .ach-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+
+  .ach-desc {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+}
+
+.swal2-confirm.btn-cartoon-ok {
+  background: linear-gradient(to bottom, #22c55e, #15803d) !important;
+  box-shadow: 0 4px 0 #14532d !important;
+  border-radius: 12px !important;
+  font-weight: 900 !important;
+  padding: 12px 30px !important;
+  text-transform: uppercase;
+  color: white !important;
+
+  &:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #14532d !important;
+  }
+}
+
+/* =========================================
+   6. ANIMATIONS
+   ========================================= */
 @keyframes cartoonShake {
   0% {
     transform: translate(-50%, -50%) scale(0.5);
@@ -224,322 +564,4 @@ h1, h2, .logo {
   to {
     transform: translateY(-10px);
   }
-}
-
-/* =========================================
-   2. VICTORY POPUP (ĐÃ TỐI ƯU & GỘP)
-   ========================================= */
-
-/* Class bọc ngoài của popup thư viện (SweetAlert/Angular Material) */
-.game-victory-popup {
-  padding: 0 !important;
-  border-radius: 30px !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  max-width: 450px !important;
-  width: 100% !important;
-  font-family: inherit;
-}
-
-/* Container chính - Sử dụng style Cartoon (Gradient đẹp hơn) */
-.victory-card-container {
-  background: linear-gradient(180deg, #2e1065 0%, #0f172a 100%); /* Tím than -> Đen */
-  border-radius: 30px;
-  padding: 30px 20px;
-  border: 4px solid #fbbf24;
-  box-shadow: 0 0 0 8px #d97706, 0 20px 50px rgba(0, 0, 0, 0.5);
-  position: relative;
-  color: white;
-  text-align: center;
-  /* Hiệu ứng Glow phía sau */
-  overflow: visible;
-}
-
-/* Glow Background effect (từ phần Global cũ đưa sang) */
-.victory-card-container::before {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, transparent 70%);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* --- Header Section --- */
-.victory-header-cartoon {
-  position: relative;
-  z-index: 1;
-  margin-top: -50px; /* Nhô lên khỏi khung */
-  margin-bottom: 20px;
-  animation: bounceHead 1s infinite alternate;
-}
-
-.victory-icon-img {
-  width: 100px;
-  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
-}
-
-.victory-title-cartoon {
-  font-size: 28px;
-  font-weight: 900;
-  color: #fbbf24;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 2px 2px 0 #b45309;
-  margin-top: 10px;
-}
-
-/* --- Rewards Section (Gộp style Grid & Flex) --- */
-.rewards-row {
-  display: flex; /* Dùng Flex cho linh hoạt */
-  justify-content: center;
-  gap: 15px;
-  position: relative;
-  z-index: 1;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-/* Item phần thưởng - Style kính mờ */
-.reward-item {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 15px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  min-width: 100px;
-  transition: transform 0.2s, background 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.reward-item:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.r-icon {
-  font-size: 2rem;
-  margin-bottom: 5px;
-}
-
-.r-val {
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-
-.r-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-/* Màu sắc riêng cho XP và Gold */
-.reward-item.xp .r-val, .xp-txt {
-  color: #38bdf8;
-  text-shadow: 0 0 10px #0ea5e9;
-}
-
-.reward-item.gold .r-val, .gold-txt {
-  color: #facc15;
-  text-shadow: 0 0 10px #ca8a04;
-}
-
-/* --- XP Bar Section --- */
-.xp-bar-wrapper {
-  margin: 0 10px 25px 10px;
-  text-align: left;
-  position: relative;
-  z-index: 1;
-}
-
-.xp-bar-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  margin-bottom: 5px;
-}
-
-.xp-track {
-  height: 20px;
-  background: #1e293b;
-  border-radius: 10px;
-  border: 2px solid #475569;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-.xp-fill {
-  height: 100%;
-  background: repeating-linear-gradient(45deg, #3b82f6, #3b82f6 10px, #60a5fa 10px, #60a5fa 20px);
-  border-radius: 8px;
-  width: 0%;
-  transition: width 1.5s ease-out;
-  box-shadow: 0 0 10px #3b82f6;
-}
-
-/* --- Level Up Banner (Giữ lại từ code cũ nhưng chỉnh màu cho hợp) --- */
-.level-up-banner {
-  background: linear-gradient(90deg, #ec4899, #8b5cf6);
-  padding: 10px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  color: white;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 5px 15px rgba(236, 72, 153, 0.4);
-  position: relative;
-  z-index: 1;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.lvl-old {
-  opacity: 0.7;
-  font-size: 14px;
-}
-
-.lvl-new {
-  font-size: 24px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.lvl-text {
-  font-size: 10px;
-  position: absolute;
-  top: -10px;
-  background: #fff;
-  color: #db2777;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 900;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Achievements List (Giữ lại từ code cũ) --- */
-.achievements-list {
-  text-align: left;
-  position: relative;
-  z-index: 1;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 15px;
-  margin-top: 15px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.ach-head {
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 700;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-}
-
-.ach-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 8px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.ach-icon {
-  font-size: 20px;
-}
-
-.ach-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #e2e8f0;
-}
-
-.ach-desc {
-  font-size: 11px;
-  color: #94a3b8;
-}
-
-/* --- Buttons (Style 3D Cartoon) --- */
-.swal2-confirm.btn-cartoon-ok {
-  background: linear-gradient(to bottom, #22c55e, #15803d) !important;
-  box-shadow: 0 4px 0 #14532d !important;
-  border-radius: 12px !important;
-  font-weight: 900 !important;
-  padding: 12px 30px !important;
-  text-transform: uppercase;
-  transition: all 0.1s;
-  color: white !important;
-}
-
-.swal2-confirm.btn-cartoon-ok:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #14532d !important;
-}
-
-/* --- XP BAR ANIMATION STYLE --- */
-
-.xp-bar-wrapper {
-  margin: 0 20px 20px 20px;
-  text-align: left;
-}
-
-.xp-bar-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  margin-bottom: 6px;
-}
-
-.xp-val {
-  font-family: monospace; /* Font số cho đẹp */
-}
-
-.progress-track {
-  background: #334155; /* Nền tối của track */
-  height: 12px;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Phần XP cũ (Màu tím giống trang Home) */
-.progress-fill-old {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, #6C5DD3, #a29bfe);
-  //border-radius: 10px;
-  z-index: 1;
-}
-
-/* Phần XP mới nhận (Màu Vàng/Xanh sáng để highlight) */
-.progress-fill-new {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, #fbbf24, #f59e0b); /* Màu vàng cam rực rỡ */
-  //border-radius: 10px;
-  z-index: 2; /* Nằm đè lên cái cũ nhưng sẽ dùng margin-left để nối tiếp */
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.6); /* Glow */
-  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Animation nảy nhẹ */
 }

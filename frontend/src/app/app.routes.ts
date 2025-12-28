@@ -5,6 +5,7 @@ import { DangKy } from './components/dang-ky/dang-ky';
 import { DangNhap } from './components/dang-nhap/dang-nhap';
 import { Home } from './components/home/home';
 import { Profile } from './components/profile/profile';
+import { ChiTietPhong } from './components/TranDau/chi-tiet-phong/chi-tiet-phong';
 import { PhongCho } from './components/TranDau/phong-cho/phong-cho';
 import { AdminGuardFn } from './guards/admin.guard';
 import { AuthGuardFn } from './guards/auth.guard';
@@ -66,8 +67,8 @@ export const routes: Routes = [
       { path: 'tran-dau/pending', component: PhongCho, title: 'Phòng đang chờ' },
       {
         path: 'tran-dau/phong/:id',
-        loadComponent: () =>
-          import('./components/TranDau/chi-tiet-phong/chi-tiet-phong').then((m) => m.ChiTietPhong),
+        component: ChiTietPhong,
+        title: 'Chi tiết phòng đấu',
       },
       {
         path: 'tran-dau/tao-moi-bo-cau-hoi',
@@ -138,14 +139,14 @@ export const routes: Routes = [
       {
         path: 'chat',
         loadComponent: () =>
-          import('./components/chat/user-chat/user-chat').then((m) => m.UserChat),
-        title: 'Trò chuyện',
+          import('./components/chat/chat-main/chat-main').then((m) => m.ChatMainComponent),
+        title: 'Tin nhắn',
       },
       {
-        path: 'chat/:partner_id',
+        path: 'chat/:roomId',
         loadComponent: () =>
-          import('./components/chat/user-chat/user-chat').then((m) => m.UserChat),
-        title: 'Trò chuyện',
+          import('./components/chat/chat-main/chat-main').then((m) => m.ChatMainComponent),
+        title: 'Tin nhắn',
       },
       {
         path: 'khoa-hoc',
@@ -178,6 +179,39 @@ export const routes: Routes = [
             (m) => m.LuyenTapKhoaHocComponent
           ),
         title: 'Luyện tập lại câu sai',
+      },
+      // Community Routes
+      {
+        path: 'community',
+        loadComponent: () =>
+          import('./components/community/community-feed/community-feed').then(
+            (m) => m.CommunityFeedComponent
+          ),
+        title: 'Cộng đồng',
+      },
+      {
+        path: 'community/create',
+        loadComponent: () =>
+          import('./components/community/post-editor/post-editor').then(
+            (m) => m.PostEditorComponent
+          ),
+        title: 'Tạo bài viết',
+      },
+      {
+        path: 'community/edit/:id',
+        loadComponent: () =>
+          import('./components/community/post-editor/post-editor').then(
+            (m) => m.PostEditorComponent
+          ),
+        title: 'Chỉnh sửa bài viết',
+      },
+      {
+        path: 'community/:id',
+        loadComponent: () =>
+          import('./components/community/post-detail/post-detail').then(
+            (m) => m.PostDetailComponent
+          ),
+        title: 'Chi tiết bài viết',
       },
     ],
   },

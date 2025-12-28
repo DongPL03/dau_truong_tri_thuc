@@ -1,0 +1,181 @@
+<div class="chat-layout">
+  <div class="bg-decor-1"></div>
+  <div class="bg-decor-2"></div>
+
+  <div class="chat-container card-3d">
+
+    <aside class="chat-sidebar">
+      <header class="sidebar-header">
+        <h2>Tin nhắn</h2>
+        <div class="header-actions">
+          <button class="btn-icon" title="Cài đặt"><i class="fas fa-cog"></i></button>
+          <button class="btn-icon" title="Soạn tin mới"><i class="fas fa-edit"></i></button>
+        </div>
+      </header>
+
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Tìm kiếm cuộc trò chuyện...">
+      </div>
+
+      <div class="sidebar-body custom-scrollbar">
+        @if (inbox_loading && inbox_items.length === 0) {
+          <div class="loading-state">
+            <div class="spinner-sm"></div>
+            Đang tải...
+          </div>
+        } @else {
+          @if (inbox_items.length === 0) {
+            <div class="empty-state">
+              <img src="assets/images/empty-chat.png" onerror="this.style.display='none'">
+              <p>Chưa có cuộc trò chuyện nào</p>
+            </div>
+          } @else {
+            <div class="conversation-list">
+              @for (item of inbox_items; track item.partner_id) {
+                <div class="conv-item"
+                     [class.active]="active_partner?.partner_id === item.partner_id"
+                     (click)="select_partner(item)">
+
+                  <div class="avatar-wrapper">
+                    <img [src]="getAvatar(item.partner_avatar_url, item.partner_name)" class="avatar">
+                    <div class="status-dot" [class.online]="item.partner_status === 'ONLINE'"></div>
+                  </div>
+
+                  <div class="conv-info">
+                    <div class="conv-top">
+                      <span class="name">{{ item.partner_name }}</span>
+                      <span class="time">{{ item.last_time | date:'HH:mm' }}</span>
+                    </div>
+                    <div class="conv-bottom">
+                      <span class="last-msg" [class.unread]="(item.unread_count ?? 0) > 0">
+                        {{ item.last_message || 'Bắt đầu trò chuyện' }}
+                      </span>
+                      @if ((item.unread_count ?? 0) > 0) {
+                        <span class="badge">{{ (item.unread_count ?? 0) > 9 ? '9+' : item.unread_count }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </aside>
+
+    <section class="chat-main">
+      @if (!active_partner) {
+        <div class="welcome-screen animate-fade-up">
+          <div class="welcome-icon">👋</div>
+          <h3>Xin chào, {{ meName }}!</h3>
+          <p>Chọn một người bạn để bắt đầu tán gẫu ngay thôi.</p>
+        </div>
+      } @else {
+
+        <header class="chat-header">
+          <div class="partner-details">
+            <div class="avatar-wrapper sm">
+              <img [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)" class="avatar">
+              <div class="status-dot" [class.online]="active_partner.partner_status === 'ONLINE'"></div>
+            </div>
+            <div class="info">
+              <h3 class="name">{{ active_partner.partner_name }}</h3>
+              <span class="status-text">
+                {{ active_partner.partner_status === 'ONLINE' ? 'Đang hoạt động' : 'Hoạt động gần đây' }}
+              </span>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button class="btn-icon"><i class="fas fa-phone-alt"></i></button>
+            <button class="btn-icon"><i class="fas fa-video"></i></button>
+            <button class="btn-icon"><i class="fas fa-info-circle"></i></button>
+          </div>
+        </header>
+
+        <div class="messages-area custom-scrollbar" #messagesContainer>
+          @if (messages_loading && messages.length === 0) {
+            <div class="loading-state full">
+              <div class="spinner-3d"></div>
+            </div>
+          } @else {
+
+            @if (messages_has_more && !messages_loading) {
+              <div class="load-more-wrapper">
+                <button class="btn-load-more" (click)="load_more_messages()">Tải tin nhắn cũ</button>
+              </div>
+            }
+
+            @if (messages.length === 0) {
+              <div class="empty-chat-state">
+                <img [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
+                     class="lg-avatar">
+                <p>Các bạn đã là bạn bè. Hãy gửi lời chào!</p>
+                <div class="wave-emoji">👋</div>
+              </div>
+            }
+
+            <div class="msg-list">
+              @for (m of messages; track m.tin_nhan_id) {
+                <div class="msg-row" [class.mine]="m.la_toi" [class.partner]="!m.la_toi">
+
+                  @if (!m.la_toi) {
+                    <img [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
+                         class="mini-avatar">
+                  }
+
+                  <div class="bubble-wrapper">
+                    <div class="bubble" [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
+                      {{ m.noi_dung }}
+                    </div>
+                    <span class="msg-time">{{ m.gui_luc | date:'HH:mm' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <footer class="chat-footer">
+
+          <button class="btn-tool"><i class="fas fa-plus-circle"></i></button>
+
+          <div class="input-box">
+            <textarea
+              #chatInput
+              [(ngModel)]="new_message_noi_dung"
+              placeholder="Nhập tin nhắn..."
+              (keydown.enter)="on_enter_send($any($event))"
+              (input)="autoResize()"
+              rows="1">
+            </textarea>
+
+            <button class="btn-emoji" (click)="toggleEmojiPicker()" [class.active]="showEmojiPicker()">
+              <i class="far fa-smile"></i>
+            </button>
+          </div>
+
+          <button class="btn-send" (click)="send_message()" [disabled]="!new_message_noi_dung.trim()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+
+          @if (showEmojiPicker()) {
+            <div class="emoji-popover">
+              <div class="emoji-overlay" (click)="showEmojiPicker.set(false)"></div>
+
+              <div class="emoji-content">
+                <emoji-mart
+                  [showPreview]="false"
+                  [enableSearch]="true"
+                  [darkMode]="false"
+                  color="#6C5DD3"
+                  (emojiClick)="addEmoji($event)">
+                </emoji-mart>
+              </div>
+            </div>
+          }
+        </footer>
+      }
+    </section>
+  </div>
+</div>

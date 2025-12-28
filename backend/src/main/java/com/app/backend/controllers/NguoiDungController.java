@@ -242,7 +242,6 @@ public class NguoiDungController {
     ) throws Exception {
         // Gọi hàm login từ UserService cho đăng nhập truyền thống
         String token = userService.login(userLoginDTO);
-        NguoiDung userDetails = (NguoiDung) userDetailsService.loadUserByUsername(userLoginDTO.getTenDangNhap());
 
         // Xử lý token và thông tin người dùng
         String userAgent = request.getHeader("User-Agent");

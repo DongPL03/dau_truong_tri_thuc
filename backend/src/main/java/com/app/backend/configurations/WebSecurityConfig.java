@@ -74,7 +74,10 @@ public class WebSecurityConfig {
 
                                     String.format("%s/provinces/**", apiPrefix),
 
-                                    String.format("%s/khoa-hoc**", apiPrefix)
+                                    String.format("%s/khoa-hoc**", apiPrefix),
+
+                                    // Community images
+                                    String.format("%s/posts/images/**", apiPrefix)
 //                                    String.format("%s/khoa-hoc/{id:\\d+}", apiPrefix)
                             ).permitAll()
 

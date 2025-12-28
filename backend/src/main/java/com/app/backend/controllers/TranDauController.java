@@ -125,6 +125,21 @@ public class TranDauController {
         );
     }
 
+    /**
+     * Lấy danh sách người chơi trong phòng (trước khi trận đấu bắt đầu)
+     */
+    @GetMapping("/{id}/players")
+    public ResponseEntity<ResponseObject> getPlayersInRoom(@PathVariable Long id) throws Exception {
+        var data = tranDauService.getPlayersInRoom(id);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy danh sách người chơi thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
     @PutMapping("/start/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ResponseObject> startBattle(@PathVariable("id") Long tranDauId) throws Exception {

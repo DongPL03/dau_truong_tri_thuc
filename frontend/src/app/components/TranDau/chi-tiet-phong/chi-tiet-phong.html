@@ -1,477 +1,671 @@
 @if (!loading()) {
-  <div class="page">
-    <div class="container">
-      <header class="header">
-        <div class="title">
-          <h1>{{ pageTitle() }}</h1>
-          <span class="code">#{{ battle()?.ma_phong }}</span>
-          <span [class]="badgeClass(status())">{{ status() }}</span>
-        </div>
-        <div class="meta">
-          <div>
-            <strong>Chế độ:</strong>
-            <span>{{ battle()?.cong_khai ? 'Công khai' : 'Riêng tư' }}</span>
+<div class="page">
+  <div class="container">
+    <header class="header">
+      <div class="title">
+        <h1>{{ pageTitle() }}</h1>
+        <span class="code">#{{ battle()?.ma_phong }}</span>
+        <span [class]="badgeClass(status())">{{ status() }}</span>
+      </div>
+      <div class="meta">
+        <div>
+          <strong>Chế độ:</strong>
+          <span>{{ battle()?.cong_khai ? 'Công khai' : 'Riêng tư'
+            }}</span>
 
-            @if (!battle()?.cong_khai) {
-              — <em>Yêu cầu PIN</em>
-            }
-          </div>
-          <div>
-            <strong>Bộ câu hỏi:</strong>
-            {{ battle()?.bo_cau_hoi_tieu_de || ('#' + battle()?.bo_cau_hoi_id) }}
-          </div>
-          <div>
-            <strong>Giới hạn người chơi:</strong> {{ battle()?.gioi_han_nguoi_choi }}
-          </div>
-          <div>
-            <strong>Thời gian mỗi câu:</strong>
-            {{ battle()?.gioi_han_thoi_gian_cau_giay }} giây —
-            <strong>Luật điểm:</strong> {{ battle()?.luat_tinh_diem }}
-          </div>
+          @if (!battle()?.cong_khai) {
+          — <em>Yêu cầu PIN</em>
+          }
         </div>
+        <div>
+          <strong>Bộ câu hỏi:</strong>
+          {{ battle()?.bo_cau_hoi_tieu_de || ('#' +
+          battle()?.bo_cau_hoi_id) }}
+        </div>
+        <div>
+          <strong>Giới hạn người chơi:</strong> {{
+          battle()?.gioi_han_nguoi_choi }}
+        </div>
+        <div>
+          <strong>Thời gian mỗi câu:</strong>
+          {{ battle()?.gioi_han_thoi_gian_cau_giay }} giây —
+          <strong>Luật điểm:</strong> {{ battle()?.luat_tinh_diem }}
+        </div>
+      </div>
+    </header>
+
+    <section class="actions">
+      <div class="left">
+        <!--        <button class="btn" (click)="doSync()"-->
+        <!--          [disabled]="saving()">Đồng bộ</button>-->
+        @if (battle()?.chu_phong_ten === currentUserName()) {
+        <button class="btn primary" (click)="startBattle()"
+          [disabled]="!isPending() || saving() || !isJoined()"
+          [title]="!isJoined() ? 'Bạn cần bấm Tham Gia trước khi bắt đầu' : ''">
+          Bắt đầu
+        </button>
+
+        <button class="btn warn" (click)="finishBattle()"
+          [disabled]="!isOngoing() || saving() || !isJoined()">
+          Kết thúc
+        </button>
+
+        <button class="btn" (click)="open_invite_panel()"
+          [disabled]="saving() || !isPending()">
+          Mời bạn bè
+        </button>
+        }
+        <button class="btn ghost" (click)="leave()"
+          [disabled]="saving()">Rời phòng</button>
+      </div>
+
+      @if (!isJoined()) {
+      @if (!battle()?.cong_khai && isPending()) {
+      <div class="right">
+        <input class="pin" placeholder="Nhập PIN để vào"
+          [ngModel]="pinCode()"
+          (ngModelChange)="pinCode.set($event)" />
+        <button class="btn" (click)="join()"
+          [disabled]="saving() || !pinCode()">
+          Nhập mã pin & Tham gia
+        </button>
+      </div>
+      } @else if (battle()?.cong_khai && isPending()) {
+      <div class="right">
+        <button class="btn" (click)="join()"
+          [disabled]="saving()">Tham gia ngay</button>
+      </div>
+      }
+      } @else {
+      <div class="right joined-status">
+        <span class="status-text">
+          <i class="fas fa-check-circle"></i> Bạn đã tham gia
+        </span>
+      </div>
+      }
+    </section>
+
+    <!-- ================== OVERLAY COUNTDOWN CHUẨN BỊ (NẾU CÓ) ================== -->
+    @if (preCountdown() > 0 && !showSummary()) {
+    <div class="pre-countdown-overlay">
+      <div class="pre-countdown-card">
+        <div class="label">Trận đấu sắp bắt đầu</div>
+        <div class="number">{{ preCountdown() }}</div>
+        <p>Hãy sẵn sàng cho câu hỏi đầu tiên!</p>
+      </div>
+    </div>
+    }
+    @if (showSummary()) {
+    <div class="summary-screen">
+
+      <header class="summary-header">
+        <h2>BẢNG XẾP HẠNG</h2>
+        <p>{{ battle()?.bo_cau_hoi_tieu_de }}</p>
       </header>
 
-      <section class="actions">
-        <div class="left">
-          <button class="btn" (click)="doSync()" [disabled]="saving()">Đồng bộ</button>
-          @if (battle()?.chu_phong_ten === currentUserName()) {
-            <button
-              class="btn primary"
-              (click)="startBattle()"
-              [disabled]="!isPending() || saving() || !isJoined()"
-              [title]="!isJoined() ? 'Bạn cần bấm Tham Gia trước khi bắt đầu' : ''"
-            >
-              Bắt đầu
-            </button>
+      <div class="podium-stage">
 
-            <button
-              class="btn warn"
-              (click)="finishBattle()"
-              [disabled]="!isOngoing() || saving() || !isJoined()"
-            >
-              Kết thúc
-            </button>
-
-            <button
-              class="btn"
-              (click)="open_invite_panel()"
-              [disabled]="saving() || !isPending()"
-            >
-              Mời bạn bè
-            </button>
-          }
-          <button class="btn ghost" (click)="leave()" [disabled]="saving()">Rời phòng</button>
+        <div class="podium-item rank-2" [class.empty]="!topThree[1]">
+          <div class="avatar-box">
+            <img
+              [src]="'http://localhost:8088/api/v1/users/profile-images/' + topThree[1]?.avatar_url"
+              class="avatar">
+            <span class="badge">2</span>
+          </div>
+          <div class="p-name">{{ topThree[1]?.ho_ten || '---' }}</div>
+          <div class="p-score">{{ topThree[1]?.diem || 0 }}</div>
+          <div class="podium-bar"></div>
         </div>
 
-        @if (!isJoined()) {
-          @if (!battle()?.cong_khai && isPending()) {
-            <div class="right">
-              <input
-                class="pin"
-                placeholder="Nhập PIN để vào"
-                [ngModel]="pinCode()"
-                (ngModelChange)="pinCode.set($event)"
-              />
-              <button class="btn" (click)="join()" [disabled]="saving() || !pinCode()">
-                Nhập mã pin & Tham gia
-              </button>
-            </div>
-          } @else if (battle()?.cong_khai && isPending()) {
-            <div class="right">
-              <button class="btn" (click)="join()" [disabled]="saving()">Tham gia ngay</button>
-            </div>
-          }
-        } @else {
-          <div class="right joined-status">
-       <span class="status-text">
-         <i class="fas fa-check-circle"></i> Bạn đã tham gia
-       </span>
+        <div class="podium-item rank-1" [class.empty]="!topThree[0]">
+          <div class="crown-icon">👑</div>
+          <div class="avatar-box">
+            <img
+              [src]="'http://localhost:8088/api/v1/users/profile-images/' + topThree[0]?.avatar_url"
+              class="avatar">
+            <span class="badge">1</span>
           </div>
+          <div class="p-name">{{ topThree[0]?.ho_ten || '---' }}</div>
+          <div class="p-score">{{ topThree[0]?.diem || 0 }}</div>
+          <div class="podium-bar"></div>
+        </div>
+
+        <div class="podium-item rank-3" [class.empty]="!topThree[2]">
+          <div class="avatar-box">
+            <img
+              [src]="'http://localhost:8088/api/v1/users/profile-images/' + topThree[2]?.avatar_url"
+              class="avatar">
+            <span class="badge">3</span>
+          </div>
+          <div class="p-name">{{ topThree[2]?.ho_ten || '---' }}</div>
+          <div class="p-score">{{ topThree[2]?.diem || 0 }}</div>
+          <div class="podium-bar"></div>
+        </div>
+
+      </div>
+
+      @if (restPlayers.length > 0) {
+      <div class="rest-list">
+        @for (p of restPlayers; track p.user_id) {
+        <div class="list-item"
+          [class.me]="p.user_id === userService.getUserId()">
+          <div class="rank-num">#{{ p.xep_hang }}</div>
+          <img [src]="getAvatarUrl(p.user_id)" class="list-avatar">
+          <div class="list-name">{{ p.ho_ten }}</div>
+          <div class="list-score">{{ p.diem }} điểm</div>
+        </div>
         }
-      </section>
-
-      <!-- ================== OVERLAY COUNTDOWN CHUẨN BỊ (NẾU CÓ) ================== -->
-      @if (preCountdown() > 0 && !showSummary()) {
-        <div class="pre-countdown-overlay">
-          <div class="pre-countdown-card">
-            <div class="label">Trận đấu sắp bắt đầu</div>
-            <div class="number">{{ preCountdown() }}</div>
-            <p>Hãy sẵn sàng cho câu hỏi đầu tiên!</p>
-          </div>
-        </div>
+      </div>
       }
-      @if (showSummary()) {
-        <div class="summary-screen">
 
-          <header class="summary-header">
-            <h2>BẢNG XẾP HẠNG</h2>
-            <p>{{ battle()?.bo_cau_hoi_tieu_de }}</p>
-          </header>
+      <div class="summary-footer">
+        <button class="btn-action secondary" (click)="goBackHome()">
+          <i class="fas fa-home"></i> Trang chủ
+        </button>
 
-          <div class="podium-stage">
+        <button class="btn-action primary"
+          (click)="practiceThisSet()">
+          <i class="fas fa-redo"></i> Luyện tập lại
+        </button>
 
-            <div class="podium-item rank-2" [class.empty]="!topThree[1]">
-              <div class="avatar-box">
-                <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + topThree[1]?.avatar_url"
-                     class="avatar">
-                <span class="badge">2</span>
-              </div>
-              <div class="p-name">{{ topThree[1]?.ho_ten || '---' }}</div>
-              <div class="p-score">{{ topThree[1]?.diem || 0 }}</div>
-              <div class="podium-bar"></div>
+        <button class="btn-action outline"
+          (click)="goBackToBattleList()">
+          <i class="fas fa-list"></i> Danh sách phòng
+        </button>
+      </div>
+
+    </div>
+    } @else {
+    <div class="game-layout">
+      <div class="game-main">
+        @if (syncState(); as s) {
+        <section class="play">
+          <h3>Trạng thái hiện tại</h3>
+          <div class="grid">
+            <div class="cell">
+              <div class="label">Câu hiện tại</div>
+              <div class="value">{{ s.current_question_index >= 0 ?
+                s.current_question_index + 1 : '' }}</div>
             </div>
-
-            <div class="podium-item rank-1" [class.empty]="!topThree[0]">
-              <div class="crown-icon">👑</div>
-              <div class="avatar-box">
-                <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + topThree[0]?.avatar_url"
-                     class="avatar">
-                <span class="badge">1</span>
+            <div class="cell">
+              <div class="label">Điểm của bạn</div>
+              <div class="value highlight">{{ s.my_total_points }}
               </div>
-              <div class="p-name">{{ topThree[0]?.ho_ten || '---' }}</div>
-              <div class="p-score">{{ topThree[0]?.diem || 0 }}</div>
-              <div class="podium-bar"></div>
             </div>
-
-            <div class="podium-item rank-3" [class.empty]="!topThree[2]">
-              <div class="avatar-box">
-                <img [src]="'http://localhost:8088/api/v1/users/profile-images/' + topThree[2]?.avatar_url"
-                     class="avatar">
-                <span class="badge">3</span>
+            <div class="cell">
+              <div class="label">Đếm ngược</div>
+              <div class="value countdown">
+                {{ remainingSeconds() > 0 ? remainingSeconds() + 's' :
+                '0s' }}
               </div>
-              <div class="p-name">{{ topThree[2]?.ho_ten || '---' }}</div>
-              <div class="p-score">{{ topThree[2]?.diem || 0 }}</div>
-              <div class="podium-bar"></div>
             </div>
-
+            <div class="cell">
+              <div class="label">Combo hiện tại</div>
+              <div class="value combo-value"
+                [class.hot]="currentCombo() >= 3 && currentCombo() < 5"
+                [class.insane]="currentCombo() >= 5">
+                @if (currentCombo() >= 2) {
+                <span>🔥 x{{ currentCombo() }}</span>
+                } @else {
+                <span></span>
+                }
+              </div>
+            </div>
           </div>
 
-          @if (restPlayers.length > 0) {
-            <div class="rest-list">
-              @for (p of restPlayers; track p.user_id) {
-                <div class="list-item" [class.me]="p.user_id === userService.getUserId()">
-                  <div class="rank-num">#{{ p.xep_hang }}</div>
-                  <img [src]="getAvatarUrl(p.user_id)" class="list-avatar">
-                  <div class="list-name">{{ p.ho_ten }}</div>
-                  <div class="list-score">{{ p.diem }} điểm</div>
-                </div>
+          <!-- ================== POWER-UPS PANEL ================== -->
+          @if (isOngoing() && inventory().length > 0) {
+          <div class="powerups-bar">
+            <div class="powerups-title">
+              <i class="fas fa-bolt"></i> Power-ups
+              @if (activeMultiplier() > 1) {
+              <span class="active-multiplier">x{{ activeMultiplier()
+                }} điểm!</span>
+              }
+              @if (hasShield()) {
+              <span class="active-shield">🛡️ Khiên</span>
               }
             </div>
+            <div class="powerups-items">
+              @for (item of inventory(); track item.vat_pham_id) {
+              <button class="powerup-btn"
+                [class.disabled]="item.so_luong <= 0 || itemUsing()"
+                [class.rare]="item.do_hiem === 'RARE'"
+                [class.epic]="item.do_hiem === 'EPIC'"
+                [class.legendary]="item.do_hiem === 'LEGENDARY'"
+                [style.borderColor]="item.mau_sac"
+                [title]="item.mo_ta" (click)="useItem(item)"
+                [disabled]="item.so_luong <= 0 || itemUsing()">
+                <span class="item-icon">{{ item.icon }}</span>
+                <span class="item-count">{{ item.so_luong }}</span>
+              </button>
+              }
+            </div>
+          </div>
           }
 
-          <div class="summary-footer">
-            <button class="btn-action secondary" (click)="goBackHome()">
-              <i class="fas fa-home"></i> Trang chủ
-            </button>
+          @if (s.current_question_index >= 0) {
+          <div class="question-block"
+            [attr.data-question-id]="s.current_question_id"
+            [attr.data-version]="s._version">
+            <div class="question">{{ s.noi_dung }}</div>
 
-            <button class="btn-action primary" (click)="practiceThisSet()">
-              <i class="fas fa-redo"></i> Luyện tập lại
-            </button>
-
-            <button class="btn-action outline" (click)="goBackToBattleList()">
-              <i class="fas fa-list"></i> Danh sách phòng
-            </button>
-          </div>
-
-        </div>
-      } @else {
-        <div class="game-layout">
-          <div class="game-main">
-            @if (syncState(); as s) {
-              <section class="play">
-                <h3>Trạng thái hiện tại</h3>
-                <div class="grid">
-                  <div class="cell">
-                    <div class="label">Câu hiện tại</div>
-                    <div class="value">{{ s.current_question_index >= 0 ? s.current_question_index + 1 : '—' }}</div>
-                  </div>
-                  <div class="cell">
-                    <div class="label">Điểm của bạn</div>
-                    <div class="value highlight">{{ s.my_total_points }}</div>
-                  </div>
-                  <div class="cell">
-                    <div class="label">Đếm ngược</div>
-                    <div class="value countdown">
-                      {{ remainingSeconds() > 0 ? remainingSeconds() + 's' : '0s' }}
-                    </div>
-                  </div>
-                  <div class="cell">
-                    <div class="label">Combo hiện tại</div>
-                    <div class="value combo-value"
-                         [class.hot]="currentCombo() >= 3 && currentCombo() < 5"
-                         [class.insane]="currentCombo() >= 5">
-                      @if (currentCombo() >= 2) {
-                        <span>🔥 x{{ currentCombo() }}</span>
-                      } @else {
-                        <span>—</span>
-                      }
-                    </div>
-                  </div>
+            @if (s.duong_dan_tep && s.loai_noi_dung !== 'VAN_BAN') {
+            @switch (s.loai_noi_dung) {
+            @case ('HINH_ANH') {
+            <div class="media">
+              <img
+                [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"
+                alt="img" />
+            </div>
+            }
+            @case ('AM_THANH') {
+            <div class="media">
+              <audio controls
+                [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"></audio>
+            </div>
+            }
+            @case ('VIDEO') {
+            <div class="media">
+              <video controls
+                [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"></video>
+            </div>
+            }
+            }
+            }
+            <div class="choices"
+              [class.long-layout]="hasLongAnswer()">
+              @for (opt of ['A', 'B', 'C', 'D']; track $index) {
+              <button class="choice"
+                [class.active]="selectedAnswer() === opt"
+                [class.correct]="revealedCorrectAnswer() === opt"
+                [class.incorrect]="revealedCorrectAnswer() && selectedAnswer() === opt && revealedCorrectAnswer() !== opt"
+                [class.eliminated]="isOptionEliminated(opt)"
+                (click)="selectAnswer(opt)"
+                [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0 || !!revealedCorrectAnswer() || isOptionEliminated(opt)">
+                <div class="choice-content">
+                  <strong>{{ opt }}.</strong>
+                  <span>{{ opt === 'A' ? s.a : opt === 'B' ? s.b : opt
+                    === 'C' ? s.c : opt === 'D' ? s.d : '' }}</span>
                 </div>
 
-                @if (s.current_question_index >= 0) {
-                  <div class="question-block" [attr.data-question-id]="s.current_question_id"
-                       [attr.data-version]="s._version">
-                    <div class="question">{{ s.noi_dung }}</div>
-
-                    @if (s.duong_dan_tep && s.loai_noi_dung !== 'VAN_BAN') {
-                      @switch (s.loai_noi_dung) {
-                        @case ('HINH_ANH') {
-                          <div class="media">
-                            <img
-                              [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"
-                              alt="img"/>
-                          </div>
-                        }
-                        @case ('AM_THANH') {
-                          <div class="media">
-                            <audio controls
-                                   [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"></audio>
-                          </div>
-                        }
-                        @case ('VIDEO') {
-                          <div class="media">
-                            <video controls
-                                   [src]="environment.apiBaseUrl + '/cauHoi/media/' + s.duong_dan_tep + '?v=' + s._version"></video>
-                          </div>
-                        }
-                      }
-                    }
-                    <div class="choices" [class.long-layout]="hasLongAnswer()">
-                      @for (opt of ['A', 'B', 'C', 'D']; track $index) {
-                        <button
-                          class="choice"
-                          [class.active]="selectedAnswer() === opt"
-                          [class.correct]="revealedCorrectAnswer() === opt"
-                          [class.incorrect]="revealedCorrectAnswer() && selectedAnswer() === opt && revealedCorrectAnswer() !== opt"
-                          (click)="selectAnswer(opt)"
-                          [disabled]="saving() || submittedCurrentAnswer() || remainingSeconds() <= 0 || !!revealedCorrectAnswer()"
-                        >
-                          <div class="choice-content">
-                            <strong>{{ opt }}.</strong>
-                            <span>{{ opt === 'A' ? s.a : opt === 'B' ? s.b : opt === 'C' ? s.c : opt === 'D' ? s.d : '' }}</span>
-                          </div>
-
-                          @if (revealedCorrectAnswer()) {
-                            @if (revealedCorrectAnswer() === opt) {
-                              <i class="fas fa-check-circle status-icon"></i>
-                            } @else if (selectedAnswer() === opt) {
-                              <i class="fas fa-times-circle status-icon"></i>
-                            }
-                          }
-                        </button>
-                      }
-                    </div>
-
-                    @if (submittedCurrentAnswer() && !revealedCorrectAnswer()) {
-                      <div class="hint animate-pulse">
-                        <i class="fas fa-check-circle"></i>
-                        Đã gửi đáp án. Vui lòng đợi câu hỏi kế tiếp...
-                      </div>
-                    }
-
-                    @if (revealedCorrectAnswer() && revealedExplanation()) {
-                      <div class="answer-reveal animate-fade-in">
-                        <strong><i class="fas fa-lightbulb"></i> Giải thích:</strong>
-                        {{ revealedExplanation() }}
-                      </div>
-                    }
-
-                    @if (!submittedCurrentAnswer() && !revealedCorrectAnswer()) {
-                      <div class="submit-row">
-                        <button class="btn primary" (click)="submitSelectedAnswer()"
-                                [disabled]="saving() || !selectedAnswer()">
-                          Nộp đáp án
-                        </button>
-                      </div>
-                    }
-                  </div>
-
-                } @else {
-                  <div class="waiting-state">
-                    <i class="fas fa-hourglass-half"></i>
-                    <p>Chờ chủ phòng bắt đầu câu hỏi...</p>
-                  </div>
+                @if (revealedCorrectAnswer()) {
+                @if (revealedCorrectAnswer() === opt) {
+                <i class="fas fa-check-circle status-icon"></i>
+                } @else if (selectedAnswer() === opt) {
+                <i class="fas fa-times-circle status-icon"></i>
                 }
-              </section>
+                }
+              </button>
+              }
+            </div>
+
+            @if (submittedCurrentAnswer() && !revealedCorrectAnswer())
+            {
+            <div class="hint animate-pulse">
+              <i class="fas fa-check-circle"></i>
+              Đã gửi đáp án. Vui lòng đợi câu hỏi kế tiếp...
+            </div>
+            }
+
+            @if (revealedCorrectAnswer() && revealedExplanation()) {
+            <div class="answer-reveal animate-fade-in">
+              <strong><i class="fas fa-lightbulb"></i> Giải
+                thích:</strong>
+              {{ revealedExplanation() }}
+            </div>
+            }
+
+            @if (!submittedCurrentAnswer() &&
+            !revealedCorrectAnswer()) {
+            <div class="submit-row">
+              <button class="btn primary"
+                (click)="submitSelectedAnswer()"
+                [disabled]="saving() || !selectedAnswer()">
+                Nộp đáp án
+              </button>
+            </div>
             }
           </div>
 
-          <div class="game-sidebar">
-            @if (leaderboard().length > 0) {
-              <section class="leaderboard">
-                <h3><i class="fas fa-trophy"></i> Top Xếp hạng</h3>
-                <table class="ranking">
-                  <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Tên</th>
-                    <th>Điểm</th>
-                    <th>Đúng</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                    @for (p of leaderboard(); track p.user_id) {
-                      <tr [class.left-player]="p.da_roi" [class.is-me]="p.user_id === finalResult?.myId">
-                        <td>
-                          <span class="rank-chip" [class.top1]="p.xep_hang === 1">{{ p.xep_hang }}</span>
-                        </td>
-                        <td>
-                          {{ p.ho_ten }}
-                          @if (p.da_roi) {
-                            <span class="tag-left" style="font-size: 0.8em; color: #999;">(đã rời)</span>
-                          }
-                        </td>
-                        <td><strong>{{ p.diem }}</strong></td>
-                        <td>{{ p.so_cau_dung }}</td>
-                      </tr>
-                    } @empty {
-                      <tr>
-                        <td colspan="4">Chưa có dữ liệu xếp hạng.</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </section>
-            }
-
-            <section class="chat-panel">
-              <div class="chat-header">
-                <h3>Chat Room</h3>
-                <span class="online-badge">{{ onlineCount() }} online</span>
-              </div>
-
-              <div class="chat-messages" #scrollContainer>
-                @for (m of chatMessages(); track $index) {
-                  <div class="chat-row" [class.me]="m.is_me" [class.system]="m.is_system">
-
-                    @if (!m.is_me && !m.is_system) {
-                      <div class="avatar-container">
-                        @if (avatarUrl) {
-                          <img [src]="avatarUrl" alt="avt" class="avatar-img" (error)="m.avatar_url = ''">
-                        } @else {
-                          <div class="avatar-text" [style.background-color]="getAvatarColor(m.ho_ten)">
-                            {{ m.ho_ten.charAt(0).toUpperCase() }}
-                          </div>
-                        }
-                      </div>
-                    }
-
-                    <div class="msg-content">
-                      @if (!m.is_me && !m.is_system) {
-                        <div class="sender">{{ m.ho_ten }}</div>
-                      }
-
-                      <div class="bubble">
-                        <span class="text">{{ m.noi_dung }}</span>
-                        <span class="msg-time">{{ m.timestamp | date:'HH:mm' }}</span>
-                      </div>
-                    </div>
-                  </div>
-                } @empty {
-                  <div class="chat-empty">
-                    <div class="empty-icon">💬</div>
-                    <p>Sàn đấu đang im lặng...<br>Hãy khuấy động phong trào!</p>
-                  </div>
-                }
-              </div>
-
-              <div class="chat-input-area">
-                @if (showEmojiPicker()) {
-                  <div class="emoji-popup">
-                    <emoji-mart [showPreview]="false" [enableSearch]="false"
-                                (emojiClick)="addEmoji($event)"></emoji-mart>
-                  </div>
-                }
-
-                <form class="input-box" (ngSubmit)="sendChat()">
-                  <button type="button" class="btn-icon" (click)="toggleEmojiPicker()">😃</button>
-                  <input
-                    type="text"
-                    [ngModel]="chatInput()"
-                    (ngModelChange)="chatInput.set($event)"
-                    name="chatMsg"
-                    placeholder="Nhắn tin..."
-                    autocomplete="off"
-                  >
-                  <button type="submit" class="btn-send" [disabled]="!chatInput().trim()">
-                    <i class="fas fa-paper-plane"></i>
-                  </button>
-                </form>
-              </div>
-            </section>
-
+          } @else {
+          <div class="waiting-state">
+            <i class="fas fa-hourglass-half"></i>
+            <p>Chờ chủ phòng bắt đầu câu hỏi...</p>
           </div>
-        </div>
-        @if (show_invite_panel) {
-          <div class="invite-overlay" (click)="close_invite_panel()">
-            <div class="invite-panel" (click)="$event.stopPropagation()">
-              <header class="invite-header">
-                <h3>Mời bạn bè vào phòng</h3>
-                <button class="btn-close" (click)="close_invite_panel()">
-                  <i class="fas fa-times"></i>
-                </button>
-              </header>
+          }
+        </section>
+        }
+      </div>
 
-              <div class="invite-body">
-                @if (invite_loading) {
-                  <div class="invite-empty">Đang tải danh sách bạn bè...</div>
-                } @else {
-                  @if (invite_friends.length === 0) {
-                    <div class="invite-empty">
-                      Bạn chưa có bạn bè nào để mời.
-                    </div>
-                  } @else {
-                    <ul class="invite-list">
-                      @for (f of invite_friends; track f.user_id) {
-                        <li class="invite-item">
-                          <div class="friend-info">
-                            <img
-                              [src]="build_friend_avatar(f.avatar_url)"
-                              class="avatar"
-                              alt="avatar"
-                            />
-                            <div class="friend-text">
-                              <div class="name">{{ f.ho_ten }}</div>
-                              <div class="status">
-                                {{ f.trang_thai === 'ONLINE' ? 'Đang online' : 'Offline' }}
-                              </div>
-                            </div>
-                          </div>
-
-                          <button
-                            class="btn small"
-                            (click)="invite_friend_to_battle(f)"
-                            [disabled]="is_inviting(f.user_id)"
-                          >
-                            @if (is_inviting(f.user_id)) {
-                              Đang mời...
-                            } @else {
-                              Mời
-                            }
-                          </button>
-                        </li>
-                      }
-                    </ul>
+      <div class="game-sidebar">
+        <!-- ================== PLAYERS IN ROOM ================== -->
+        @if (isPending()) {
+        <section class="players-panel">
+          <h3><i class="fas fa-users"></i> Người chơi trong phòng ({{
+            onlineCount() }})</h3>
+          <div class="players-list">
+            @for (p of playersInRoom(); track p.user_id) {
+            <div class="player-card" [class.is-host]="p.la_chu_phong">
+              <img
+                [src]="p.avatar_url ? image_base_url + p.avatar_url : default_avatar"
+                class="player-avatar" alt="avatar">
+              <div class="player-info">
+                <span class="player-name">
+                  {{ p.ho_ten }}
+                  @if (p.la_chu_phong) {
+                  <i class="fas fa-crown host-crown"
+                    title="Chủ phòng"></i>
                   }
+                </span>
+                @if (p.user_id !== userService.getUserId()) {
+                <div class="player-actions">
+                  <button class="action-btn view-profile"
+                    title="Xem profile"
+                    (click)="viewProfile(p.user_id)">
+                    <i class="fas fa-user"></i>
+                  </button>
+                  <button class="action-btn add-friend"
+                    title="Kết bạn"
+                    (click)="sendFriendRequest(p.user_id)">
+                    <i class="fas fa-user-plus"></i>
+                  </button>
+                </div>
                 }
               </div>
             </div>
+            } @empty {
+            <p class="no-players">Chưa có người chơi</p>
+            }
           </div>
+        </section>
         }
 
-      }
+        @if (leaderboard().length > 0) {
+        <section class="leaderboard">
+          <h3><i class="fas fa-trophy"></i> Top Xếp hạng</h3>
+          <table class="ranking">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tên</th>
+                <th>Điểm</th>
+                <th>Đúng</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of leaderboard(); track p.user_id) {
+              <tr [class.left-player]="p.da_roi"
+                [class.is-me]="p.user_id === finalResult?.myId">
+                <td>
+                  <span class="rank-chip"
+                    [class.top1]="p.xep_hang === 1">{{ p.xep_hang
+                    }}</span>
+                </td>
+                <td>
+                  {{ p.ho_ten }}
+                  @if (p.da_roi) {
+                  <span class="tag-left"
+                    style="font-size: 0.8em; color: #999;">(đã
+                    rời)</span>
+                  }
+                </td>
+                <td><strong>{{ p.diem }}</strong></td>
+                <td>{{ p.so_cau_dung }}</td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="4">Chưa có dữ liệu xếp hạng.</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+        }
+
+        <section class="chat-panel">
+          <div class="chat-header">
+            <h3>Chat Room</h3>
+            <span class="online-badge">{{ onlineCount() }}
+              online</span>
+          </div>
+
+          <div class="chat-messages" #scrollContainer>
+            @for (m of chatMessages(); track $index) {
+            <div class="chat-row" [class.me]="m.is_me"
+              [class.system]="m.is_system">
+
+              @if (!m.is_me && !m.is_system) {
+              <div class="avatar-container">
+                @if (avatarUrl) {
+                <img [src]="avatarUrl" alt="avt" class="avatar-img"
+                  (error)="m.avatar_url = ''">
+                } @else {
+                <div class="avatar-text"
+                  [style.background-color]="getAvatarColor(m.ho_ten)">
+                  {{ m.ho_ten.charAt(0).toUpperCase() }}
+                </div>
+                }
+              </div>
+              }
+
+              <div class="msg-content">
+                @if (!m.is_me && !m.is_system) {
+                <div class="sender">{{ m.ho_ten }}</div>
+                }
+
+                <div class="bubble">
+                  <span class="text">{{ m.noi_dung }}</span>
+                  <span class="msg-time">{{ m.timestamp | date:'HH:mm'
+                    }}</span>
+                </div>
+              </div>
+            </div>
+            } @empty {
+            <div class="chat-empty">
+              <div class="empty-icon">💬</div>
+              <p>Sàn đấu đang im lặng...<br>Hãy khuấy động phong trào!
+              </p>
+            </div>
+            }
+          </div>
+
+          <div class="chat-input-area">
+            @if (showEmojiPicker()) {
+            <div class="emoji-popup">
+              <emoji-mart [showPreview]="false" [enableSearch]="false"
+                (emojiClick)="addEmoji($event)"></emoji-mart>
+            </div>
+            }
+
+            <form class="input-box" (ngSubmit)="sendChat()">
+              <button type="button" class="btn-icon"
+                (click)="toggleEmojiPicker()">😃</button>
+              <input type="text" [ngModel]="chatInput()"
+                (ngModelChange)="chatInput.set($event)" name="chatMsg"
+                placeholder="Nhắn tin..." autocomplete="off">
+              <button type="submit" class="btn-send"
+                [disabled]="!chatInput().trim()">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </section>
+
+      </div>
     </div>
+    @if (show_invite_panel) {
+    <div class="invite-overlay" (click)="close_invite_panel()">
+      <div class="invite-panel" (click)="$event.stopPropagation()">
+        <header class="invite-header">
+          <h3>Mời bạn bè vào phòng</h3>
+          <button class="btn-close" (click)="close_invite_panel()">
+            <i class="fas fa-times"></i>
+          </button>
+        </header>
+
+        <div class="invite-body">
+          @if (invite_loading) {
+          <div class="invite-empty">Đang tải danh sách bạn bè...</div>
+          } @else {
+          @if (invite_friends.length === 0) {
+          <div class="invite-empty">
+            Bạn chưa có bạn bè nào để mời.
+          </div>
+          } @else {
+          <ul class="invite-list">
+            @for (f of invite_friends; track f.user_id) {
+            <li class="invite-item">
+              <div class="friend-info">
+                <img [src]="build_friend_avatar(f.avatar_url)"
+                  class="avatar" alt="avatar" />
+                <div class="friend-text">
+                  <div class="name">{{ f.ho_ten }}</div>
+                  <div class="status">
+                    {{ f.trang_thai === 'ONLINE' ? 'Đang online' :
+                    'Offline' }}
+                  </div>
+                </div>
+              </div>
+
+              <button class="btn small"
+                (click)="invite_friend_to_battle(f)"
+                [disabled]="is_inviting(f.user_id)">
+                @if (is_inviting(f.user_id)) {
+                Đang mời...
+                } @else {
+                Mời
+                }
+              </button>
+            </li>
+            }
+          </ul>
+          }
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    }
   </div>
+</div>
 } @else {
-  <div class="loading">
-    <i class="fas fa-spinner fa-spin"></i>
-    Đang tải phòng...
-  </div>
+<div class="loading">
+  <i class="fas fa-spinner fa-spin"></i>
+  Đang tải phòng...
+</div>
 }
 @if (showComboVFX) {
-  <div class="combo-vfx">
-    <div class="fire-text">COMBO!</div>
-    <div class="combo-num">x{{ currentCombo() }}</div>
+<div class="combo-vfx">
+  <div class="fire-text">COMBO!</div>
+  <div class="combo-num">x{{ currentCombo() }}</div>
+</div>
+}
+
+<!-- ================== USER PROFILE MODAL ================== -->
+@if (show_user_modal) {
+<div class="modal-backdrop fade-in" (click)="closeUserModal()">
+  <div class="modal-glass scale-in"
+    (click)="$event.stopPropagation()">
+
+    <button class="btn-close" (click)="closeUserModal()">
+      <i class="fas fa-times"></i>
+    </button>
+
+    @if (user_modal_loading) {
+    <div class="modal-loading">
+      <div class="spinner-3d"></div>
+      <p>Đang tải thông tin...</p>
+    </div>
+    } @else if (user_modal_summary) {
+
+    <div class="modal-hero">
+      <div class="hero-avatar-wrapper">
+        <img [src]="image_base_url + user_modal_summary.avatar_url"
+          class="hero-avatar" alt="avatar"
+          (error)="$any($event.target).src = default_avatar">
+        <div class="level-badge">Lv.{{ user_modal_summary.level }}
+        </div>
+      </div>
+      <div class="hero-info">
+        <h2>{{ user_modal_summary.ho_ten }}</h2>
+        <span class="hero-tier"
+          [ngClass]="(user_modal_summary.rank_tier || '').toLowerCase()">
+          {{ mapTierLabel(user_modal_summary.rank_tier) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon-stat">🏆</div>
+        <div class="stat-content">
+          <small>Tổng điểm</small>
+          <strong class="text-primary">{{ user_modal_summary.tong_diem
+            | number }}</strong>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-stat">⚔️</div>
+        <div class="stat-content">
+          <small>Thắng/Thua</small>
+          <strong><span class="text-green">{{
+              user_modal_summary.so_tran_thang }}</span>/<span
+              class="text-red">{{ user_modal_summary.so_tran_thua
+              }}</span></strong>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-stat">🔥</div>
+        <div class="stat-content">
+          <small>Tỉ lệ thắng</small>
+          <strong>{{ user_modal_summary.ti_le_thang | percent:'1.0-0'
+            }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <h3><i class="fas fa-history"></i> Lịch sử đấu gần đây</h3>
+      <div class="history-list">
+        @if (user_history_loading) {
+        <div class="mini-spinner"></div>
+        } @else if (user_history_items.length === 0) {
+        <div class="empty-history">Chưa có trận đấu nào.</div>
+        } @else {
+        @for (h of user_history_items; track $index) {
+        <div class="history-row">
+          <div class="h-icon" [class.win]="h.xep_hang === 1">
+            {{ h.xep_hang === 1 ? '👑' : '#' + h.xep_hang }}
+          </div>
+          <div class="h-info">
+            <div class="h-room">{{ h.ten_phong }}</div>
+            <div class="h-time">{{ h.hoan_thanh_luc | date:'dd/MM
+              HH:mm' }}</div>
+          </div>
+          <div class="h-stats">
+            <span class="h-score">+{{ h.tong_diem }} pts</span>
+            <span class="h-correct"><i class="fas fa-check"></i> {{
+              h.so_cau_dung }}</span>
+          </div>
+        </div>
+        }
+        }
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      @if (user_modal_summary.user_id !== userService.getUserId()) {
+      <button class="btn-full-profile"
+        [routerLink]="['/nguoi-choi', user_modal_summary.user_id]"
+        (click)="closeUserModal()">
+        Xem hồ sơ chi tiết <i class="fas fa-arrow-right"></i>
+      </button>
+      }
+    </div>
+
+    }
   </div>
+</div>
 }

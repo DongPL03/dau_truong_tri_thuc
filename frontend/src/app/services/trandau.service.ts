@@ -14,6 +14,7 @@ import { PageResponse } from '../responses/page-response';
 import { ResponseObject } from '../responses/response-object';
 import { LichSuTranDauDetailResponse } from '../responses/trandau/lich-su-tran-dau-detail-response';
 import { LichSuTranDauResponse } from '../responses/trandau/lichsutrandau';
+import { NguoiChoiTrongPhongResponse } from '../responses/trandau/nguoi-choi-trong-phong-response';
 import { SyncStateResponse } from '../responses/trandau/syncstate-response';
 import { TranDauResponse } from '../responses/trandau/trandau-response';
 
@@ -81,6 +82,18 @@ export class TrandauService {
     return this.http.get<ResponseObject<SyncStateResponse>>(`${this.api}/sync/${id}`, {
       headers: this.httpUtil.createAuthHeaders(),
     });
+  }
+
+  /**
+   * 🔹 Lấy danh sách người chơi trong phòng (trước khi trận đấu bắt đầu)
+   */
+  getPlayersInRoom(id: number): Observable<ResponseObject<NguoiChoiTrongPhongResponse[]>> {
+    return this.http.get<ResponseObject<NguoiChoiTrongPhongResponse[]>>(
+      `${this.api}/${id}/players`,
+      {
+        headers: this.httpUtil.createAuthHeaders(),
+      }
+    );
   }
 
   /**

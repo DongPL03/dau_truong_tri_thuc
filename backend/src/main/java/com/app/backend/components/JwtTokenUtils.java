@@ -142,4 +142,12 @@ public class JwtTokenUtils {
             return false;
         }
     }
+
+    public Long extractUserId(String authHeader) throws InvalidParamException {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new InvalidParamException("Invalid Authorization header");
+        }
+        String token = authHeader.substring(7);
+        return extractClaim(token, claims -> claims.get("userId", Long.class));
+    }
 }

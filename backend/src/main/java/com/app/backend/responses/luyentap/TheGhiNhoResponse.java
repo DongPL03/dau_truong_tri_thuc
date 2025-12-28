@@ -1,6 +1,7 @@
 package com.app.backend.responses.luyentap;
 
 import com.app.backend.models.TheGhiNho;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -31,6 +32,7 @@ public class TheGhiNhoResponse {
     private String giaiThich;
 
     @JsonProperty("tao_luc")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     private Instant taoLuc;
 
     public static TheGhiNhoResponse from(TheGhiNho entity) {

@@ -1,55 +1,113 @@
-import {Component, OnInit} from '@angular/core';
-import {Base} from '../../base/base';
-import {FriendRequestItemResponse} from '../../../responses/banbe/friend_request_item_response';
-import {FriendSummaryResponse} from '../../../responses/banbe/friend_summary_response';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
-import {FormsModule} from '@angular/forms';
-import {CommonModule, DatePipe} from '@angular/common';
+import { BlockedUserResponse } from '../../../responses/banbe/blocked_user_response';
+import { FriendRequestItemResponse } from '../../../responses/banbe/friend_request_item_response';
+import { FriendSuggestionResponse } from '../../../responses/banbe/friend_suggestion_response';
+import { FriendSummaryResponse } from '../../../responses/banbe/friend_summary_response';
+import { FriendEventService } from '../../../services/friend-event.service';
+import { Base } from '../../base/base';
 
 @Component({
   selector: 'app-user-friend',
-  imports: [
-    FormsModule,
-    DatePipe,
-    CommonModule
-  ],
+  imports: [FormsModule, DatePipe, CommonModule],
   templateUrl: './user-friend.html',
   styleUrl: './user-friend.scss',
-  standalone: true
+  standalone: true,
 })
-export class UserFriend extends Base implements OnInit {
-  // Tab hiện tại: 'friends' | 'incoming' | 'outgoing'
-  active_tab: 'friends' | 'incoming' | 'outgoing' = 'friends';
+export class UserFriend extends Base implements OnInit, OnDestroy {
+  private friendEventService = inject(FriendEventService);
+  private eventSubscription?: Subscription;
+
+  // Tab hiện tại: 'friends' | 'incoming' | 'outgoing' | 'suggestions' | 'blocked' | 'search'
+  active_tab: 'friends' | 'incoming' | 'outgoing' | 'suggestions' | 'blocked' | 'search' =
+    'friends';
 
   // Loading flags
   loading_friends = false;
   loading_incoming = false;
   loading_outgoing = false;
+  loading_suggestions = false;
+  loading_blocked = false;
+  loading_search = false;
 
   // Dữ liệu
   friends: FriendSummaryResponse[] = [];
   incoming_requests: FriendRequestItemResponse[] = [];
   outgoing_requests: FriendRequestItemResponse[] = [];
+  suggestions: FriendSuggestionResponse[] = [];
+  blocked_users: BlockedUserResponse[] = [];
+  search_results: FriendSummaryResponse[] = [];
 
   // Gửi lời mời nhanh theo user_id (tạm thời, sau này có search theo username/profile thì nâng cấp)
   new_friend_id: number | null = null;
   sending_request = false;
 
+  // Search
+  search_keyword = '';
+  search_sending = new Set<number>(); // Track user_ids đang gửi lời mời
+
   ngOnInit(): void {
     // Mặc định load tab bạn bè
     this.loadFriends();
+    // Load suggestions ngay để hiển thị ở sidebar hoặc khi vào tab
+    this.loadSuggestions();
+
+    // Subscribe to friend events from WebSocket notifications
+    this.eventSubscription = this.friendEventService.events$.subscribe((event) => {
+      switch (event.type) {
+        case 'FRIEND_REQUEST_RECEIVED':
+          // Có lời mời mới -> reload incoming
+          if (this.active_tab === 'incoming') {
+            this.loadIncoming();
+          } else {
+            // Reset để buộc reload khi chuyển tab
+            this.incoming_requests = [];
+          }
+          break;
+        case 'FRIEND_REQUEST_ACCEPTED':
+          // Lời mời được chấp nhận -> reload friends và outgoing
+          this.loadFriends();
+          if (this.active_tab === 'outgoing') {
+            this.loadOutgoing();
+          } else {
+            this.outgoing_requests = [];
+          }
+          break;
+        case 'FRIEND_REQUEST_DECLINED':
+          // Lời mời bị từ chối -> reload outgoing
+          if (this.active_tab === 'outgoing') {
+            this.loadOutgoing();
+          } else {
+            this.outgoing_requests = [];
+          }
+          break;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.eventSubscription?.unsubscribe();
   }
 
   // ----- TAB -----
-  setTab(tab: 'friends' | 'incoming' | 'outgoing'): void {
+  setTab(tab: 'friends' | 'incoming' | 'outgoing' | 'suggestions' | 'blocked' | 'search'): void {
     this.active_tab = tab;
 
     if (tab === 'friends' && this.friends.length === 0) {
       this.loadFriends();
-    } else if (tab === 'incoming' && this.incoming_requests.length === 0) {
+    } else if (tab === 'incoming') {
+      // Luôn reload incoming để đảm bảo dữ liệu mới nhất
       this.loadIncoming();
-    } else if (tab === 'outgoing' && this.outgoing_requests.length === 0) {
+    } else if (tab === 'outgoing') {
+      // Luôn reload outgoing để đảm bảo dữ liệu mới nhất (fix bug từ chối còn lưu)
       this.loadOutgoing();
+    } else if (tab === 'suggestions' && this.suggestions.length === 0) {
+      this.loadSuggestions();
+    } else if (tab === 'blocked') {
+      this.loadBlockedUsers();
     }
   }
 
@@ -63,7 +121,7 @@ export class UserFriend extends Base implements OnInit {
       },
       error: () => {
         this.loading_friends = false;
-      }
+      },
     });
   }
 
@@ -76,7 +134,7 @@ export class UserFriend extends Base implements OnInit {
       },
       error: () => {
         this.loading_incoming = false;
-      }
+      },
     });
   }
 
@@ -89,7 +147,51 @@ export class UserFriend extends Base implements OnInit {
       },
       error: () => {
         this.loading_outgoing = false;
-      }
+      },
+    });
+  }
+
+  loadSuggestions(): void {
+    this.loading_suggestions = true;
+    this.friendService.getSuggestions(10).subscribe({
+      next: (res) => {
+        this.suggestions = res.data || [];
+        this.loading_suggestions = false;
+      },
+      error: () => {
+        this.loading_suggestions = false;
+      },
+    });
+  }
+
+  loadBlockedUsers(): void {
+    this.loading_blocked = true;
+    this.friendService.getBlockedUsers().subscribe({
+      next: (res) => {
+        this.blocked_users = res.data || [];
+        this.loading_blocked = false;
+      },
+      error: () => {
+        this.loading_blocked = false;
+      },
+    });
+  }
+
+  searchUsers(): void {
+    if (!this.search_keyword || this.search_keyword.trim().length < 2) {
+      Swal.fire('Thông báo', 'Vui lòng nhập ít nhất 2 ký tự để tìm kiếm', 'info');
+      return;
+    }
+
+    this.loading_search = true;
+    this.friendService.searchUsers(this.search_keyword.trim(), 20).subscribe({
+      next: (res) => {
+        this.search_results = res.data || [];
+        this.loading_search = false;
+      },
+      error: () => {
+        this.loading_search = false;
+      },
     });
   }
 
@@ -103,7 +205,7 @@ export class UserFriend extends Base implements OnInit {
     }
 
     this.sending_request = true;
-    this.friendService.sendRequest({target_user_id: this.new_friend_id}).subscribe({
+    this.friendService.sendRequest({ target_user_id: this.new_friend_id }).subscribe({
       next: (res) => {
         this.sending_request = false;
         Swal.fire('Thành công', 'Đã gửi lời mời kết bạn', 'success');
@@ -118,7 +220,7 @@ export class UserFriend extends Base implements OnInit {
         console.error('sendFriendRequest error', err);
         const msg = err?.error?.message || 'Gửi lời mời kết bạn thất bại';
         Swal.fire('Lỗi', msg, 'error');
-      }
+      },
     });
   }
 
@@ -134,7 +236,7 @@ export class UserFriend extends Base implements OnInit {
         console.error('acceptRequest error', err);
         const msg = err?.error?.message || 'Không thể chấp nhận lời mời';
         Swal.fire('Lỗi', msg, 'error');
-      }
+      },
     });
   }
 
@@ -149,7 +251,7 @@ export class UserFriend extends Base implements OnInit {
         console.error('declineRequest error', err);
         const msg = err?.error?.message || 'Không thể từ chối lời mời';
         Swal.fire('Lỗi', msg, 'error');
-      }
+      },
     });
   }
 
@@ -164,7 +266,7 @@ export class UserFriend extends Base implements OnInit {
         console.error('cancelRequest error', err);
         const msg = err?.error?.message || 'Không thể huỷ lời mời';
         Swal.fire('Lỗi', msg, 'error');
-      }
+      },
     });
   }
 
@@ -176,8 +278,8 @@ export class UserFriend extends Base implements OnInit {
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Huỷ kết bạn',
-      cancelButtonText: 'Đóng'
-    }).then(result => {
+      cancelButtonText: 'Đóng',
+    }).then((result) => {
       if (!result.isConfirmed) return;
 
       this.friendService.unfriend(friend.user_id).subscribe({
@@ -189,7 +291,7 @@ export class UserFriend extends Base implements OnInit {
           console.error('unfriend error', err);
           const msg = err?.error?.message || 'Không thể huỷ kết bạn';
           Swal.fire('Lỗi', msg, 'error');
-        }
+        },
       });
     });
   }
@@ -203,5 +305,143 @@ export class UserFriend extends Base implements OnInit {
 
   navigateChatWithFriend(f: FriendSummaryResponse) {
     this.router.navigate(['/chat', f.user_id]).then();
+  }
+
+  // ============== SUGGESTIONS ==============
+
+  /** Gửi lời mời từ gợi ý */
+  sendRequestFromSuggestion(user: FriendSuggestionResponse): void {
+    this.search_sending.add(user.user_id);
+    this.friendService.sendRequest({ target_user_id: user.user_id }).subscribe({
+      next: () => {
+        this.search_sending.delete(user.user_id);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Đã gửi lời mời kết bạn!',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        // Xóa khỏi danh sách suggestions
+        this.suggestions = this.suggestions.filter((s) => s.user_id !== user.user_id);
+      },
+      error: (err) => {
+        this.search_sending.delete(user.user_id);
+        const msg = err?.error?.message || 'Không thể gửi lời mời';
+        Swal.fire('Lỗi', msg, 'error');
+      },
+    });
+  }
+
+  /** Gửi lời mời từ kết quả tìm kiếm */
+  sendRequestFromSearch(user: FriendSummaryResponse): void {
+    this.search_sending.add(user.user_id);
+    this.friendService.sendRequest({ target_user_id: user.user_id }).subscribe({
+      next: () => {
+        this.search_sending.delete(user.user_id);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Đã gửi lời mời kết bạn!',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        // Xóa khỏi danh sách search
+        this.search_results = this.search_results.filter((s) => s.user_id !== user.user_id);
+      },
+      error: (err) => {
+        this.search_sending.delete(user.user_id);
+        const msg = err?.error?.message || 'Không thể gửi lời mời';
+        Swal.fire('Lỗi', msg, 'error');
+      },
+    });
+  }
+
+  isSendingRequest(userId: number): boolean {
+    return this.search_sending.has(userId);
+  }
+
+  // ============== BLOCK ==============
+
+  /** Chặn một người dùng */
+  blockUser(user: FriendSummaryResponse): void {
+    Swal.fire({
+      title: 'Chặn người dùng?',
+      text: `Bạn có chắc muốn chặn ${user.ho_ten}? Người này sẽ không thể gửi tin nhắn hay kết bạn với bạn.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Chặn',
+      cancelButtonText: 'Hủy',
+      confirmButtonColor: '#ef4444',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      this.friendService.blockUser({ target_user_id: user.user_id }).subscribe({
+        next: () => {
+          Swal.fire('Đã chặn', `${user.ho_ten} đã bị chặn`, 'success');
+          this.loadFriends();
+          this.loadBlockedUsers();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Không thể chặn người dùng';
+          Swal.fire('Lỗi', msg, 'error');
+        },
+      });
+    });
+  }
+
+  /** Bỏ chặn một người dùng */
+  unblockUser(blocked: BlockedUserResponse): void {
+    Swal.fire({
+      title: 'Bỏ chặn?',
+      text: `Bạn có chắc muốn bỏ chặn ${blocked.ho_ten}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Bỏ chặn',
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      this.friendService.unblockUser(blocked.user_id).subscribe({
+        next: () => {
+          Swal.fire('Đã bỏ chặn', `${blocked.ho_ten} đã được bỏ chặn`, 'success');
+          this.loadBlockedUsers();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Không thể bỏ chặn';
+          Swal.fire('Lỗi', msg, 'error');
+        },
+      });
+    });
+  }
+
+  // ============== HELPERS ==============
+
+  getReasonLabel(reason: string): string {
+    switch (reason) {
+      case 'SAME_BATTLE':
+        return 'Đã chơi cùng';
+      case 'MUTUAL_FRIEND':
+        return 'Bạn chung';
+      case 'POPULAR':
+        return 'Phổ biến';
+      default:
+        return '';
+    }
+  }
+
+  getReasonIcon(reason: string): string {
+    switch (reason) {
+      case 'SAME_BATTLE':
+        return 'fa-gamepad';
+      case 'MUTUAL_FRIEND':
+        return 'fa-users';
+      case 'POPULAR':
+        return 'fa-star';
+      default:
+        return 'fa-user';
+    }
   }
 }

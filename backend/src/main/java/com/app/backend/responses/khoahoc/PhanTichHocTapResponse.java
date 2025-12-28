@@ -1,5 +1,6 @@
 package com.app.backend.responses.khoahoc;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +40,7 @@ public class PhanTichHocTapResponse {
     private String giaiPhap; // Giải pháp cải thiện
 
     @JsonProperty("cap_nhat_luc")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     private Instant capNhatLuc;
 
     @Data

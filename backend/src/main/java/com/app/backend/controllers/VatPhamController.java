@@ -5,9 +5,10 @@ import com.app.backend.models.BattleState;
 import com.app.backend.models.VatPham;
 import com.app.backend.responses.SuDungVatPhamResponse;
 import com.app.backend.responses.VatPhamInventoryResponse;
-import com.app.backend.services.TranDauService;
+import com.app.backend.services.trandau.ITranDauService;
 import com.app.backend.services.VatPhamService;
 import com.app.backend.components.JwtTokenUtils;
+import com.app.backend.components.BattleStateManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ import java.util.Map;
 public class VatPhamController {
 
     private final VatPhamService vatPhamService;
-    private final TranDauService tranDauService;
+    private final BattleStateManager battleStateManager;
     private final JwtTokenUtils jwtTokenUtils;
 
     /**
@@ -61,7 +62,7 @@ public class VatPhamController {
             Long userId = jwtTokenUtils.extractUserId(authHeader);
 
             // Lấy BattleState hiện tại
-            BattleState battleState = tranDauService.getState(dto.getTranDauId());
+            BattleState battleState = battleStateManager.get(dto.getTranDauId());
             if (battleState == null) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("message", "Trận đấu không tồn tại hoặc chưa bắt đầu"));
@@ -81,9 +82,9 @@ public class VatPhamController {
 
             SuDungVatPhamResponse response = vatPhamService.useItem(userId, dto, battleState);
 
-            // Nếu sử dụng thành công, broadcast event cho các player khác
+            // Lưu lại state sau khi áp dụng item effect
             if (response.isThanhCong()) {
-                tranDauService.broadcastItemUsed(dto.getTranDauId(), userId, response);
+                battleStateManager.save(battleState);
             }
 
             return ResponseEntity.ok(response);

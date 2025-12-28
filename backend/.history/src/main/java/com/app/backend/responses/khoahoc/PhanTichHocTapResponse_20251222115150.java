@@ -39,6 +39,7 @@ public class PhanTichHocTapResponse {
     private String giaiPhap; // Giải pháp cải thiện
 
     @JsonProperty("cap_nhat_luc")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     private Instant capNhatLuc;
 
     @Data

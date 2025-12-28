@@ -1,11 +1,12 @@
-import {CommonModule} from '@angular/common';
-import {Component, ElementRef, HostListener, OnInit} from '@angular/core';
-import {RouterModule} from '@angular/router';
-import {NotificationResponse} from '../../responses/notification/notification-response';
-import {PageResponse} from '../../responses/page-response';
-import {ResponseObject} from '../../responses/response-object';
-import {Base} from '../base/base';
-import {ClickOutsideDirective} from './click-outside.directive';
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, HostListener, inject, OnInit } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { NotificationResponse } from '../../responses/notification/notification-response';
+import { PageResponse } from '../../responses/page-response';
+import { ResponseObject } from '../../responses/response-object';
+import { FriendEventService } from '../../services/friend-event.service';
+import { Base } from '../base/base';
+import { ClickOutsideDirective } from './click-outside.directive';
 
 @Component({
   selector: 'app-notification-bell',
@@ -15,6 +16,8 @@ import {ClickOutsideDirective} from './click-outside.directive';
   styleUrl: './notification-bell.scss',
 })
 export class NotificationBell extends Base implements OnInit {
+  private friendEventService = inject(FriendEventService);
+
   unread_count = 0;
   notifications: NotificationResponse[] = [];
   loading = false;
@@ -30,9 +33,7 @@ export class NotificationBell extends Base implements OnInit {
   battle_invite_ma_phong: string | null = null;
   private battle_invite_timer: any = null;
 
-  constructor(
-    private elementRef: ElementRef,
-  ) {
+  constructor(private elementRef: ElementRef) {
     super();
   }
 
@@ -78,6 +79,12 @@ export class NotificationBell extends Base implements OnInit {
         }
 
         // ---- 2. Các loại notif khác (FRIEND_REQUEST, SYSTEM...) dùng toast thường ----
+
+        // ⭐ Emit friend event để các component khác lắng nghe và refresh
+        if (notif.loai === 'FRIEND_REQUEST') {
+          this.friendEventService.handleNotification(notif);
+        }
+
         const msg =
           notif.noi_dung ||
           (notif.loai === 'FRIEND_REQUEST'
@@ -174,8 +181,7 @@ export class NotificationBell extends Base implements OnInit {
             this.unread_count--;
           }
         },
-        error: () => {
-        },
+        error: () => {},
       });
     }
 
@@ -203,8 +209,7 @@ export class NotificationBell extends Base implements OnInit {
         this.notifications.forEach((n) => (n.da_doc = true));
         this.unread_count = 0;
       },
-      error: () => {
-      },
+      error: () => {},
     });
   }
 
@@ -246,10 +251,8 @@ export class NotificationBell extends Base implements OnInit {
     // đánh dấu đã đọc (best effort, lỗi cũng không sao)
     if (!notif.da_doc) {
       this.notificationService.markAsRead(notif.thong_bao_id).subscribe({
-        next: () => {
-        },
-        error: () => {
-        },
+        next: () => {},
+        error: () => {},
       });
     }
 
@@ -261,10 +264,8 @@ export class NotificationBell extends Base implements OnInit {
     const notif = this.battle_invite_toast;
     if (notif && !notif.da_doc) {
       this.notificationService.markAsRead(notif.thong_bao_id).subscribe({
-        next: () => {
-        },
-        error: () => {
-        },
+        next: () => {},
+        error: () => {},
       });
     }
     this.closeBattleInviteToast();
@@ -339,8 +340,7 @@ export class NotificationBell extends Base implements OnInit {
       try {
         const meta = JSON.parse(n.metadata);
         if (typeof meta?.type === 'string') return meta.type;
-      } catch {
-      }
+      } catch {}
     }
     return n.loai;
   }
@@ -355,6 +355,4 @@ export class NotificationBell extends Base implements OnInit {
       return null;
     }
   }
-
-
 }

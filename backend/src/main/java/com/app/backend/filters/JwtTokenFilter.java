@@ -165,7 +165,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/cauHoi/bo/**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/provinces**", apiPrefix), "GET"),
 
-                Pair.of(String.format("%s/leaderboard/**", apiPrefix), "GET")
+                Pair.of(String.format("%s/leaderboard/**", apiPrefix), "GET"),
+
+                Pair.of(String.format("%s/posts/images/**", apiPrefix), "GET")
 
                 // ❌ XÓA dòng này để API khoa-hoc yêu cầu authentication
                 // Pair.of(String.format("%s/khoa-hoc**", apiPrefix), "GET")

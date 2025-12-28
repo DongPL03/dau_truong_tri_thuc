@@ -16,137 +16,335 @@
       <div class="add-friend-bar">
         <div class="input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="number"
-                 [(ngModel)]="new_friend_id"
-                 placeholder="Nhập ID người chơi để kết bạn..."
-                 (keyup.enter)="sendFriendRequest()">
+          <input type="text" [(ngModel)]="search_keyword"
+            placeholder="Tìm kiếm người chơi theo tên..."
+            (keyup.enter)="searchUsers()">
         </div>
-        <button class="btn-add" [disabled]="sending_request" (click)="sendFriendRequest()">
-          @if (sending_request) {
-            <i class="fas fa-spinner fa-spin"></i>
+        <button class="btn-add" [disabled]="loading_search"
+          (click)="searchUsers()">
+          @if (loading_search) {
+          <i class="fas fa-spinner fa-spin"></i>
           } @else {
-            <i class="fas fa-user-plus"></i> Gửi lời mời
+          <i class="fas fa-search"></i> Tìm kiếm
           }
         </button>
       </div>
     </header>
 
     <div class="nav-tabs animate-fade-up">
-      <button class="tab-pill" [class.active]="active_tab === 'friends'" (click)="setTab('friends')">
-        Bạn bè <span class="count">{{ friends.length }}</span>
+      <button class="tab-pill"
+        [class.active]="active_tab === 'friends'"
+        (click)="setTab('friends')">
+        <i class="fas fa-users"></i> Bạn bè <span class="count">{{
+          friends.length }}</span>
       </button>
-      <button class="tab-pill" [class.active]="active_tab === 'incoming'" (click)="setTab('incoming')">
-        Lời mời đến
+      <button class="tab-pill"
+        [class.active]="active_tab === 'incoming'"
+        (click)="setTab('incoming')">
+        <i class="fas fa-inbox"></i> Lời mời đến
         @if (incoming_requests.length > 0) {
-          <span class="badge-red">{{ incoming_requests.length }}</span>
+        <span class="badge-red">{{ incoming_requests.length }}</span>
         }
       </button>
-      <button class="tab-pill" [class.active]="active_tab === 'outgoing'" (click)="setTab('outgoing')">
-        Đã gửi <span class="count">{{ outgoing_requests.length }}</span>
+      <button class="tab-pill"
+        [class.active]="active_tab === 'outgoing'"
+        (click)="setTab('outgoing')">
+        <i class="fas fa-paper-plane"></i> Đã gửi <span
+          class="count">{{ outgoing_requests.length }}</span>
+      </button>
+      <button class="tab-pill"
+        [class.active]="active_tab === 'suggestions'"
+        (click)="setTab('suggestions')">
+        <i class="fas fa-lightbulb"></i> Gợi ý
+        @if (suggestions.length > 0) {
+        <span class="badge-green">{{ suggestions.length }}</span>
+        }
+      </button>
+      <button class="tab-pill"
+        [class.active]="active_tab === 'search'"
+        (click)="setTab('search')">
+        <i class="fas fa-search"></i> Tìm kiếm
+      </button>
+      <button class="tab-pill"
+        [class.active]="active_tab === 'blocked'"
+        (click)="setTab('blocked')">
+        <i class="fas fa-ban"></i> Đã chặn
       </button>
     </div>
 
     <div class="content-area animate-scale-up">
 
       @if (loading_friends || loading_incoming || loading_outgoing) {
-        <div class="loading-state">
-          <div class="spinner-3d"></div>
-          <p>Đang tải dữ liệu...</p>
-        </div>
+      <div class="loading-state">
+        <div class="spinner-3d"></div>
+        <p>Đang tải dữ liệu...</p>
+      </div>
       } @else {
 
-        @if (active_tab === 'friends') {
-          @if (friends.length === 0) {
-            <div class="empty-state">
-              <img src="assets/images/empty-friends.png" onerror="this.style.display='none'">
-              <p>Danh sách bạn bè đang trống. Hãy kết thêm bạn mới nhé!</p>
+      @if (active_tab === 'friends') {
+      @if (friends.length === 0) {
+      <div class="empty-state">
+        <img src="assets/images/empty-friends.png"
+          onerror="this.style.display='none'">
+        <p>Danh sách bạn bè đang trống. Hãy kết thêm bạn mới nhé!</p>
+      </div>
+      } @else {
+      <div class="grid-layout">
+        @for (f of friends; track f.user_id) {
+        <div class="user-card friend-card">
+          <div class="status-dot"
+            [class.online]="f.trang_thai === 'ONLINE'"></div>
+
+          <div class="card-avatar">
+            <img [src]="getAvatar(f.avatar_url, f.ho_ten)">
+          </div>
+
+          <div class="card-info">
+            <h3>{{ f.ho_ten }}</h3>
+            <div class="sub-info">
+              <span class="uid">ID: {{ f.user_id }}</span>
+              <span class="status-text"
+                [class.on]="f.trang_thai === 'ONLINE'">
+                {{ f.trang_thai === 'ONLINE' ? 'Online' : 'Offline' }}
+              </span>
             </div>
-          } @else {
-            <div class="grid-layout">
-              @for (f of friends; track f.user_id) {
-                <div class="user-card friend-card">
-                  <div class="status-dot" [class.online]="f.trang_thai === 'ONLINE'"></div>
+          </div>
 
-                  <div class="card-avatar">
-                    <img [src]="getAvatar(f.avatar_url, f.ho_ten)">
-                  </div>
-
-                  <div class="card-info">
-                    <h3>{{ f.ho_ten }}</h3>
-                    <div class="sub-info">
-                      <span class="uid">ID: {{ f.user_id }}</span>
-                      <span class="status-text" [class.on]="f.trang_thai === 'ONLINE'">
-                        {{ f.trang_thai === 'ONLINE' ? 'Online' : 'Offline' }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="card-actions">
-                    <button class="btn-icon chat" title="Nhắn tin" (click)="navigateChatWithFriend(f)">
-                      <i class="fas fa-comment-dots"></i>
-                    </button>
-                    <button class="btn-icon remove" (click)="unfriend(f)" title="Hủy kết bạn">
-                      <i class="fas fa-user-minus"></i>
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
+          <div class="card-actions">
+            <button class="btn-icon chat" title="Nhắn tin"
+              (click)="navigateChatWithFriend(f)">
+              <i class="fas fa-comment-dots"></i>
+            </button>
+            <button class="btn-icon remove" (click)="unfriend(f)"
+              title="Hủy kết bạn">
+              <i class="fas fa-user-minus"></i>
+            </button>
+          </div>
+        </div>
         }
+      </div>
+      }
+      }
 
-        @if (active_tab === 'incoming') {
-          @if (incoming_requests.length === 0) {
-            <div class="empty-state">
-              <p>Không có lời mời kết bạn nào.</p>
-            </div>
-          } @else {
-            <div class="grid-layout">
-              @for (req of incoming_requests; track req.request_id) {
-                <div class="user-card request-card">
-                  <div class="card-avatar">
-                    <img [src]="getAvatar(null, req.nguoi_gui_ten)"></div>
-                  <div class="card-info">
-                    <h3>{{ req.nguoi_gui_ten }}</h3>
-                    <span class="time-ago">Gửi lúc: {{ req.tao_luc | date:'dd/MM HH:mm' }}</span>
-                  </div>
-                  <div class="action-row">
-                    <button class="btn-pill accept" (click)="acceptRequest(req)">Chấp nhận</button>
-                    <button class="btn-pill decline" (click)="declineRequest(req)">Xóa</button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
+      @if (active_tab === 'incoming') {
+      @if (incoming_requests.length === 0) {
+      <div class="empty-state">
+        <p>Không có lời mời kết bạn nào.</p>
+      </div>
+      } @else {
+      <div class="grid-layout">
+        @for (req of incoming_requests; track req.request_id) {
+        <div class="user-card request-card">
+          <div class="card-avatar">
+            <img [src]="getAvatar(null, req.nguoi_gui_ten)">
+          </div>
+          <div class="card-info">
+            <h3>{{ req.nguoi_gui_ten }}</h3>
+            <span class="time-ago">Gửi lúc: {{ req.tao_luc |
+              date:'dd/MM HH:mm' }}</span>
+          </div>
+          <div class="action-row">
+            <button class="btn-pill accept"
+              (click)="acceptRequest(req)">Chấp nhận</button>
+            <button class="btn-pill decline"
+              (click)="declineRequest(req)">Xóa</button>
+          </div>
+        </div>
         }
+      </div>
+      }
+      }
 
-        @if (active_tab === 'outgoing') {
-          @if (outgoing_requests.length === 0) {
-            <div class="empty-state">
-              <p>Bạn chưa gửi lời mời nào.</p>
-            </div>
-          } @else {
-            <div class="grid-layout">
-              @for (req of outgoing_requests; track req.request_id) {
-                <div class="user-card sent-card">
-                  <div class="card-avatar grayscale">
-                    <img [src]="getAvatar(null, req.nguoi_nhan_ten)">
-                  </div>
-                  <div class="card-info">
-                    <h3>{{ req.nguoi_nhan_ten }}</h3>
-                    <span class="time-ago">Đã gửi: {{ req.tao_luc | date:'dd/MM HH:mm' }}</span>
-                    <span class="status-badge pending">Đang chờ...</span>
-                  </div>
-                  <div class="card-actions">
-                    <button class="btn-text cancel" (click)="cancelRequest(req)">
-                      <i class="fas fa-times"></i> Hủy lời mời
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
+      @if (active_tab === 'outgoing') {
+      @if (outgoing_requests.length === 0) {
+      <div class="empty-state">
+        <p>Bạn chưa gửi lời mời nào.</p>
+      </div>
+      } @else {
+      <div class="grid-layout">
+        @for (req of outgoing_requests; track req.request_id) {
+        <div class="user-card sent-card">
+          <div class="card-avatar grayscale">
+            <img [src]="getAvatar(null, req.nguoi_nhan_ten)">
+          </div>
+          <div class="card-info">
+            <h3>{{ req.nguoi_nhan_ten }}</h3>
+            <span class="time-ago">Đã gửi: {{ req.tao_luc |
+              date:'dd/MM HH:mm' }}</span>
+            <span class="status-badge pending">Đang chờ...</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn-text cancel"
+              (click)="cancelRequest(req)">
+              <i class="fas fa-times"></i> Hủy lời mời
+            </button>
+          </div>
+        </div>
         }
+      </div>
+      }
+      }
+
+      <!-- ============== TAB GỢI Ý ============== -->
+      @if (active_tab === 'suggestions') {
+      @if (loading_suggestions) {
+      <div class="loading-state">
+        <div class="spinner-3d"></div>
+        <p>Đang tìm gợi ý...</p>
+      </div>
+      } @else if (suggestions.length === 0) {
+      <div class="empty-state">
+        <p>Không có gợi ý kết bạn nào. Hãy tham gia thêm trận đấu!</p>
+      </div>
+      } @else {
+      <div class="grid-layout">
+        @for (user of suggestions; track user.user_id) {
+        <div class="user-card suggestion-card">
+          <div class="suggestion-reason">
+            <i class="fas" [ngClass]="getReasonIcon(user.reason)"></i>
+            {{ getReasonLabel(user.reason) }}
+            @if (user.mutual_friends_count > 0) {
+            <span class="mutual-count">({{ user.mutual_friends_count
+              }})</span>
+            }
+          </div>
+          <div class="card-avatar">
+            <img [src]="getAvatar(user.avatar_url, user.ho_ten)">
+          </div>
+          <div class="card-info">
+            <h3>{{ user.ho_ten }}</h3>
+            <div class="sub-info">
+              <span class="level">Lv.{{ user.level }}</span>
+              <span class="points">{{ user.tong_diem | number }}
+                điểm</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-pill accept"
+              [disabled]="isSendingRequest(user.user_id)"
+              (click)="sendRequestFromSuggestion(user)">
+              @if (isSendingRequest(user.user_id)) {
+              <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+              <i class="fas fa-user-plus"></i> Kết bạn
+              }
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+      }
+      }
+
+      <!-- ============== TAB TÌM KIẾM ============== -->
+      @if (active_tab === 'search') {
+      <div class="search-section">
+        <div class="search-input-large">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="search_keyword"
+            placeholder="Nhập tên người chơi..."
+            (keyup.enter)="searchUsers()">
+          <button class="btn-search" [disabled]="loading_search"
+            (click)="searchUsers()">
+            @if (loading_search) {
+            <i class="fas fa-spinner fa-spin"></i>
+            } @else {
+            Tìm
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (loading_search) {
+      <div class="loading-state">
+        <div class="spinner-3d"></div>
+        <p>Đang tìm kiếm...</p>
+      </div>
+      } @else if (search_results.length === 0 && search_keyword) {
+      <div class="empty-state">
+        <p>Không tìm thấy người chơi nào với từ khóa "{{
+          search_keyword }}"</p>
+      </div>
+      } @else if (search_results.length > 0) {
+      <div class="grid-layout">
+        @for (user of search_results; track user.user_id) {
+        <div class="user-card search-card">
+          <div class="status-dot"
+            [class.online]="user.trang_thai === 'ONLINE'"></div>
+          <div class="card-avatar">
+            <img [src]="getAvatar(user.avatar_url, user.ho_ten)">
+          </div>
+          <div class="card-info">
+            <h3>{{ user.ho_ten }}</h3>
+            <div class="sub-info">
+              <span class="uid">ID: {{ user.user_id }}</span>
+              <span class="status-text"
+                [class.on]="user.trang_thai === 'ONLINE'">
+                {{ user.trang_thai === 'ONLINE' ? 'Online' : 'Offline'
+                }}
+              </span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn-pill accept"
+              [disabled]="isSendingRequest(user.user_id)"
+              (click)="sendRequestFromSearch(user)">
+              @if (isSendingRequest(user.user_id)) {
+              <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+              <i class="fas fa-user-plus"></i> Kết bạn
+              }
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+      <div class="empty-state">
+        <p>Nhập tên người chơi và nhấn "Tìm" để tìm kiếm</p>
+      </div>
+      }
+      }
+
+      <!-- ============== TAB ĐÃ CHẶN ============== -->
+      @if (active_tab === 'blocked') {
+      @if (loading_blocked) {
+      <div class="loading-state">
+        <div class="spinner-3d"></div>
+        <p>Đang tải...</p>
+      </div>
+      } @else if (blocked_users.length === 0) {
+      <div class="empty-state">
+        <p>Bạn chưa chặn ai.</p>
+      </div>
+      } @else {
+      <div class="grid-layout">
+        @for (blocked of blocked_users; track blocked.block_id) {
+        <div class="user-card blocked-card">
+          <div class="card-avatar grayscale">
+            <img
+              [src]="getAvatar(blocked.avatar_url, blocked.ho_ten)">
+          </div>
+          <div class="card-info">
+            <h3>{{ blocked.ho_ten }}</h3>
+            <span class="time-ago">Chặn lúc: {{ blocked.chan_luc |
+              date:'dd/MM/yyyy HH:mm' }}</span>
+            @if (blocked.ly_do) {
+            <span class="block-reason">Lý do: {{ blocked.ly_do
+              }}</span>
+            }
+          </div>
+          <div class="card-actions">
+            <button class="btn-pill unblock"
+              (click)="unblockUser(blocked)">
+              <i class="fas fa-unlock"></i> Bỏ chặn
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+      }
+      }
 
       }
     </div>

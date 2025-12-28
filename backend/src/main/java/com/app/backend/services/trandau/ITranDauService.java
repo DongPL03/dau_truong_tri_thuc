@@ -98,4 +98,9 @@ public interface ITranDauService {
      */
     byte[] exportHistoryCsv(String keyword, String loaiTranDau, Long boCauHoiId, String fromDate, String toDate);
 
+    /**
+     * Lấy danh sách người chơi trong phòng (trước khi trận đấu bắt đầu)
+     */
+    List<NguoiChoiTrongPhongResponse> getPlayersInRoom(Long tranDauId) throws Exception;
+
 }

@@ -1,0 +1,218 @@
+<div class="community-feed">
+  <!-- Header -->
+  <div class="feed-header">
+    <div class="header-content">
+      <h1>Cộng đồng</h1>
+      <p>Thảo luận, chia sẻ và học hỏi cùng nhau</p>
+    </div>
+    <a routerLink="/community/create" class="btn-create-post">
+      <i class="fas fa-plus"></i>
+      Tạo bài viết
+    </a>
+  </div>
+
+  <!-- Search & Tabs -->
+  <div class="feed-controls">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Tìm kiếm bài viết..."
+             [ngModel]="searchKeyword"
+             (ngModelChange)="onSearch($event)"/>
+      @if (searchKeyword) {
+        <button class="btn-clear" (click)="onSearch('')">
+          <i class="fas fa-times"></i>
+        </button>
+      }
+    </div>
+
+    <div class="tabs">
+      <button class="tab"
+              [class.active]="activeTab === 'feed' && !selectedTagId && !searchKeyword"
+              (click)="onTabChange('feed')">
+        <i class="fas fa-home"></i>
+        Mới nhất
+      </button>
+      <button class="tab"
+              [class.active]="activeTab === 'hot' && !selectedTagId && !searchKeyword"
+              (click)="onTabChange('hot')">
+        <i class="fas fa-fire"></i>
+        Nổi bật
+      </button>
+      <button class="tab" [class.active]="activeTab === 'saved'"
+              (click)="onTabChange('saved')">
+        <i class="fas fa-bookmark"></i>
+        Đã lưu
+      </button>
+      <button class="tab"
+              [class.active]="activeTab === 'my-posts'"
+              (click)="onTabChange('my-posts')">
+        <i class="fas fa-user"></i>
+        Bài của tôi
+      </button>
+    </div>
+  </div>
+
+  <div class="feed-layout">
+    <!-- Main Content -->
+    <div class="feed-main">
+      <!-- Selected Tag Badge -->
+      @if (selectedTagId) {
+        @let selectedTag = getTagById(selectedTagId);
+        @if (selectedTag) {
+          <div class="selected-tag-banner"
+               [style.background]="selectedTag.mauSac + '20'">
+            <span class="tag-icon">{{ selectedTag.icon }}</span>
+            <span class="tag-name">{{ selectedTag.ten }}</span>
+            <span class="tag-count">{{ selectedTag.soBaiViet }}
+              bài viết</span>
+            <button class="btn-clear-tag"
+                    (click)="onTagSelect(null)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        }
+      }
+
+      <!-- Search Results Info -->
+      @if (searchKeyword) {
+        <div class="search-results-info">
+                <span>Kết quả tìm kiếm cho "{{
+                    searchKeyword
+                  }}"</span>
+          <span class="result-count">({{ totalItems }} kết
+                    quả)</span>
+        </div>
+      }
+
+      <!-- Loading -->
+      @if (loading) {
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Đang tải bài viết...</p>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (error && !loading) {
+        <div class="error-container">
+          <i class="fas fa-exclamation-circle"></i>
+          <p>{{ error }}</p>
+          <button (click)="loadPosts()" class="btn-retry">
+            <i class="fas fa-redo"></i>
+            Thử lại
+          </button>
+        </div>
+      }
+
+      <!-- Posts List -->
+      @if (!loading && !error) {
+        @if (posts.length === 0) {
+          <div class="empty-container">
+            <i class="fas fa-inbox"></i>
+            <p>Chưa có bài viết nào</p>
+            <a routerLink="/community/create" class="btn-create">
+              Tạo bài viết đầu tiên
+            </a>
+          </div>
+        } @else {
+          <div class="posts-list">
+            @for (post of posts; track post.id) {
+              <app-post-card [post]="post"
+                             (deleted)="onPostDeleted($event)"
+                             (updated)="onPostUpdated($event)"/>
+            }
+          </div>
+
+          <!-- Pagination -->
+          @if (totalPages > 1) {
+            <div class="pagination">
+              <button class="page-btn"
+                      [disabled]="currentPage === 0"
+                      (click)="onPageChange(currentPage - 1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              @for (page of pages; track page) {
+                <button class="page-btn"
+                        [class.active]="page === currentPage"
+                        (click)="onPageChange(page)">
+                  {{ page + 1 }}
+                </button>
+              }
+
+              <button class="page-btn"
+                      [disabled]="currentPage === totalPages - 1"
+                      (click)="onPageChange(currentPage + 1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          }
+        }
+      }
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="feed-sidebar">
+      <!-- Popular Tags -->
+      <div class="sidebar-section">
+        <h3>
+          <i class="fas fa-tags"></i>
+          Chủ đề phổ biến
+        </h3>
+        <div class="popular-tags">
+          @for (tag of popularTags; track tag.id) {
+            <button class="tag-chip"
+                    [class.active]="selectedTagId === tag.id"
+                    [style.--tag-color]="tag.mauSac"
+                    (click)="onTagSelect(tag.id)">
+              <span class="tag-icon">{{ tag.icon }}</span>
+              <span class="tag-name">{{ tag.ten }}</span>
+              <span class="tag-count">{{
+                  tag.soBaiViet
+                }}</span>
+            </button>
+          }
+        </div>
+        <a routerLink="/community/tags" class="view-all-tags">
+          Xem tất cả chủ đề
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <!-- Post Types -->
+      <div class="sidebar-section">
+        <h3>
+          <i class="fas fa-filter"></i>
+          Loại bài viết
+        </h3>
+        <div class="post-types">
+          @for (type of loaiBaiVietOptions; track
+            type.value) {
+            <div class="post-type-item">
+              <span class="type-icon">{{ type.icon }}</span>
+              <span class="type-label">{{
+                  type.label
+                }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="sidebar-section tips">
+        <h3>
+          <i class="fas fa-lightbulb"></i>
+          Mẹo hay
+        </h3>
+        <ul>
+          <li>Sử dụng thẻ phù hợp để bài viết dễ tìm thấy
+          </li>
+          <li>Đặt câu hỏi rõ ràng để nhận được câu trả lời
+            tốt
+          </li>
+          <li>Tham gia thảo luận để tăng điểm uy tín</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>

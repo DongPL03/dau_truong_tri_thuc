@@ -124,6 +124,17 @@ export const adminRoutes: Routes = [
           ),
         title: 'Chi tiết khóa học',
       },
+
+      // ✅ Quản lý cộng đồng
+      {
+        path: 'community',
+        loadComponent: () =>
+          import('./community/admin-community/admin-community').then(
+            (m) => m.AdminCommunityComponent
+          ),
+        title: 'Quản lý cộng đồng',
+      },
+
       // {
       //   path: 'thong-ke',
       //   component: AdminThongKe

@@ -45,7 +45,7 @@ export class AdminGuard {
       // 🛑 Đã đăng nhập nhưng KHÔNG PHẢI ADMIN
       // Đừng đẩy về Login (vì sẽ bị GuestGuard đá về Home)
       // Hãy đẩy về Home hoặc trang báo lỗi 403
-      alert('Bạn không có quyền truy cập trang quản trị!');
+      console.log('Bạn không có quyền truy cập trang quản trị!');
       this.router.navigate(['/home']);
       return false;
     }

@@ -3,100 +3,125 @@
 // WebSocket Battle service — kết nối STOMP/SockJS tới backend
 // ============================================================
 
-import {Injectable, NgZone} from '@angular/core';
-import {Client, IMessage, StompSubscription} from '@stomp/stompjs';
+import { Injectable, NgZone } from '@angular/core';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 // ---- Kiểu dữ liệu sự kiện trận đấu ----
 export type BattleEvent =
   | {
-  type: 'PLAYER_JOINED' | 'PLAYER_LEFT';
-  tran_dau_id: number;
-  user_id: number; // Sửa từ userId
-  ho_ten: string; // Sửa từ hoTen
-  so_nguoi_hien_tai: number; // Sửa từ soNguoiHienTai
-}
+      type: 'PLAYER_JOINED' | 'PLAYER_LEFT';
+      tran_dau_id: number;
+      user_id: number; // Sửa từ userId
+      ho_ten: string; // Sửa từ hoTen
+      so_nguoi_hien_tai: number; // Sửa từ soNguoiHienTai
+    }
   | {
-  type: 'BATTLE_STARTED';
-  tran_dau_id: number; // Sửa từ tranDauId
-  ten_phong: string; // Sửa từ tenPhong
-  bat_dau_luc: string; // Sửa từ batDauLuc
-  tong_cau_hoi: number; // Sửa từ tongCauHoi
-  thoi_gian_moi_cau_giay: number; // Sửa từ thoiGianMoiCauGiay
-  dem_nguoc_truoc_cau: number;
-}
+      type: 'BATTLE_STARTED';
+      tran_dau_id: number; // Sửa từ tranDauId
+      ten_phong: string; // Sửa từ tenPhong
+      bat_dau_luc: string; // Sửa từ batDauLuc
+      tong_cau_hoi: number; // Sửa từ tongCauHoi
+      thoi_gian_moi_cau_giay: number; // Sửa từ thoiGianMoiCauGiay
+      dem_nguoc_truoc_cau: number;
+    }
   | {
-  type: 'NEW_QUESTION';
-  tran_dau_id: number;
-  question_index: number;
-  thoi_gian_cau_giay: number;
-  timestamp: string;
-  question: QuestionPayload;
-}
+      type: 'NEW_QUESTION';
+      tran_dau_id: number;
+      question_index: number;
+      thoi_gian_cau_giay: number;
+      timestamp: string;
+      question: QuestionPayload;
+    }
   | {
-  type: 'ANSWER_REVEAL';
-  tran_dau_id: number;
-  dap_an_dung: string; // "A" | "B" | "C" | "D"
-  giai_thich?: string; // Có thể null hoặc string
-  timestamp?: string;
-}
+      type: 'ANSWER_REVEAL';
+      tran_dau_id: number;
+      dap_an_dung: string; // "A" | "B" | "C" | "D"
+      giai_thich?: string; // Có thể null hoặc string
+      timestamp?: string;
+    }
   | {
-  type: 'SCORE_UPDATE';
-  tran_dau_id: number;
-  user_id: number;
-  ho_ten: string;
-  correct: boolean;
-  gained_points: number;
-  total_points: number;
-  question_index: number;
-  timestamp: string;
-  combo_streak?: number;
-  combo_bonus?: number;
-  combo_multiplier?: number;
-}
+      type: 'SCORE_UPDATE';
+      tran_dau_id: number;
+      user_id: number;
+      ho_ten: string;
+      correct: boolean;
+      gained_points: number;
+      total_points: number;
+      question_index: number;
+      timestamp: string;
+      combo_streak?: number;
+      combo_bonus?: number;
+      combo_multiplier?: number;
+    }
   | {
-  type: "LEADERBOARD_UPDATE";
-  tran_dau_id: number;
-  players: Array<{
-    user_id: number;
-    ho_ten: string;
-    diem: number;
-    so_cau_dung: number;
-    xep_hang: number;
-  }>;
-}
+      type: 'LEADERBOARD_UPDATE';
+      tran_dau_id: number;
+      players: Array<{
+        user_id: number;
+        ho_ten: string;
+        diem: number;
+        so_cau_dung: number;
+        xep_hang: number;
+      }>;
+    }
   | {
-  type: 'FINISHED';
-  tran_dau_id: number; // Sửa từ tranDauId
-  ten_phong: string; // Sửa từ tenPhong
-  ma_phong: string; // Sửa từ maPhong
-  bat_dau_luc: string; // Sửa từ batDauLuc
-  ket_thuc_luc: string; // Sửa từ ketThucLuc
-  timestamp: string;
-  winner?: {
-    user_id: number;
-    ho_ten: string;
-    diem: number;
-    so_cau_dung: number;
-  } | null;
-  leaderboard: Array<{
-    user_id: number;
-    ho_ten: string;
-    diem: number;
-    so_cau_dung: number;
-    xep_hang: number;
-    max_combo?: number;
-  }>;
-}
+      type: 'FINISHED';
+      tran_dau_id: number; // Sửa từ tranDauId
+      ten_phong: string; // Sửa từ tenPhong
+      ma_phong: string; // Sửa từ maPhong
+      bat_dau_luc: string; // Sửa từ batDauLuc
+      ket_thuc_luc: string; // Sửa từ ketThucLuc
+      timestamp: string;
+      winner?: {
+        user_id: number;
+        ho_ten: string;
+        diem: number;
+        so_cau_dung: number;
+      } | null;
+      leaderboard: Array<{
+        user_id: number;
+        ho_ten: string;
+        diem: number;
+        so_cau_dung: number;
+        xep_hang: number;
+        max_combo?: number;
+      }>;
+    }
   | {
-  type: 'CHAT_MESSAGE';
-  tran_dau_id: number;
-  user_id: number;
-  ho_ten: string;
-  noi_dung: string;
-  is_system: boolean;
-  timestamp: string;
-};
+      type: 'CHAT_MESSAGE';
+      tran_dau_id: number;
+      user_id: number;
+      ho_ten: string;
+      noi_dung: string;
+      is_system: boolean;
+      timestamp: string;
+    }
+  | {
+      type: 'ITEM_USED';
+      tran_dau_id: number;
+      user_id: number;
+      ho_ten: string;
+      loai_vat_pham: string;
+      ten_vat_pham: string;
+      hieu_ung?: any;
+      timestamp: string;
+    }
+  | {
+      type: 'EFFECT_50_50';
+      tran_dau_id: number;
+      user_id: number;
+      dap_an_bi_loai: string[];
+      timestamp: string;
+    }
+  | {
+      type: 'MULTIPLIER_ACTIVE';
+      tran_dau_id: number;
+      user_id: number;
+      ho_ten: string;
+      multiplier: number;
+      timestamp: string;
+    };
 
 export interface QuestionPayload {
   id: number;
@@ -109,15 +134,14 @@ export interface QuestionPayload {
   lua_chon_d: string;
 }
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class WsTrandauService {
   private client?: Client;
   private connected = false;
   private reconnectTimeout?: any;
   private subs: Record<string, StompSubscription> = {};
 
-  constructor(private zone: NgZone) {
-  }
+  constructor(private zone: NgZone) {}
 
   /**
    * ✅ Kết nối tới backend WebSocket (STOMP)
@@ -167,14 +191,16 @@ export class WsTrandauService {
     if (this.reconnectTimeout) return;
     console.log('♻️ Tự động reconnect WS sau 5s...');
     this.reconnectTimeout = setTimeout(() => {
-      this.connect(getToken, userId, tranDauId).then(r => {
-        console.log('✅ Reconnected WS thành công!');
-        this.reconnectTimeout = undefined;
-      }).catch(err => {
-        console.error('❌ Reconnect WS thất bại:', err);
-        this.reconnectTimeout = undefined;
-        this.retry(getToken, userId, tranDauId);
-      });
+      this.connect(getToken, userId, tranDauId)
+        .then((r) => {
+          console.log('✅ Reconnected WS thành công!');
+          this.reconnectTimeout = undefined;
+        })
+        .catch((err) => {
+          console.error('❌ Reconnect WS thất bại:', err);
+          this.reconnectTimeout = undefined;
+          this.retry(getToken, userId, tranDauId);
+        });
     }, 5000);
   }
 
@@ -223,8 +249,7 @@ export class WsTrandauService {
     if (this.subs[topic]) {
       try {
         this.subs[topic].unsubscribe();
-      } catch {
-      }
+      } catch {}
       delete this.subs[topic];
     }
   }

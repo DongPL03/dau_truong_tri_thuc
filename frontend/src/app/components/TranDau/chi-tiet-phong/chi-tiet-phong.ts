@@ -1,35 +1,44 @@
-import {Component, computed, effect, OnDestroy, OnInit, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {Base} from '../../base/base';
-import {TranDauResponse} from '../../../responses/trandau/trandau-response';
-import {SyncStateResponse} from '../../../responses/trandau/syncstate-response';
-import {ResponseObject} from '../../../responses/response-object';
+import { CommonModule } from '@angular/common';
+import { Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import {ThamGiaTranDauDTO} from '../../../dtos/tran-dau/thamgiatrandau-dto';
-import {RoiTranDauDTO} from '../../../dtos/tran-dau/roitran-dto';
-import {SubmitAnswerDTO} from '../../../dtos/tran-dau/submitanswer-dto';
-import {BattleEvent} from '../../../services/ws-trandau.service';
-import {environment} from '../../../environments/environment';
-import {FinishedPlayer} from '../../../responses/trandau/finished-player';
+import { RoiTranDauDTO } from '../../../dtos/tran-dau/roitran-dto';
+import { SubmitAnswerDTO } from '../../../dtos/tran-dau/submitanswer-dto';
+import { ThamGiaTranDauDTO } from '../../../dtos/tran-dau/thamgiatrandau-dto';
+import { environment } from '../../../environments/environment';
+import { ResponseObject } from '../../../responses/response-object';
+import { FinishedPlayer } from '../../../responses/trandau/finished-player';
+import { LichSuTranDauResponse } from '../../../responses/trandau/lichsutrandau';
+import { NguoiChoiTrongPhongResponse } from '../../../responses/trandau/nguoi-choi-trong-phong-response';
+import { SyncStateResponse } from '../../../responses/trandau/syncstate-response';
+import { TranDauResponse } from '../../../responses/trandau/trandau-response';
+import { BattleEvent } from '../../../services/ws-trandau.service';
+import { Base } from '../../base/base';
 
-import {ChatMessage} from '../../../responses/nguoidung/chatmessage';
-import {finalize} from 'rxjs/operators';
-import {PickerComponent} from '@ctrl/ngx-emoji-mart';
-import {UserResponse} from '../../../responses/nguoidung/user-response';
-import {FriendSummaryResponse} from '../../../responses/banbe/friend_summary_response';
-import {UserSummaryResponse} from '../../../responses/nguoidung/user-summary-response';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { finalize } from 'rxjs/operators';
+import {
+  LoaiVatPham,
+  SuDungVatPhamResponse,
+  VatPhamInventory,
+  VatPhamUtils,
+} from '../../../models/vat-pham.model';
+import { FriendSummaryResponse } from '../../../responses/banbe/friend_summary_response';
+import { ChatMessage } from '../../../responses/nguoidung/chatmessage';
+import { UserResponse } from '../../../responses/nguoidung/user-response';
+import { UserSummaryResponse } from '../../../responses/nguoidung/user-summary-response';
+import { VatPhamService } from '../../../services/vat-pham.service';
+
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-chi-tiet-phong',
-  imports: [CommonModule, FormsModule, PickerComponent],
+  imports: [CommonModule, FormsModule, PickerComponent, RouterLink],
   templateUrl: './chi-tiet-phong.html',
   styleUrl: './chi-tiet-phong.scss',
-  standalone: true
+  standalone: true,
 })
-
 export class ChiTietPhong extends Base implements OnInit, OnDestroy {
-
   user?: UserResponse | null = null;
   avatarUrl: string = 'assets/images/default-profile-image.jpeg';
   readonly imageBaseUrl = 'http://localhost:8088/api/v1/users/profile-images/';
@@ -43,7 +52,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     leaderboard: any[];
     myId: number;
   };
-// Thêm signal để điều khiển việc hiện/ẩn bảng emoji
+  // Thêm signal để điều khiển việc hiện/ẩn bảng emoji
   showEmojiPicker = signal<boolean>(false);
 
   preCountdown = signal<number>(0);
@@ -51,7 +60,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   loading = signal<boolean>(true);
   saving = signal<boolean>(false);
-
 
   battle = signal<TranDauResponse | null>(null);
   syncState = signal<SyncStateResponse | null>(null);
@@ -63,7 +71,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   protected readonly environment = environment;
   protected readonly console = console;
 
-
   pageTitle = computed(() => this.battle()?.ten_phong ?? 'Phòng');
   status = computed(() => this.battle()?.trang_thai ?? 'PENDING');
   isPending = computed(() => this.status() === 'PENDING');
@@ -74,7 +81,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   pinCode = signal<string>('');
   selectedAnswer = signal<'A' | 'B' | 'C' | 'D' | ''>('');
 
-// simple ticking countdown (client-side) derived from sync
+  // simple ticking countdown (client-side) derived from sync
   remainingSeconds = signal<number>(0);
   private timer?: ReturnType<typeof setInterval>;
 
@@ -82,15 +89,15 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   mySummaryRow?: FinishedPlayer;
   isWinnerMe = false;
 
-// ====== CHỐNG NỘP NHIỀU LẦN ======
+  // ====== CHỐNG NỘP NHIỀU LẦN ======
   submittedCurrentAnswer = signal<boolean>(false);
 
   onlineCount = signal<number>(0);
 
   localJoinedState = signal<boolean>(false);
 
-  revealedCorrectAnswer = signal<string>('');  // "A" | "B" | "C" | "D" | ''
-  revealedExplanation = signal<string>('');    // text giải thích
+  revealedCorrectAnswer = signal<string>(''); // "A" | "B" | "C" | "D" | ''
+  revealedExplanation = signal<string>(''); // text giải thích
 
   // đã nằm trong class ChiTietPhong
   joinedBattle = signal<boolean>(false);
@@ -100,7 +107,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   invite_friends: FriendSummaryResponse[] = [];
   private inviting_ids = new Set<number>();
 
-// nếu bạn có sẵn base url avatar thì có thể dùng lại
+  // nếu bạn có sẵn base url avatar thì có thể dùng lại
   readonly default_avatar = 'assets/images/default-profile-image.jpeg';
   readonly image_base_url = 'http://localhost:8088/api/v1/users/profile-images/';
 
@@ -112,6 +119,27 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   showComboVFX = false;
   comboBonusPoints = 0; // Biến lưu điểm cộng thêm để hiển thị
   userSummary = signal<UserSummaryResponse | null>(null);
+
+  // ================== POWER-UPS / ITEMS ==================
+  private vatPhamService = inject(VatPhamService);
+  inventory = signal<VatPhamInventory[]>([]);
+  showItemPanel = signal<boolean>(false);
+  activeMultiplier = signal<number>(1);
+  eliminatedOptions = signal<string[]>([]);
+  hasShield = signal<boolean>(false);
+  itemUsing = signal<boolean>(false);
+  protected readonly LoaiVatPham = LoaiVatPham;
+  protected readonly VatPhamUtils = VatPhamUtils;
+
+  // Danh sách người chơi trong phòng (trước khi trận đấu bắt đầu)
+  playersInRoom = signal<NguoiChoiTrongPhongResponse[]>([]);
+
+  // ================== USER MODAL (xem profile trong modal) ==================
+  show_user_modal = false;
+  user_modal_loading = false;
+  user_modal_summary?: UserSummaryResponse | null;
+  user_history_items: LichSuTranDauResponse[] = [];
+  user_history_loading = false;
 
   constructor() {
     super();
@@ -131,7 +159,10 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       // tránh gọi tick nếu chưa có thời gian bắt đầu
       const startIso = s.current_question_start ? Date.parse(s.current_question_start) : NaN;
       if (isNaN(startIso)) {
-        console.warn('⏸️ Bỏ qua effect tick() vì current_question_start chưa hợp lệ:', s.current_question_start);
+        console.warn(
+          '⏸️ Bỏ qua effect tick() vì current_question_start chưa hợp lệ:',
+          s.current_question_start
+        );
         return;
       }
       const endAt = startIso + s.seconds_per_question * 1000;
@@ -142,8 +173,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       console.log('💡 Effect tick() được kích hoạt cho câu', s.current_question_index + 1);
       this.tick(endAt);
     });
-
-
   }
 
   ngOnInit(): void {
@@ -152,27 +181,32 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
     const token = this.tokenService.getAccessToken();
     const user = this.userService.currentUser();
+    if (!user) return;
 
-    // @ts-ignore
-    this.wsTrandauService.connect(() => token, user.id, id)
+    this.wsTrandauService
+      .connect(() => token, user.id, id)
       .then(() => {
         console.log('✅ WebSocket connected!');
         this.wsTrandauService.subscribeBattle(id, (ev) => this.handleBattleEvent(ev));
       })
-      .catch(err => console.error('❌ WebSocket connect failed:', err));
+      .catch((err) => console.error('❌ WebSocket connect failed:', err));
 
     // Lấy dữ liệu lần đầu
     this.fetchDetail(id, () => this.doSync());
 
-    [500, 1500, 3000].forEach(time => {
+    [500, 1500, 3000].forEach((time) => {
       setTimeout(() => {
         console.log(`🔄 [${time}ms] Đang gọi lại API để check số người...`);
         this.refreshRoomInfo();
       }, time);
     });
     this.currentUserName();
-    setTimeout(() => this.syncState.update(s => s ? {...s} : s), 200);
+    setTimeout(() => this.syncState.update((s) => (s ? { ...s } : s)), 200);
     this.loadUserInfo();
+    this.loadInventory();
+
+    // 🔹 Load danh sách người chơi trong phòng (cho trạng thái PENDING)
+    this.loadPlayersInRoom(id);
   }
 
   private loadUserInfo(): void {
@@ -185,17 +219,34 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * 🔹 Lấy danh sách người chơi trong phòng (dùng cho trạng thái PENDING)
+   */
+  private loadPlayersInRoom(battleId: number): void {
+    this.tranDauService.getPlayersInRoom(battleId).subscribe({
+      next: (res) => {
+        console.log('👥 Danh sách người chơi trong phòng:', res.data);
+        if (res.data) {
+          this.playersInRoom.set(res.data);
+          this.onlineCount.set(res.data.length);
+        }
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi lấy danh sách người chơi:', err);
+      },
+    });
+  }
+
   ngOnDestroy() {
     this.clearTimer();
     this.wsTrandauService.disconnect();
   }
 
+  // =====================================================
+  // REST API
+  // =====================================================
 
-// =====================================================
-// REST API
-// =====================================================
-
-  fetchDetail(id: number, next ?: () => void) {
+  fetchDetail(id: number, next?: () => void) {
     this.loading.set(true);
     this.tranDauService.getBattleDetail(id).subscribe({
       next: (res: ResponseObject<TranDauResponse>) => {
@@ -231,7 +282,9 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading.set(false);
-        Swal.fire('Lỗi', 'Không thể tải thông tin phòng', 'error').then(() => this.router.navigateByUrl('/home'));
+        Swal.fire('Lỗi', 'Không thể tải thông tin phòng', 'error').then(() =>
+          this.router.navigateByUrl('/home')
+        );
       },
     });
   }
@@ -244,7 +297,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('❌ Lỗi khi tải thống kê người dùng:', err);
-      }
+      },
     });
   }
 
@@ -257,13 +310,13 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
         // ✅ ép effect chạy lại nếu có câu hỏi đầu tiên
         const s = res.data!;
-      }
+      },
     });
   }
 
-// =====================================================
-// THAM GIA PHÒNG + KẾT NỐI WS
-// =====================================================
+  // =====================================================
+  // THAM GIA PHÒNG + KẾT NỐI WS
+  // =====================================================
 
   isJoined = computed(() => {
     const myId = this.userService.getUserId();
@@ -271,7 +324,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
     // 👇 SỬA LẠI: Xóa bỏ "|| this.isHostUser()"
     // Logic đúng: Chỉ tính là đã join khi có tên trong danh sách HOẶC vừa nhập PIN xong
-    return players.some(p => p.user_id === myId) || this.localJoinedState();
+    return players.some((p) => p.user_id === myId) || this.localJoinedState();
   });
 
   // 3. Bổ sung hàm isHostUser cho chắc chắn (nếu chưa có logic chuẩn)
@@ -287,16 +340,16 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   join() {
     const b = this.battle();
     if (!b) return;
-    const dto: ThamGiaTranDauDTO = {tran_dau_id: b.id};
+    const dto: ThamGiaTranDauDTO = { tran_dau_id: b.id };
     if (!b.cong_khai) dto.ma_pin = this.pinCode();
     this.saving.set(true);
-    this.tranDauService.joinBattle(dto as any)
+    this.tranDauService
+      .joinBattle(dto as any)
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => {
           this.joinedBattle.set(true);
-          Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(() => {
-          });
+          Swal.fire('Thành công', 'Bạn đã tham gia phòng', 'success').then(() => {});
 
           this.localJoinedState.set(true);
           // ⬇️ Sau khi join xong, gọi lại detail để lấy đúng số người tham gia (lúc này DB đã là 2)
@@ -306,8 +359,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         error: (e) => {
           // Nếu lỗi là "User đã tham gia", ta coi như thành công
           if (e?.error?.message?.includes('đã tham gia')) {
-            Swal.fire('Đã tham gia', 'Bạn đã ở trong phòng này rồi', 'info').then(() => {
-            });
+            Swal.fire('Đã tham gia', 'Bạn đã ở trong phòng này rồi', 'info').then(() => {});
             this.refreshRoomInfo();
             this.doSync();
           } else {
@@ -315,10 +367,9 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
               'Không thể tham gia',
               e?.error?.message || 'Vui lòng kiểm tra lại',
               'error'
-            ).then(() => {
-            });
+            ).then(() => {});
           }
-        }
+        },
       });
   }
 
@@ -330,7 +381,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Rời đi',
-      cancelButtonText: 'Ở lại'
+      cancelButtonText: 'Ở lại',
     }).then((r) => {
       if (!r.isConfirmed) return;
 
@@ -341,8 +392,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       // TRƯỜNG HỢP 1: Chưa tham gia (đang xem) -> Chỉ cần chuyển trang về Home
       if (!this.isJoined()) {
         this.wsTrandauService.disconnect(); // Ngắt kết nối socket cho sạch
-        this.router.navigateByUrl('/home').then(r => {
-        });
+        this.router.navigateByUrl('/home').then((r) => {});
         return; // Dừng hàm tại đây, không gọi API bên dưới
       }
 
@@ -350,62 +400,58 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       const b = this.battle();
       if (!b) return;
 
-      const dto: RoiTranDauDTO = {tran_dau_id: b.id};
+      const dto: RoiTranDauDTO = { tran_dau_id: b.id };
       this.saving.set(true);
 
       this.tranDauService.leaveBattle(dto as any).subscribe({
         next: () => {
           this.saving.set(false);
-          Swal.fire('Đã rời phòng', '', 'success').then(() => {
-          });
+          Swal.fire('Đã rời phòng', '', 'success').then(() => {});
           this.wsTrandauService.disconnect();
-          this.router.navigateByUrl('/home').then(r => {
-          });
+          this.router.navigateByUrl('/home').then((r) => {});
         },
         error: (e) => {
           this.saving.set(false);
           // Dù lỗi API (do mạng lag hay gì đó) thì cũng nên cho người dùng thoát ra
           // Nếu muốn chặt chẽ thì giữ alert, nếu muốn UX mượt thì navigate luôn
-          Swal.fire('Lỗi', e?.error?.message || 'Không thể rời phòng', 'error').then(r => {
-          });
+          Swal.fire('Lỗi', e?.error?.message || 'Không thể rời phòng', 'error').then((r) => {});
 
           // Option: Nếu API lỗi "Bạn chưa ở trong phòng", ta vẫn cho họ về Home luôn
           if (e?.error?.message?.includes('chưa ở trong phòng')) {
-            this.router.navigateByUrl('/home').then(r => {
-            });
+            this.router.navigateByUrl('/home').then((r) => {});
           }
         },
       });
     });
   }
 
-// =====================================================
-// WEBSOCKET EVENT HANDLER
-// =====================================================
+  // =====================================================
+  // WEBSOCKET EVENT HANDLER
+  // =====================================================
   handleBattleEvent(evt: BattleEvent) {
     console.log('📡 WS Event:', evt);
     switch (evt.type) {
       case 'PLAYER_JOINED': {
-        this.leaderboard.update(list =>
-          list.map(p =>
-            p.user_id === evt.user_id ? {...p, da_roi: false} : p
-          )
+        this.leaderboard.update((list) =>
+          list.map((p) => (p.user_id === evt.user_id ? { ...p, da_roi: false } : p))
         );
-        Swal.fire('👋 Người chơi mới', `${evt.ho_ten} vừa tham gia phòng`, 'info').then(r => {
-        });
+        Swal.fire('👋 Người chơi mới', `${evt.ho_ten} vừa tham gia phòng`, 'info').then((r) => {});
         this.refreshRoomInfo();
+        // 🔹 Refresh danh sách người chơi trong phòng
+        const battleId = this.battle()?.id;
+        if (battleId) this.loadPlayersInRoom(battleId);
         break;
       }
       case 'PLAYER_LEFT': {
         // Đánh dấu "đã rời trận" trên leaderboard
-        this.leaderboard.update(list =>
-          list.map(p =>
-            p.user_id === evt.user_id ? {...p, da_roi: true} : p
-          )
+        this.leaderboard.update((list) =>
+          list.map((p) => (p.user_id === evt.user_id ? { ...p, da_roi: true } : p))
         );
-        Swal.fire('🚪 Người chơi rời đi', `${evt.ho_ten} đã rời phòng`, 'warning').then(r => {
-        });
+        Swal.fire('🚪 Người chơi rời đi', `${evt.ho_ten} đã rời phòng`, 'warning').then((r) => {});
         this.refreshRoomInfo();
+        // 🔹 Refresh danh sách người chơi trong phòng
+        const leftBattleId = this.battle()?.id;
+        if (leftBattleId) this.loadPlayersInRoom(leftBattleId);
         break;
       }
       case 'BATTLE_STARTED':
@@ -414,14 +460,13 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           title: 'Trận đấu bắt đầu!',
           text: `Phòng: ${evt.ten_phong} (${evt.tong_cau_hoi} câu hỏi, ${evt.thoi_gian_moi_cau_giay}s mỗi câu)`,
           timer: 1800,
-          showConfirmButton: false
-        }).then(r => {
-        });
+          showConfirmButton: false,
+        }).then((r) => {});
 
         this.battle.update((b) => ({
           ...b!,
           trang_thai: 'ONGOING',
-          bat_dau_luc: evt.bat_dau_luc
+          bat_dau_luc: evt.bat_dau_luc,
         }));
 
         const pre = (evt as any).dem_nguoc_truoc_giay ?? 0;
@@ -435,7 +480,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
             next: (res: ResponseObject<SyncStateResponse>) => {
               const s = res.data!;
               this.syncState.set(s);
-            }
+            },
           });
         };
         setTimeout(doInitSync, 200); // lần đầu sync
@@ -448,6 +493,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
         this.revealedCorrectAnswer.set('');
         this.revealedExplanation.set('');
+        // Reset hiệu ứng power-ups từ câu trước
+        this.resetItemEffects();
 
         const newState = {
           tran_dau_id: evt.tran_dau_id,
@@ -466,7 +513,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           _version: Math.random(),
         };
 
-        this.syncState.set({...newState});
+        this.syncState.set({ ...newState });
 
         // ⛔ reset trạng thái nộp của câu mới
         this.submittedCurrentAnswer.set(false);
@@ -474,7 +521,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
         this.submittedCurrentAnswer.set(false);
         this.selectedAnswer.set('');
-
 
         const startMs = Date.parse(newState.current_question_start);
         if (isNaN(startMs)) {
@@ -487,7 +533,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       }
       case 'ANSWER_REVEAL': {
         // Lưu đáp án đúng & giải thích
-        this.revealedCorrectAnswer.set(evt.dap_an_dung);      // "A" | "B" | "C" | "D"
+        this.revealedCorrectAnswer.set(evt.dap_an_dung); // "A" | "B" | "C" | "D"
         this.revealedExplanation.set(evt.giai_thich || '');
         break;
       }
@@ -506,10 +552,13 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
             Swal.fire({
               icon: 'success',
               title: `+${pointsGained} điểm`,
-              toast: true, position: 'top', showConfirmButton: false, timer: 1200,
-              background: '#dcfce7', color: '#166534'
-            }).then(r => {
-            });
+              toast: true,
+              position: 'top',
+              showConfirmButton: false,
+              timer: 1200,
+              background: '#dcfce7',
+              color: '#166534',
+            }).then((r) => {});
           }
         } else {
           Swal.fire({
@@ -521,12 +570,11 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
             showConfirmButton: false,
             timer: 1500,
             background: '#fee2e2', // Nền đỏ nhạt
-            color: '#991b1b'
-          }).then(r => {
-          });
+            color: '#991b1b',
+          }).then((r) => {});
         }
         setTimeout(() => {
-          this.syncState.update(s => s ? {...s, my_total_points: evt.total_points} : s);
+          this.syncState.update((s) => (s ? { ...s, my_total_points: evt.total_points } : s));
         }, 300);
         break;
 
@@ -539,14 +587,14 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         break;
 
       case 'FINISHED': {
-        this.battle.set({...(this.battle() as TranDauResponse), trang_thai: 'FINISHED'});
+        this.battle.set({ ...(this.battle() as TranDauResponse), trang_thai: 'FINISHED' });
         const myId = this.userService.getUserId();
         this.finalResult = {
           winner: evt.winner,
           leaderboard: evt.leaderboard as FinishedPlayer[],
           myId,
         };
-        this.mySummaryRow = this.finalResult.leaderboard.find(p => p.user_id === myId);
+        this.mySummaryRow = this.finalResult.leaderboard.find((p) => p.user_id === myId);
         console.log('🏆 Dòng kết quả của tôi:', this.mySummaryRow);
         this.isWinnerMe = !!(this.finalResult.winner && this.finalResult.winner.user_id === myId);
         this.showSummary.set(true);
@@ -570,13 +618,63 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           timestamp: evt.timestamp,
           is_me: evt.user_id === meId,
         };
-        this.chatMessages.update(list => [...list, msg]);
+        this.chatMessages.update((list) => [...list, msg]);
         setTimeout(() => {
           const box = document.querySelector('.chat-messages');
           if (box) {
             (box as HTMLElement).scrollTop = (box as HTMLElement).scrollHeight;
           }
         }, 50);
+        break;
+      }
+
+      // ================== POWER-UPS / ITEMS EVENTS ==================
+      case 'ITEM_USED': {
+        const data = (evt as any).data || evt;
+        const myId = this.userService.getUserId();
+
+        // Nếu không phải mình thì chỉ hiển thị toast
+        if (data.user_id !== myId) {
+          Swal.fire({
+            toast: true,
+            position: 'top',
+            icon: 'info',
+            title: `${data.ho_ten} đã sử dụng ${data.ten_vat_pham || '🎁 Vật phẩm'}`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+
+        // Xử lý hiệu ứng 50/50 từ người khác (nếu cần show)
+        if (data.hieu_ung?.dap_an_bi_loai && data.user_id === myId) {
+          this.eliminatedOptions.set(data.hieu_ung.dap_an_bi_loai);
+        }
+        break;
+      }
+
+      case 'EFFECT_50_50': {
+        const myId = this.userService.getUserId();
+        if ((evt as any).user_id === myId) {
+          this.eliminatedOptions.set((evt as any).dap_an_bi_loai || []);
+        }
+        break;
+      }
+
+      case 'MULTIPLIER_ACTIVE': {
+        const myId = this.userService.getUserId();
+        if ((evt as any).user_id === myId) {
+          this.activeMultiplier.set((evt as any).multiplier || 1);
+        } else {
+          // Hiển thị thông báo người khác đang có boost
+          Swal.fire({
+            toast: true,
+            position: 'top',
+            icon: 'warning',
+            title: `⚡ ${(evt as any).ho_ten} kích hoạt x${(evt as any).multiplier} điểm!`,
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        }
         break;
       }
     }
@@ -589,19 +687,20 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     this.tranDauService.startBattle(id).subscribe({
       next: (res) => {
         this.saving.set(false);
-        this.battle.set({...(this.battle() as TranDauResponse), trang_thai: 'ONGOING'});
-        Swal.fire('Bắt đầu!', 'Trận đấu đã bắt đầu', 'success').then(r => {
-        });
+        this.battle.set({ ...(this.battle() as TranDauResponse), trang_thai: 'ONGOING' });
+        Swal.fire('Bắt đầu!', 'Trận đấu đã bắt đầu', 'success').then((r) => {});
         this.doSync();
       },
       error: (e) => {
         this.saving.set(false);
-        Swal.fire('Không thể bắt đầu', e?.error?.message || 'Bạn có quyền chủ phòng?', 'error').then(r => {
-        });
-      }
+        Swal.fire(
+          'Không thể bắt đầu',
+          e?.error?.message || 'Bạn có quyền chủ phòng?',
+          'error'
+        ).then((r) => {});
+      },
     });
   }
-
 
   finishBattle() {
     const id = this.battle()?.id;
@@ -610,23 +709,23 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       title: 'Kết thúc trận?',
       text: 'Hệ thống sẽ chốt điểm & phát kết quả',
       icon: 'warning',
-      showCancelButton: true
-    }).then(r => {
+      showCancelButton: true,
+    }).then((r) => {
       if (!r.isConfirmed) return;
       this.saving.set(true);
       this.tranDauService.finishBattle(id).subscribe({
         next: () => {
           this.saving.set(false);
-          this.battle.set({...(this.battle() as TranDauResponse), trang_thai: 'FINISHED'});
-          Swal.fire('Đã kết thúc', 'Xem bảng xếp hạng ở phía dưới', 'success').then(r => {
-          });
+          this.battle.set({ ...(this.battle() as TranDauResponse), trang_thai: 'FINISHED' });
+          Swal.fire('Đã kết thúc', 'Xem bảng xếp hạng ở phía dưới', 'success').then((r) => {});
           this.doSync();
         },
         error: (e) => {
           this.saving.set(false);
-          Swal.fire('Không thể kết thúc', e?.error?.message || 'Thử lại sau', 'error').then(r => {
-          });
-        }
+          Swal.fire('Không thể kết thúc', e?.error?.message || 'Thử lại sau', 'error').then(
+            (r) => {}
+          );
+        },
       });
     });
   }
@@ -638,19 +737,21 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
     // ⛔ đã nộp câu hiện tại rồi
     if (this.submittedCurrentAnswer()) {
-      Swal.fire('Bạn đã nộp đáp án', 'Hãy chờ câu hỏi tiếp theo nhé', 'info').then(() => {
-      });
+      Swal.fire('Bạn đã nộp đáp án', 'Hãy chờ câu hỏi tiếp theo nhé', 'info').then(() => {});
       return;
     }
 
     const ans = this.selectedAnswer();
     if (!ans) {
-      Swal.fire('Chưa chọn đáp án', 'Hãy chọn A/B/C/D', 'info').then(r => {
-      });
+      Swal.fire('Chưa chọn đáp án', 'Hãy chọn A/B/C/D', 'info').then((r) => {});
       return;
     }
 
-    const dto: SubmitAnswerDTO = {tran_dau_id: b.id, cau_hoi_id: s.current_question_id, answer: ans};
+    const dto: SubmitAnswerDTO = {
+      tran_dau_id: b.id,
+      cau_hoi_id: s.current_question_id,
+      answer: ans,
+    };
     // ✅ Đánh dấu đã nộp NGAY LẬP TỨC để chặn double-click
     this.submittedCurrentAnswer.set(true);
     this.saving.set(true);
@@ -664,9 +765,10 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
         this.saving.set(false);
         // Nếu lỗi thì cho phép nộp lại
         this.submittedCurrentAnswer.set(false);
-        Swal.fire('Không thể nộp đáp án', e?.error?.message || 'Thử lại sau', 'error').then(r => {
-        });
-      }
+        Swal.fire('Không thể nộp đáp án', e?.error?.message || 'Thử lại sau', 'error').then(
+          (r) => {}
+        );
+      },
     });
   }
 
@@ -681,7 +783,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     this.saving.set(true);
 
     // 3. Gọi API
-    this.tranDauService.sendChat({tran_dau_id: battleId, noi_dung: content} as any)
+    this.tranDauService
+      .sendChat({ tran_dau_id: battleId, noi_dung: content } as any)
       .pipe(
         // Dùng finalize để luôn tắt loading dù thành công hay thất bại
         finalize(() => this.saving.set(false))
@@ -706,17 +809,15 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
             toast: true,
             position: 'top-end',
             showConfirmButton: false,
-            timer: 3000
-          }).then(r => {
-          });
-        }
+            timer: 3000,
+          }).then((r) => {});
+        },
       });
   }
 
-
-// =====================================================
-// TIMER
-// =====================================================
+  // =====================================================
+  // TIMER
+  // =====================================================
 
   tick(endAtMs: number) {
     if (!endAtMs || isNaN(endAtMs)) {
@@ -733,7 +834,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     run();
     this.timer = setInterval(run, 1000);
   }
-
 
   clearTimer() {
     if (this.timer) {
@@ -788,20 +888,20 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
           this.onlineCount.set(count);
         }
       },
-      error: (err) => console.error('Lỗi refresh room info', err)
+      error: (err) => console.error('Lỗi refresh room info', err),
     });
   }
 
-// Hàm toggle
+  // Hàm toggle
   toggleEmojiPicker() {
-    this.showEmojiPicker.update(v => !v);
+    this.showEmojiPicker.update((v) => !v);
   }
 
   // Hàm xử lý khi chọn 1 emoji
   addEmoji(event: any) {
     const emoji = event.emoji.native;
     // Nối emoji vào chuỗi input hiện tại
-    this.chatInput.update(current => current + emoji);
+    this.chatInput.update((current) => current + emoji);
     // (Tùy chọn) Đóng bảng sau khi chọn xong nếu muốn
     // this.showEmojiPicker.set(false);
   }
@@ -810,9 +910,17 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   getAvatarColor(name: string): string {
     const colors = [
-      '#ef4444', '#f97316', '#f59e0b', '#84cc16',
-      '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
-      '#8b5cf6', '#d946ef', '#f43f5e'
+      '#ef4444',
+      '#f97316',
+      '#f59e0b',
+      '#84cc16',
+      '#10b981',
+      '#06b6d4',
+      '#3b82f6',
+      '#6366f1',
+      '#8b5cf6',
+      '#d946ef',
+      '#f43f5e',
     ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -836,15 +944,12 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     return this.isPending() && !this.is_room_full();
   });
 
-
   goBackToBattleList() {
-    this.router.navigateByUrl('/tran-dau/pending').then(r => {
-    }); // hoặc '/battle/danh-sach-bo-cau-hoi'
+    this.router.navigateByUrl('/tran-dau/pending').then((r) => {}); // hoặc '/battle/danh-sach-bo-cau-hoi'
   }
 
   goBackHome() {
-    this.router.navigateByUrl('/home').then(r => {
-    });
+    this.router.navigateByUrl('/home').then((r) => {});
   }
 
   get summary_leaderboard(): FinishedPlayer[] {
@@ -860,7 +965,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     const w = this.finalResult?.winner as FinishedPlayer | undefined;
     return w ?? null;
   }
-
 
   is_my_row(p: FinishedPlayer): boolean {
     return this.finalResult?.myId === p.user_id;
@@ -879,14 +983,14 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
     const boId = b.bo_cau_hoi_id;
 
-    this.router.navigate(['/luyen-tap'], {
-      queryParams: {
-        bo_cau_hoi_id: boId
-      }
-    }).then(r => {
-    });
+    this.router
+      .navigate(['/luyen-tap'], {
+        queryParams: {
+          bo_cau_hoi_id: boId,
+        },
+      })
+      .then((r) => {});
   }
-
 
   startPreCountdown(seconds: number) {
     if (this.preCountdownTimer) {
@@ -906,7 +1010,6 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     }, 1000);
   }
 
-
   currentUserName() {
     const u = this.userService.currentUser();
     return u ? u.ho_ten : 'Người chơi';
@@ -914,7 +1017,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
   // Trong class ChiTietPhong
 
-// 1. Thêm computed này vào
+  // 1. Thêm computed này vào
   hasLongAnswer = computed(() => {
     const s = this.syncState();
     if (!s) return false;
@@ -922,10 +1025,12 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     const threshold = 25; // ⚡ Ngưỡng ký tự. Nếu dài hơn số này -> chuyển thành 1 cột
 
     // Kiểm tra độ dài của cả 4 đáp án
-    return (s.a || '').length > threshold ||
+    return (
+      (s.a || '').length > threshold ||
       (s.b || '').length > threshold ||
       (s.c || '').length > threshold ||
-      (s.d || '').length > threshold;
+      (s.d || '').length > threshold
+    );
   });
 
   open_invite_panel(): void {
@@ -952,7 +1057,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       error: () => {
         this.invite_loading = false;
         this.invite_friends = [];
-      }
+      },
     });
   }
 
@@ -973,20 +1078,19 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     if (!battle) {
       return;
     }
-    const tran_dau_id = (battle.id) as number;
+    const tran_dau_id = battle.id as number;
 
     this.inviting_ids.add(friend.user_id);
 
-    this.tranDauService.inviteFriend(tran_dau_id, friend.user_id)
-      .subscribe({
-        next: () => {
-          this.inviting_ids.delete(friend.user_id);
-          // Có thể popup nhỏ: “Đã gửi lời mời cho XXX”
-        },
-        error: () => {
-          this.inviting_ids.delete(friend.user_id);
-        }
-      });
+    this.tranDauService.inviteFriend(tran_dau_id, friend.user_id).subscribe({
+      next: () => {
+        this.inviting_ids.delete(friend.user_id);
+        // Có thể popup nhỏ: “Đã gửi lời mời cho XXX”
+      },
+      error: () => {
+        this.inviting_ids.delete(friend.user_id);
+      },
+    });
   }
 
   private show_match_reward_popup(): void {
@@ -1038,9 +1142,11 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     <div class="victory-card-container">
 
       <div class="victory-header-cartoon">
-        <img src="${this.isWinnerMe
-      ? 'https://cdn-icons-png.flaticon.com/512/2583/2583344.png'
-      : 'https://cdn-icons-png.flaticon.com/512/1055/1055666.png'}"
+        <img src="${
+          this.isWinnerMe
+            ? 'https://cdn-icons-png.flaticon.com/512/2583/2583344.png'
+            : 'https://cdn-icons-png.flaticon.com/512/1055/1055666.png'
+        }"
           class="victory-icon-img">
       </div>
 
@@ -1092,7 +1198,7 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       backdrop: `rgba(15, 23, 42, 0.9)`,
       customClass: {
         confirmButton: 'btn-cartoon-ok',
-        popup: 'game-victory-popup'
+        popup: 'game-victory-popup',
       },
       didOpen: () => {
         // Kích hoạt Animation sau 300ms
@@ -1103,9 +1209,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
             bar.style.width = `${percentGainedWidth}%`;
           }
         }, 300);
-      }
-    }).then(() => {
-    });
+      },
+    }).then(() => {});
   }
 
   triggerComboVFX() {
@@ -1116,30 +1221,316 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     }, 1500);
   }
 
-// Thêm các getter này vào class ChiTietPhong
+  // Thêm các getter này vào class ChiTietPhong
 
-// Lấy Top 3 để đưa lên bục
+  // Lấy Top 3 để đưa lên bục
   get topThree() {
     const list = this.summary_leaderboard;
     // Đảm bảo mảng đủ 3 phần tử (để render slot trống nếu ít người)
     return [
       list[0] || null, // Top 1
       list[1] || null, // Top 2
-      list[2] || null  // Top 3
+      list[2] || null, // Top 3
     ];
   }
 
-// Lấy danh sách còn lại (từ hạng 4 trở đi)
+  // Lấy danh sách còn lại (từ hạng 4 trở đi)
   get restPlayers() {
     return this.summary_leaderboard.slice(3);
   }
 
   getAvatarUrl(user_id: number) {
-    const player = this.leaderboard().find(p => p.user_id === user_id);
+    const player = this.leaderboard().find((p) => p.user_id === user_id);
     if (player && player.avatar_url) {
       return this.image_base_url + player.avatar_url;
     }
     return this.default_avatar;
+  }
 
+  // ================== POWER-UPS / ITEMS METHODS ==================
+
+  /**
+   * Load inventory của user
+   */
+  loadInventory(): void {
+    this.vatPhamService.getInventory().subscribe({
+      next: (items) => {
+        this.inventory.set(items);
+        console.log('📦 Inventory loaded:', items.length, 'items');
+      },
+      error: (err) => console.error('❌ Error loading inventory:', err),
+    });
+  }
+
+  /**
+   * Toggle hiển thị panel vật phẩm
+   */
+  toggleItemPanel(): void {
+    this.showItemPanel.update((v) => !v);
+  }
+
+  /**
+   * Sử dụng vật phẩm
+   */
+  useItem(item: VatPhamInventory): void {
+    if (this.itemUsing() || item.so_luong <= 0) return;
+
+    const battleId = this.battle()?.id;
+    const questionIndex = this.syncState()?.current_question_index;
+
+    if (!battleId) {
+      Swal.fire('Lỗi', 'Không tìm thấy trận đấu', 'error');
+      return;
+    }
+
+    // Confirm với Swal nếu là item quý hiếm
+    if (item.do_hiem === 'LEGENDARY' || item.do_hiem === 'EPIC') {
+      Swal.fire({
+        title: `Sử dụng ${item.ten}?`,
+        html: `<p>${item.mo_ta}</p><p class="text-warning">Bạn chỉ còn ${item.so_luong} vật phẩm này!</p>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sử dụng',
+        cancelButtonText: 'Hủy',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.executeUseItem(battleId, item, questionIndex);
+        }
+      });
+    } else {
+      this.executeUseItem(battleId, item, questionIndex);
+    }
+  }
+
+  /**
+   * Thực hiện sử dụng vật phẩm
+   */
+  private executeUseItem(battleId: number, item: VatPhamInventory, questionIndex?: number): void {
+    this.itemUsing.set(true);
+
+    this.vatPhamService.useItemByType(battleId, item.loai, questionIndex).subscribe({
+      next: (response: SuDungVatPhamResponse) => {
+        this.itemUsing.set(false);
+
+        if (response.thanh_cong) {
+          // Cập nhật inventory
+          this.inventory.update((inv) =>
+            inv
+              .map((i) =>
+                i.loai === item.loai ? { ...i, so_luong: response.so_luong_con_lai } : i
+              )
+              .filter((i) => i.so_luong > 0)
+          );
+
+          // Áp dụng hiệu ứng UI
+          this.applyItemEffect(response);
+
+          // Toast thông báo
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `${item.icon} ${response.thong_bao}`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        } else {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: response.thong_bao,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      },
+      error: (err) => {
+        this.itemUsing.set(false);
+        Swal.fire('Lỗi', err.error?.message || 'Không thể sử dụng vật phẩm', 'error');
+      },
+    });
+  }
+
+  /**
+   * Áp dụng hiệu ứng vật phẩm lên UI
+   */
+  private applyItemEffect(response: SuDungVatPhamResponse): void {
+    const effect = response.hieu_ung;
+    if (!effect) return;
+
+    // X2/X3 điểm
+    if (effect.he_so_diem && effect.he_so_diem > 1) {
+      this.activeMultiplier.set(effect.he_so_diem);
+      // Reset sau câu tiếp theo (sẽ reset khi nhận NEW_QUESTION)
+    }
+
+    // 50/50 - Loại bỏ đáp án
+    if (effect.dap_an_bi_loai && effect.dap_an_bi_loai.length > 0) {
+      this.eliminatedOptions.set(effect.dap_an_bi_loai);
+    }
+
+    // Khiên bảo vệ
+    if (effect.bao_ve_combo) {
+      this.hasShield.set(true);
+    }
+
+    // Đóng băng thời gian
+    if (effect.thoi_gian_them_giay && effect.thoi_gian_them_giay > 0) {
+      // Thêm thời gian vào countdown hiện tại
+      this.remainingSeconds.update((s) => s + effect.thoi_gian_them_giay!);
+    }
+
+    // Hiển thị đáp án đúng
+    if (effect.dap_an_dung) {
+      Swal.fire({
+        title: '👁️ Đáp án đúng',
+        html: `<span style="font-size: 3rem; color: #10b981;">${effect.dap_an_dung}</span>`,
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  }
+
+  /**
+   * Reset hiệu ứng item khi sang câu mới
+   */
+  private resetItemEffects(): void {
+    this.activeMultiplier.set(1);
+    this.eliminatedOptions.set([]);
+    // Shield giữ nguyên cho đến khi dùng
+  }
+
+  /**
+   * Kiểm tra đáp án có bị loại không (50/50)
+   */
+  isOptionEliminated(option: string): boolean {
+    return this.eliminatedOptions().includes(option);
+  }
+
+  /**
+   * Lấy số lượng item theo loại
+   */
+  getItemCount(loai: LoaiVatPham): number {
+    return this.vatPhamService.getItemQuantity(this.inventory(), loai);
+  }
+
+  /**
+   * Kiểm tra có item không
+   */
+  hasItemType(loai: LoaiVatPham): boolean {
+    return this.getItemCount(loai) > 0;
+  }
+
+  // ================== PLAYER INTERACTIONS ==================
+
+  /**
+   * Xem profile người chơi (hiện modal)
+   */
+  viewProfile(userId: number): void {
+    this.show_user_modal = true;
+    this.user_modal_loading = true;
+
+    // Load user summary
+    this.userService.getUserSummary(userId).subscribe({
+      next: (res) => {
+        this.user_modal_summary = res.data;
+        if (this.user_modal_summary) {
+          // Tính toán tỉ lệ thắng
+          const { so_tran_thang, tong_tran } = this.user_modal_summary;
+          this.user_modal_summary.ti_le_thang = tong_tran > 0 ? so_tran_thang / tong_tran : 0;
+        }
+        this.user_modal_loading = false;
+        // Sau khi có summary, load history
+        this.loadUserHistory(userId);
+      },
+      error: () => (this.user_modal_loading = false),
+    });
+  }
+
+  /**
+   * Load lịch sử trận đấu của user (cho modal)
+   */
+  loadUserHistory(userId: number): void {
+    this.user_history_loading = true;
+    this.tranDauService.getUserHistory(userId, 0, 5).subscribe({
+      next: (res) => {
+        this.user_history_items = res.data?.items ?? [];
+        this.user_history_loading = false;
+      },
+      error: () => (this.user_history_loading = false),
+    });
+  }
+
+  /**
+   * Đóng modal user
+   */
+  closeUserModal(): void {
+    this.show_user_modal = false;
+    this.user_modal_summary = null;
+    this.user_history_items = [];
+  }
+
+  /**
+   * Map tier label
+   */
+  mapTierLabel(tier: string | undefined): string {
+    switch (tier?.toUpperCase()) {
+      case 'BRONZE':
+        return 'Đồng';
+      case 'SILVER':
+        return 'Bạc';
+      case 'GOLD':
+        return 'Vàng';
+      case 'PLATINUM':
+        return 'Bạch Kim';
+      case 'DIAMOND':
+        return 'Kim Cương';
+      case 'MASTER':
+        return 'Cao Thủ';
+      case 'GRANDMASTER':
+        return 'Đại Cao Thủ';
+      default:
+        return 'Tập sự';
+    }
+  }
+
+  /**
+   * Gửi lời mời kết bạn
+   */
+  sendFriendRequest(userId: number): void {
+    Swal.fire({
+      title: 'Gửi lời mời kết bạn?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Gửi',
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.friendService.sendRequest({ target_user_id: userId }).subscribe({
+          next: () => {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'Đã gửi lời mời kết bạn!',
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          },
+          error: (err) => {
+            const msg = err.error?.message || 'Không thể gửi lời mời kết bạn';
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: msg,
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          },
+        });
+      }
+    });
   }
 }

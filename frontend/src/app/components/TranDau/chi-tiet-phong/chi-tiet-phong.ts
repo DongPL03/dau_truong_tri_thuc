@@ -321,22 +321,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
   isJoined = computed(() => {
     const myId = this.userService.getUserId();
     const players = this.leaderboard();
-
-    // 👇 SỬA LẠI: Xóa bỏ "|| this.isHostUser()"
-    // Logic đúng: Chỉ tính là đã join khi có tên trong danh sách HOẶC vừa nhập PIN xong
     return players.some((p) => p.user_id === myId) || this.localJoinedState();
   });
-
-  // 3. Bổ sung hàm isHostUser cho chắc chắn (nếu chưa có logic chuẩn)
-  isHostUser(): boolean {
-    const b = this.battle();
-    const u = this.userService.currentUser(); // Đảm bảo lấy đúng user hiện tại
-    if (!b || !u) return false;
-    // So sánh ID hoặc Tên tùy vào dữ liệu backend trả về
-    // Tốt nhất là so sánh User ID nếu có, ở đây tạm dùng tên như code cũ của bạn
-    return b.chu_phong_ten === u.ho_ten;
-  }
-
   join() {
     const b = this.battle();
     if (!b) return;
@@ -756,10 +742,23 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
     this.submittedCurrentAnswer.set(true);
     this.saving.set(true);
     this.tranDauService.submitAnswer(dto as any).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.saving.set(false);
         // Đánh dấu đã nộp
         this.submittedCurrentAnswer.set(true);
+
+        // Nếu khiên bảo vệ đã được sử dụng, thông báo và reset hasShield
+        if (res.shield_used) {
+          this.hasShield.set(false);
+          Swal.fire({
+            toast: true,
+            position: 'top',
+            icon: 'info',
+            title: '🛡️ Khiên bảo vệ đã cứu combo của bạn!',
+            timer: 2500,
+            showConfirmButton: false,
+          });
+        }
       },
       error: (e) => {
         this.saving.set(false);
@@ -1105,6 +1104,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
     const xpGained = row.xp_gained ?? 0;
     const goldGained = row.gold_gained ?? 0;
+    const levelUpRewards = row.level_up_rewards ?? [];
+    const hasLevelUpRewards = levelUpRewards.length > 0;
 
     // --- TÍNH TOÁN THANH XP (Dựa trên logic trang Home của bạn) ---
     const currentXP = summary.xp_in_current_level;
@@ -1137,6 +1138,35 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       percentGainedWidth = percentNew - percentOld;
     }
 
+    // Build level up rewards HTML
+    let levelUpRewardsHtml = '';
+    if (hasLevelUpRewards) {
+      const rewardsItems = levelUpRewards
+        .map(
+          (r) => `
+        <div class="levelup-reward-item">
+          <span class="reward-icon">${r.icon || '🎁'}</span>
+          <span class="reward-name">${r.ten}</span>
+          <span class="reward-qty">x${r.so_luong}</span>
+        </div>
+      `
+        )
+        .join('');
+
+      levelUpRewardsHtml = `
+        <div class="levelup-rewards-section">
+          <div class="levelup-banner">
+            <span class="levelup-star">⭐</span>
+            <span class="levelup-text">LEVEL UP!</span>
+            <span class="levelup-level">${row.level_before} → ${row.level_after}</span>
+          </div>
+          <div class="levelup-rewards-list">
+            ${rewardsItems}
+          </div>
+        </div>
+      `;
+    }
+
     // --- RENDER HTML ---
     let htmlContent = `
     <div class="victory-card-container">
@@ -1152,8 +1182,10 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
 
       <div class="victory-title-cartoon">${this.isWinnerMe ? 'VICTORY' : 'COMPLETED'}</div>
       <div style="margin-bottom: 20px; color: #cbd5e1; font-size: 0.9rem;">
-        ${isLevelUp ? 'Chúc mừng bạn đã lên cấp mới!' : 'Bạn đã làm rất tốt!'}
+        ${isLevelUp ? '🎉 Chúc mừng bạn đã lên cấp mới!' : 'Bạn đã làm rất tốt!'}
       </div>
+
+      ${levelUpRewardsHtml}
 
       <div class="rewards-cartoon-row">
         <div class="r-item">
@@ -1357,6 +1389,8 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
    */
   private applyItemEffect(response: SuDungVatPhamResponse): void {
     const effect = response.hieu_ung;
+    console.log('🎁 applyItemEffect - response:', response);
+    console.log('🎁 applyItemEffect - hieu_ung:', effect);
     if (!effect) return;
 
     // X2/X3 điểm
@@ -1375,20 +1409,46 @@ export class ChiTietPhong extends Base implements OnInit, OnDestroy {
       this.hasShield.set(true);
     }
 
-    // Đóng băng thời gian
-    if (effect.thoi_gian_them_giay && effect.thoi_gian_them_giay > 0) {
-      // Thêm thời gian vào countdown hiện tại
-      this.remainingSeconds.update((s) => s + effect.thoi_gian_them_giay!);
+    // DONG_BANG_THOI_GIAN đã bị loại bỏ - không còn hỗ trợ
+
+    // Bỏ qua câu hỏi - tự động chuyển sang câu tiếp theo
+    if (effect.bo_qua_thanh_cong) {
+      this.submittedCurrentAnswer.set(true);
+      this.selectedAnswer.set('');
+      Swal.fire({
+        toast: true,
+        position: 'top',
+        icon: 'info',
+        title: '⏭️ Đã bỏ qua câu hỏi này!',
+        timer: 1500,
+        showConfirmButton: false,
+      });
     }
 
     // Hiển thị đáp án đúng
+    console.log('🎁 Checking dap_an_dung:', effect.dap_an_dung);
     if (effect.dap_an_dung) {
-      Swal.fire({
-        title: '👁️ Đáp án đúng',
-        html: `<span style="font-size: 3rem; color: #10b981;">${effect.dap_an_dung}</span>`,
-        timer: 3000,
-        showConfirmButton: false,
-      });
+      console.log('🎁 Showing correct answer popup:', effect.dap_an_dung);
+      // Đóng tất cả popup hiện tại trước khi hiển thị đáp án
+      Swal.close();
+      setTimeout(() => {
+        Swal.fire({
+          title: '👁️ Đáp án đúng là:',
+          html: `<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                   <span style="font-size: 5rem; font-weight: bold; color: #10b981; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">${effect.dap_an_dung}</span>
+                   <span style="font-size: 1.2rem; color: #666;">Hãy chọn đáp án này!</span>
+                 </div>`,
+          timer: 5000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          background: '#1a1a2e',
+          color: '#fff',
+          backdrop: 'rgba(0,0,0,0.7)',
+          customClass: {
+            popup: 'animate__animated animate__bounceIn',
+          },
+        });
+      }, 100);
     }
   }
 

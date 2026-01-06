@@ -29,19 +29,14 @@
 
         <div class="filter-group">
           <label class="group-label">Sắp xếp</label>
-          <div class="toggle-row">
-            <label class="toggle-btn"
-                   [class.active]="sortOrder === 'NEWEST'">
-              <input type="radio" name="sort" value="NEWEST"
-                     [(ngModel)]="sortOrder" hidden>
-              Mới nhất
-            </label>
-            <label class="toggle-btn"
-                   [class.active]="sortOrder === 'OLDEST'">
-              <input type="radio" name="sort" value="OLDEST"
-                     [(ngModel)]="sortOrder" hidden>
-              Cũ nhất
-            </label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="sortOrder" class="custom-select">
+              <option value="NEWEST">🕐 Mới nhất</option>
+              <option value="OLDEST">📅 Cũ nhất</option>
+              <option value="RATING_DESC">⭐ Đánh giá cao nhất</option>
+              <option value="RATING_ASC">⭐ Đánh giá thấp nhất</option>
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
           </div>
         </div>
 
@@ -115,6 +110,18 @@
                      [(ngModel)]="priceFilter" hidden>
               <i class="fas fa-key"></i> Mất phí
             </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Đánh giá</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="minRating" class="custom-select">
+              @for (opt of ratingOptions; track opt.value) {
+                <option [ngValue]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
           </div>
         </div>
 
@@ -241,10 +248,17 @@
             <h3 class="card-title"
                 [innerHTML]="highlightKeyword(quiz.tieu_de)"></h3>
             <div class="card-meta">
-            <span class="meta-item"><i
-              class="fas fa-user-astronaut"></i> {{
-                quiz.nguoi_tao || 'Ẩn danh'
-              }}</span>
+              <span class="meta-item"><i
+                class="fas fa-user-astronaut"></i> {{
+                  quiz.nguoi_tao || 'Ẩn danh'
+                }}</span>
+              @if (quiz.tong_danh_gia > 0) {
+                <span class="meta-item rating-display">
+                  <i class="fas fa-star text-warning"></i>
+                  {{ quiz.trung_binh_sao | number:'1.1-1' }}
+                  <span class="rating-count">({{ quiz.tong_danh_gia }})</span>
+                </span>
+              }
             </div>
             <p class="card-desc">
               {{ quiz.mo_ta || 'Chưa có mô tả cho bộ câu hỏi này.' }}

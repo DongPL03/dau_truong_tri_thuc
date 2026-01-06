@@ -1,0 +1,464 @@
+:host {
+  /* COLORS SYSTEM */
+  --primary: #6C5DD3;
+  --primary-dark: #5b4cc4;
+  --bg-body: #F8F9FD;
+  --bg-card: #FFFFFF;
+  --text-main: #11142D;
+  --text-sub: #808191;
+  --border: #E4E4E4;
+  --gold: #FFCE73;
+  --red: #FF754C;
+
+  /* Rarity Colors */
+  --r-common: #A0AEC0;
+  --r-rare: #4299E1;
+  --r-epic: #9F7AEA;
+  --r-legendary: #F6AD55;
+}
+
+.shop-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  background: var(--bg-body);
+  min-height: 100vh;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* HEADER */
+.shop-header {
+  background: var(--bg-card);
+  padding: 25px 30px;
+  border-radius: 20px;
+  border: 1px solid white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  margin-bottom: 30px;
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .title-group {
+      h1 {
+        font-size: 1.8rem;
+        margin: 0 0 8px;
+        color: var(--text-main);
+        font-weight: 800;
+      }
+
+      p {
+        color: var(--text-sub);
+        margin: 0;
+        font-size: 1rem;
+      }
+    }
+
+    .balance-card {
+      background: linear-gradient(135deg, #FFF8E7, #FFF0C2);
+      padding: 12px 24px;
+      border-radius: 16px;
+      border: 1px solid #FFE5A0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 180px;
+
+      .label {
+        font-size: 0.75rem;
+        color: #B7791F;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .coin-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .coin-icon {
+          font-size: 1.4rem;
+        }
+
+        .amount {
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: #744210;
+        }
+
+        .btn-add-coin {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: none;
+          background: #D69E2E;
+          color: white;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.2s;
+
+          &:hover {
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .balance-card {
+      width: 100%;
+      align-items: center;
+    }
+  }
+}
+
+/* FILTER BAR */
+.filter-bar {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    padding: 8px 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--border);
+
+    label {
+      font-weight: 700;
+      color: var(--text-main);
+      font-size: 0.9rem;
+    }
+
+    select {
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      padding-right: 20px;
+
+      &:hover {
+        color: var(--primary);
+      }
+    }
+  }
+}
+
+/* SHOP GRID */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* ITEM CARD DESIGN */
+.item-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(108, 93, 211, 0.1);
+    border-color: var(--primary);
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(0.8);
+  }
+
+  /* Rarity Badge (Top Right) */
+  .rarity-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 8px;
+
+    &.rarity-common {
+      background: #EDF2F7;
+      color: #718096;
+    }
+
+    &.rarity-rare {
+      background: #EBF8FF;
+      color: #3182CE;
+    }
+
+    &.rarity-epic {
+      background: #FAF5FF;
+      color: #805AD5;
+    }
+
+    &.rarity-legendary {
+      background: #FFFAF0;
+      color: #DD6B20;
+    }
+  }
+
+  /* Icon Area */
+  .item-icon-wrapper {
+    margin: 10px 0 15px;
+
+    .icon-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #F8F9FD; /* Default light bg */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      transition: transform 0.3s;
+    }
+  }
+
+  /* Dynamic Icon Backgrounds based on Rarity (Optional) */
+  &[data-rarity="COMMON"] .icon-circle {
+    background: #EDF2F7;
+  }
+
+  &[data-rarity="RARE"] .icon-circle {
+    background: #EBF8FF;
+  }
+
+  &[data-rarity="EPIC"] .icon-circle {
+    background: #FAF5FF;
+  }
+
+  &[data-rarity="LEGENDARY"] .icon-circle {
+    background: #FFFAF0;
+    box-shadow: 0 0 15px rgba(246, 173, 85, 0.3);
+  }
+
+  &:hover .icon-circle {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  /* Info */
+  .item-info {
+    flex: 1;
+    margin-bottom: 15px;
+    width: 100%;
+
+    .item-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 0 0 6px;
+    }
+
+    .item-desc {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      line-height: 1.4;
+      margin: 0;
+      min-height: 40px;
+    }
+  }
+
+  /* Footer */
+  .item-footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+
+    .price-tag {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #D69E2E;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .limit-text {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .limit-text.warning {
+      color: var(--red);
+    }
+
+    .btn-buy {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(108, 93, 211, 0.2);
+
+      &:hover:not(:disabled) {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      &:disabled {
+        background: #CBD5E1;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .spinner-sm {
+        width: 16px;
+        height: 16px;
+        border: 2px solid white;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+      }
+    }
+  }
+}
+
+/* RULES FOOTER */
+.shop-rules {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+
+  h3 {
+    font-size: 1rem;
+    margin: 0 0 15px;
+    color: var(--text-main);
+  }
+
+  .rule-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .tag {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.legendary {
+        background: #FFFAF0;
+        color: #DD6B20;
+      }
+
+      &.epic {
+        background: #FAF5FF;
+        color: #805AD5;
+      }
+
+      &.common {
+        background: #F0FFF4;
+        color: #38A169;
+      }
+
+      &.reset {
+        background: #EBF8FF;
+        color: #3182CE;
+      }
+    }
+  }
+}
+
+/* Animations & Loading */
+.loading-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 50px;
+  color: var(--text-sub);
+
+  .spinner {
+    margin: 0 auto 10px;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #eee;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-sub);
+  grid-column: 1 / -1;
+  font-style: italic;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-down {
+  animation: fadeDown 0.5s ease-out;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s ease-out;
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -463,6 +463,31 @@
   margin-bottom: 10px;
   font-size: 0.85rem;
   color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .rating-display {
+    color: var(--warning);
+    font-weight: 600;
+
+    .text-warning {
+      color: #ffc107;
+    }
+
+    .rating-count {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+  }
 }
 
 .card-desc {

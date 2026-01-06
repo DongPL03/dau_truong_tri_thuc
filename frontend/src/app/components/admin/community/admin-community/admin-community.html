@@ -1,390 +1,403 @@
 <div class="admin-community-page">
-    <header class="page-header">
-        <div class="header-content">
-            <h1>
-                <i class="fa-solid fa-users-rectangle"></i>
-                Quản lý Cộng đồng
-            </h1>
-            <p>Duyệt bài viết và xử lý báo cáo</p>
-        </div>
-    </header>
-
-    <!-- Tabs -->
-    <div class="tabs-container">
-        <div class="tabs">
-            <button class="tab"
-                [class.active]="activeTab === 'pending'"
-                (click)="switchTab('pending')">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                Chờ duyệt
-                @if (pendingPosts.length) {
-                <span class="badge">{{ pendingPosts.length }}</span>
-                }
-            </button>
-            <button class="tab"
-                [class.active]="activeTab === 'reports'"
-                (click)="switchTab('reports')">
-                <i class="fa-solid fa-flag"></i>
-                Báo cáo
-            </button>
-        </div>
+  <header class="page-header">
+    <div class="header-content">
+      <h1>
+        <i class="fa-solid fa-users-rectangle"></i>
+        Quản lý Cộng đồng
+      </h1>
+      <p>Duyệt bài viết và xử lý báo cáo</p>
     </div>
+  </header>
 
-    <!-- Pending Posts Tab -->
-    @if (activeTab === 'pending') {
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab"
+              [class.active]="activeTab === 'pending'"
+              (click)="switchTab('pending')">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        Chờ duyệt
+        @if (pendingPosts.length) {
+          <span class="badge">{{ pendingPosts.length }}</span>
+        }
+      </button>
+      <button class="tab"
+              [class.active]="activeTab === 'reports'"
+              (click)="switchTab('reports')">
+        <i class="fa-solid fa-flag"></i>
+        Báo cáo
+      </button>
+    </div>
+  </div>
+
+  <!-- Pending Posts Tab -->
+  @if (activeTab === 'pending') {
     <section class="content-section">
-        @if (pendingLoading) {
+      @if (pendingLoading) {
         <div class="loading-state">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Đang tải...
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Đang tải...
         </div>
-        } @else if (pendingPosts.length === 0) {
+      } @else if (pendingPosts.length === 0) {
         <div class="empty-state">
-            <i class="fa-regular fa-check-circle"></i>
-            <h3>Không có bài viết chờ duyệt</h3>
-            <p>Tất cả bài viết đã được xử lý</p>
+          <i class="fa-regular fa-check-circle"></i>
+          <h3>Không có bài viết chờ duyệt</h3>
+          <p>Tất cả bài viết đã được xử lý</p>
         </div>
-        } @else {
+      } @else {
         <div class="posts-grid">
-            @for (post of pendingPosts; track post.id) {
+          @for (post of pendingPosts; track post.id) {
             <div class="post-card"
-                [class.processing]="processingIds.has(post.id)">
-                <div class="post-header">
-                    <div class="author-info">
-                        <img [src]="post.nguoiDang?.anhDaiDien || '/assets/images/default-avatar.png'"
-                            [alt]="post.nguoiDang?.ten"
-                            class="author-avatar">
-                        <div class="author-meta">
+                 [class.processing]="processingIds.has(post.id)">
+              <div class="post-header">
+                <div class="author-info">
+                  <img
+                    [src]="'http://localhost:8088/api/v1/users/profile-images/' + post.nguoiDang?.anhDaiDien || '/assets/images/default-avatar.png'"
+                    [alt]="post.nguoiDang?.ten"
+                    class="author-avatar">
+                  <div class="author-meta">
                             <span class="author-name">{{
                                 post.nguoiDang?.ten || 'Người dùng'
-                                }}</span>
-                            <span class="author-level">Cấp {{
-                                post.nguoiDang?.capDo || 1 }}</span>
-                        </div>
-                    </div>
-                    <span class="post-type"
-                        [attr.data-type]="post.loai">
+                              }}</span>
+                    <span class="author-level">Cấp {{
+                        post.nguoiDang?.capDo || 1
+                      }}</span>
+                  </div>
+                </div>
+                <span class="post-type"
+                      [attr.data-type]="post.loai">
                         {{ getTypeLabel(post.loai) }}
                     </span>
-                </div>
+              </div>
 
-                <div class="post-content">
-                    <h3 class="post-title">
-                        <a [routerLink]="['/community', post.id]"
-                            target="_blank">
-                            {{ post.tieuDe }}
-                        </a>
-                    </h3>
-                    <p class="post-excerpt"
-                        [innerHTML]="truncate(post.noiDung, 200)"></p>
+              <div class="post-content">
+                <h3 class="post-title">
+                  <a [routerLink]="['/community', post.id]"
+                     target="_blank">
+                    {{ post.tieuDe }}
+                  </a>
+                </h3>
+                <p class="post-excerpt"
+                   [innerHTML]="truncate(post.noiDung, 200)"></p>
 
-                    @if (post.tags?.length) {
-                    <div class="post-tags">
-                        @for (tag of post.tags; track tag.id) {
-                        <span class="tag"
+                @if (post.tags?.length) {
+                  <div class="post-tags">
+                    @for (tag of post.tags; track tag.id) {
+                      <span class="tag"
                             [style.--tag-color]="tag.mauSac">
                             {{ tag.ten }}
                         </span>
-                        }
-                    </div>
                     }
-                </div>
+                  </div>
+                }
+              </div>
 
-                <div class="post-footer">
+              <div class="post-footer">
                     <span class="post-time">
                         <i class="fa-regular fa-clock"></i>
-                        {{ formatDate(post.ngayTao) }}
+                      {{ formatDate(post.ngayTao) }}
                     </span>
-                    <div class="post-actions">
-                        <button class="btn-reject"
-                            [disabled]="processingIds.has(post.id)"
-                            (click)="openRejectModal(post)">
-                            <i class="fa-solid fa-times"></i>
-                            Từ chối
-                        </button>
-                        <button class="btn-approve"
-                            [disabled]="processingIds.has(post.id)"
-                            (click)="approvePost(post)">
-                            @if (processingIds.has(post.id)) {
-                            <i
-                                class="fa-solid fa-spinner fa-spin"></i>
-                            } @else {
-                            <i class="fa-solid fa-check"></i>
-                            }
-                            Duyệt
-                        </button>
-                    </div>
+                <div class="post-actions">
+                  <button class="btn-reject"
+                          [disabled]="processingIds.has(post.id)"
+                          (click)="openRejectModal(post)">
+                    <i class="fa-solid fa-times"></i>
+                    Từ chối
+                  </button>
+                  <button class="btn-approve"
+                          [disabled]="processingIds.has(post.id)"
+                          (click)="approvePost(post)">
+                    @if (processingIds.has(post.id)) {
+                      <i
+                        class="fa-solid fa-spinner fa-spin"></i>
+                    } @else {
+                      <i class="fa-solid fa-check"></i>
+                    }
+                    Duyệt
+                  </button>
                 </div>
+              </div>
             </div>
-            }
+          }
         </div>
 
         <!-- Pagination -->
         @if (pendingTotalPages > 1) {
-        <div class="pagination">
+          <div class="pagination">
             <button class="btn-page" [disabled]="pendingPage === 0"
-                (click)="changePendingPage(pendingPage - 1)">
-                <i class="fa-solid fa-chevron-left"></i>
+                    (click)="changePendingPage(pendingPage - 1)">
+              <i class="fa-solid fa-chevron-left"></i>
             </button>
             <span class="page-info">{{ pendingPage + 1 }} / {{
-                pendingTotalPages }}</span>
+                pendingTotalPages
+              }}</span>
             <button class="btn-page"
-                [disabled]="pendingPage >= pendingTotalPages - 1"
-                (click)="changePendingPage(pendingPage + 1)">
-                <i class="fa-solid fa-chevron-right"></i>
+                    [disabled]="pendingPage >= pendingTotalPages - 1"
+                    (click)="changePendingPage(pendingPage + 1)">
+              <i class="fa-solid fa-chevron-right"></i>
             </button>
-        </div>
+          </div>
         }
-        }
+      }
     </section>
-    }
+  }
 
-    <!-- Reports Tab -->
-    @if (activeTab === 'reports') {
+  <!-- Reports Tab -->
+  @if (activeTab === 'reports') {
     <section class="content-section">
-        <!-- Filter -->
-        <div class="filter-bar">
-            <label class="filter-label">Trạng thái:</label>
-            <select class="filter-select" [(ngModel)]="reportStatus"
+      <!-- Filter -->
+      <div class="filter-bar">
+        <label class="filter-label">Trạng thái:</label>
+        <select class="filter-select" [(ngModel)]="reportStatus"
                 (ngModelChange)="onReportStatusChange()">
-                <option value="ALL">Tất cả</option>
-                <option value="CHO_XU_LY">Chờ xử lý</option>
-                <option value="DA_XU_LY">Đã xử lý</option>
-                <option value="TU_CHOI">Từ chối</option>
-            </select>
-        </div>
+          <option value="ALL">Tất cả</option>
+          <option value="CHO_XU_LY">Chờ xử lý</option>
+          <option value="DA_XU_LY">Đã xử lý</option>
+          <option value="TU_CHOI">Từ chối</option>
+        </select>
+      </div>
 
-        @if (reportsLoading) {
+      @if (reportsLoading) {
         <div class="loading-state">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Đang tải...
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Đang tải...
         </div>
-        } @else if (reports.length === 0) {
+      } @else if (reports.length === 0) {
         <div class="empty-state">
-            <i class="fa-regular fa-flag"></i>
-            <h3>Không có báo cáo nào</h3>
-            <p>Chưa có báo cáo nào cần xử lý</p>
+          <i class="fa-regular fa-flag"></i>
+          <h3>Không có báo cáo nào</h3>
+          <p>Chưa có báo cáo nào cần xử lý</p>
         </div>
-        } @else {
+      } @else {
         <div class="reports-table-wrapper">
-            <table class="reports-table">
-                <thead>
-                    <tr>
-                        <th>Người báo cáo</th>
-                        <th>Loại</th>
-                        <th>Nội dung</th>
-                        <th>Mục tiêu</th>
-                        <th>Thời gian</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (report of reports; track report.id) {
-                    <tr
-                        [class.processing]="processingIds.has(report.id)">
-                        <td>
-                            <div class="user-cell">
-                                <img [src]="report.nguoiBaoCao?.anhDaiDien || '/assets/images/default-avatar.png'"
-                                    [alt]="report.nguoiBaoCao?.ten">
-                                <span>{{ report.nguoiBaoCao?.ten ||
-                                    'Người dùng' }}</span>
-                            </div>
-                        </td>
-                        <td>
+          <table class="reports-table">
+            <thead>
+            <tr>
+              <th>Người báo cáo</th>
+              <th>Loại</th>
+              <th>Nội dung</th>
+              <th>Mục tiêu</th>
+              <th>Thời gian</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (report of reports; track report.id) {
+                <tr
+                  [class.processing]="processingIds.has(report.id)">
+                  <td>
+                    <div class="user-cell">
+                      <img [src]="'http://localhost:8088/api/v1/users/profile-images/'+report.nguoiBaoCao?.anhDaiDien || '/assets/images/default-avatar.png'"
+                           [alt]="report.nguoiBaoCao?.ten">
+                      <span>{{
+                          report.nguoiBaoCao?.ten ||
+                          'Người dùng'
+                        }}</span>
+                    </div>
+                  </td>
+                  <td>
                             <span class="report-type">{{
                                 getReportTypeLabel(report.loai)
-                                }}</span>
-                        </td>
-                        <td>
-                            <p class="report-content">{{
-                                report.chiTiet || 'Không có chi tiết'
-                                }}</p>
-                        </td>
-                        <td>
-                            @if (report.baiViet) {
-                            <a class="target-link"
-                                [routerLink]="['/community', report.baiViet.id]"
-                                target="_blank">
-                                <i class="fa-solid fa-file-lines"></i>
-                                Bài viết #{{ report.baiViet.id }}
-                            </a>
-                            } @else if (report.binhLuan) {
-                            <span class="target-comment">
+                              }}</span>
+                  </td>
+                  <td>
+                    <p class="report-content">{{
+                        report.chiTiet || 'Không có chi tiết'
+                      }}</p>
+                  </td>
+                  <td>
+                    @if (report.baiViet) {
+                      <a class="target-link"
+                         [routerLink]="['/community', report.baiViet.id]"
+                         target="_blank">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Bài viết #{{ report.baiViet.id }}
+                      </a>
+                    } @else if (report.binhLuan) {
+                      <span class="target-comment">
                                 <i class="fa-solid fa-comment"></i>
                                 Bình luận #{{ report.binhLuan.id }}
                             </span>
-                            }
-                        </td>
-                        <td>{{ formatDate(report.ngayTao) }}</td>
-                        <td>
+                    }
+                  </td>
+                  <td>{{ formatDate(report.ngayTao) }}</td>
+                  <td>
                             <span class="status-badge"
-                                [ngClass]="getReportStatusClass(report.trangThai)">
+                                  [ngClass]="getReportStatusClass(report.trangThai)">
                                 {{
                                 getReportStatusLabel(report.trangThai)
-                                }}
+                              }}
                             </span>
-                        </td>
-                        <td>
-                            @if (report.trangThai === 'CHO_XU_LY') {
-                            <button class="btn-action"
-                                [disabled]="processingIds.has(report.id)"
-                                (click)="openReportModal(report)">
-                                <i class="fa-solid fa-gavel"></i>
-                                Xử lý
-                            </button>
-                            } @else {
-                            <span class="handled-by">
+                  </td>
+                  <td>
+                    @if (report.trangThai === 'CHO_XU_LY') {
+                      <button class="btn-action"
+                              [disabled]="processingIds.has(report.id)"
+                              (click)="openReportModal(report)">
+                        <i class="fa-solid fa-gavel"></i>
+                        Xử lý
+                      </button>
+                    } @else {
+                      <span class="handled-by">
                                 {{ report.nguoiXuLy?.ten || 'N/A' }}
                             </span>
-                            }
-                        </td>
-                    </tr>
                     }
-                </tbody>
-            </table>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
 
         <!-- Pagination -->
         @if (reportsTotalPages > 1) {
-        <div class="pagination">
+          <div class="pagination">
             <button class="btn-page" [disabled]="reportsPage === 0"
-                (click)="changeReportsPage(reportsPage - 1)">
-                <i class="fa-solid fa-chevron-left"></i>
+                    (click)="changeReportsPage(reportsPage - 1)">
+              <i class="fa-solid fa-chevron-left"></i>
             </button>
             <span class="page-info">{{ reportsPage + 1 }} / {{
-                reportsTotalPages }}</span>
+                reportsTotalPages
+              }}</span>
             <button class="btn-page"
-                [disabled]="reportsPage >= reportsTotalPages - 1"
-                (click)="changeReportsPage(reportsPage + 1)">
-                <i class="fa-solid fa-chevron-right"></i>
+                    [disabled]="reportsPage >= reportsTotalPages - 1"
+                    (click)="changeReportsPage(reportsPage + 1)">
+              <i class="fa-solid fa-chevron-right"></i>
             </button>
-        </div>
+          </div>
         }
-        }
+      }
     </section>
-    }
+  }
 </div>
 
 <!-- Reject Post Modal -->
 @if (showRejectModal && selectedPost) {
-<div class="modal-overlay" (click)="closeRejectModal()">
+  <div class="modal-overlay" (click)="closeRejectModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>
-                <i class="fa-solid fa-times-circle"></i>
-                Từ chối bài viết
-            </h3>
-            <button class="btn-close" (click)="closeRejectModal()">
-                <i class="fa-solid fa-times"></i>
-            </button>
+      <div class="modal-header">
+        <h3>
+          <i class="fa-solid fa-times-circle"></i>
+          Từ chối bài viết
+        </h3>
+        <button class="btn-close" (click)="closeRejectModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="post-preview">
+          <h4>{{ selectedPost.tieuDe }}</h4>
+          <span>Bởi {{ selectedPost.nguoiDang?.ten }}</span>
         </div>
-        <div class="modal-body">
-            <div class="post-preview">
-                <h4>{{ selectedPost.tieuDe }}</h4>
-                <span>Bởi {{ selectedPost.nguoiDang?.ten }}</span>
-            </div>
-            <div class="form-group">
-                <label>Lý do từ chối <span
-                        class="required">*</span></label>
-                <textarea [(ngModel)]="rejectReason"
+        <div class="form-group">
+          <label>Lý do từ chối <span
+            class="required">*</span></label>
+          <textarea [(ngModel)]="rejectReason"
                     placeholder="Nhập lý do từ chối bài viết..."
                     rows="4"></textarea>
-            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn-cancel"
-                (click)="closeRejectModal()">Hủy</button>
-            <button class="btn-reject"
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel"
+                (click)="closeRejectModal()">Hủy
+        </button>
+        <button class="btn-reject"
                 [disabled]="!rejectReason.trim() || processingIds.has(selectedPost.id)"
                 (click)="rejectPost()">
-                @if (processingIds.has(selectedPost.id)) {
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                }
-                Từ chối
-            </button>
-        </div>
+          @if (processingIds.has(selectedPost.id)) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          }
+          Từ chối
+        </button>
+      </div>
     </div>
-</div>
+  </div>
 }
 
 <!-- Handle Report Modal -->
 @if (showReportModal && selectedReport) {
-<div class="modal-overlay" (click)="closeReportModal()">
+  <div class="modal-overlay" (click)="closeReportModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>
-                <i class="fa-solid fa-gavel"></i>
-                Xử lý báo cáo
-            </h3>
-            <button class="btn-close" (click)="closeReportModal()">
-                <i class="fa-solid fa-times"></i>
-            </button>
+      <div class="modal-header">
+        <h3>
+          <i class="fa-solid fa-gavel"></i>
+          Xử lý báo cáo
+        </h3>
+        <button class="btn-close" (click)="closeReportModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="report-info">
+          <div class="info-row">
+            <span class="label">Người báo cáo:</span>
+            <span class="value">{{
+                selectedReport.nguoiBaoCao?.ten
+              }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Loại:</span>
+            <span class="value">{{
+                getReportTypeLabel(selectedReport.loai)
+              }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Chi tiết:</span>
+            <span class="value">{{
+                selectedReport.chiTiet ||
+                'Không có'
+              }}</span>
+          </div>
         </div>
-        <div class="modal-body">
-            <div class="report-info">
-                <div class="info-row">
-                    <span class="label">Người báo cáo:</span>
-                    <span class="value">{{
-                        selectedReport.nguoiBaoCao?.ten }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Loại:</span>
-                    <span class="value">{{
-                        getReportTypeLabel(selectedReport.loai)
-                        }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Chi tiết:</span>
-                    <span class="value">{{ selectedReport.chiTiet ||
-                        'Không có' }}</span>
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label>Quyết định</label>
-                <div class="action-options">
-                    <label class="action-option"
-                        [class.selected]="reportAction === 'approve'">
-                        <input type="radio" name="action"
-                            value="approve"
-                            [(ngModel)]="reportAction">
-                        <i class="fa-solid fa-check-circle"></i>
-                        <span>Chấp nhận báo cáo</span>
-                        <small>Xóa nội dung vi phạm</small>
-                    </label>
-                    <label class="action-option"
-                        [class.selected]="reportAction === 'reject'">
-                        <input type="radio" name="action"
-                            value="reject" [(ngModel)]="reportAction">
-                        <i class="fa-solid fa-times-circle"></i>
-                        <span>Từ chối báo cáo</span>
-                        <small>Nội dung không vi phạm</small>
-                    </label>
-                </div>
-            </div>
+        <div class="form-group">
+          <label>Quyết định</label>
+          <div class="action-options">
+            <label class="action-option"
+                   [class.selected]="reportAction === 'approve'">
+              <input type="radio" name="action"
+                     value="approve"
+                     [(ngModel)]="reportAction">
+              <i class="fa-solid fa-check-circle"></i>
+              <span>Chấp nhận báo cáo</span>
+              <small>Xóa nội dung vi phạm</small>
+            </label>
+            <label class="action-option"
+                   [class.selected]="reportAction === 'reject'">
+              <input type="radio" name="action"
+                     value="reject" [(ngModel)]="reportAction">
+              <i class="fa-solid fa-times-circle"></i>
+              <span>Từ chối báo cáo</span>
+              <small>Nội dung không vi phạm</small>
+            </label>
+          </div>
+        </div>
 
-            <div class="form-group">
-                <label>Ghi chú</label>
-                <textarea [(ngModel)]="reportNote"
+        <div class="form-group">
+          <label>Ghi chú</label>
+          <textarea [(ngModel)]="reportNote"
                     placeholder="Ghi chú xử lý (tùy chọn)..."
                     rows="3"></textarea>
-            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn-cancel"
-                (click)="closeReportModal()">Hủy</button>
-            <button class="btn-submit"
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel"
+                (click)="closeReportModal()">Hủy
+        </button>
+        <button class="btn-submit"
                 [class.reject]="reportAction === 'reject'"
                 [disabled]="processingIds.has(selectedReport.id)"
                 (click)="handleReport()">
-                @if (processingIds.has(selectedReport.id)) {
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                }
-                {{ reportAction === 'approve' ? 'Chấp nhận' : 'Từ
-                chối' }}
-            </button>
-        </div>
+          @if (processingIds.has(selectedReport.id)) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          }
+          {{
+            reportAction === 'approve' ? 'Chấp nhận' : 'Từ
+              chối'
+          }}
+        </button>
+      </div>
     </div>
-</div>
+  </div>
 }

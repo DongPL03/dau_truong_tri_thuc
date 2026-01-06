@@ -1,5 +1,5 @@
 <header class="global-navbar">
-  <div class="logo">
+  <div class="logo" routerLink="/home">
     <span class="logo-primary">ĐẤU TRƯỜNG</span>
     <span class="logo-accent">TRI THỨC</span>
   </div>
@@ -8,66 +8,70 @@
     <a routerLink="/home" routerLinkActive="active" class="nav-item">
       <i class="fas fa-home"></i> <span>Trang Chủ</span>
     </a>
-    <a routerLink="/tran-dau/pending" routerLinkActive="active"
-      class="nav-item">
-      <i class="fas fa-bolt"></i> <span>Đấu Trường</span>
+    <a routerLink="/shop" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-store"></i> <span>Cửa hàng</span>
     </a>
-    <a routerLink="/bo-cau-hoi/danh-sach-bo-cau-hoi"
-      routerLinkActive="active" class="nav-item">
-      <i class="fas fa-book-open"></i> <span>Kho Câu Hỏi</span>
+    <a routerLink="/ban-be" routerLinkActive="active" class="nav-item">
+      <i class="fas fa-user-friends"></i> <span>Bạn bè</span>
     </a>
-    <a routerLink="/bang-xep-hang" routerLinkActive="active"
-      class="nav-item">
-      <i class="fas fa-trophy"></i> <span>BXH</span>
-    </a>
-    <a routerLink="/chat" routerLinkActive="active" class="nav-item">
-      <i class="fas fa-comments"></i> <span>Chat</span>
-    </a>
-    <a routerLink="/community" routerLinkActive="active"
-      class="nav-item">
+    <a routerLink="/community" routerLinkActive="active" class="nav-item">
       <i class="fas fa-users"></i> <span>Cộng đồng</span>
     </a>
+
     @if (user?.vai_tro?.ten_vai_tro === 'admin') {
-    <a routerLink="/admin" routerLinkActive="active"
-      class="nav-item admin-item">
-      <i class="fas fa-user-shield"></i> <span>Admin</span>
-    </a>
+      <a routerLink="/admin" routerLinkActive="active" class="nav-item admin-item">
+        <i class="fas fa-user-shield"></i> <span>Admin</span>
+      </a>
     }
   </nav>
 
   <div class="user-profile-actions">
+    <button class="streak-btn"
+            (click)="toggleStreakPopup()"
+            [class.is-burning]="hasUnclaimedStreak"
+            [title]="hasUnclaimedStreak ? 'Bạn chưa điểm danh!' : 'Đã điểm danh hôm nay'">
+      <i class="fas fa-fire streak-icon"></i>
+
+      @if (hasUnclaimedStreak) {
+        <span class="streak-badge">!</span>
+      }
+    </button>
 
     <app-notification-bell></app-notification-bell>
 
     <div class="user-dropdown" (click)="$event.stopPropagation()">
-      <button class="avatar-btn" (click)="toggleUserMenu()"
-        [class.active-btn]="userMenuOpen">
+      <button class="avatar-btn" (click)="toggleUserMenu()" [class.active-btn]="userMenuOpen">
         <div class="avatar-wrapper">
-          <img
-            [src]="avatarUrl || 'assets/images/default-profile-image.jpeg'"
-            alt="avatar" class="nav-avatar" />
+          <img [src]="avatarUrl || 'assets/images/default-profile-image.jpeg'" alt="avatar" class="nav-avatar"/>
         </div>
         <div class="user-info">
-          <span class="user-display-name">
-            {{ user?.ho_ten || user?.ten_dang_nhap || 'Game thủ' }}
-          </span>
-          <i class="fa-solid fa-chevron-down arrow-icon"
-            [class.rotate]="userMenuOpen"></i>
+          <span class="user-display-name">{{ user?.ho_ten || 'Game thủ' }}</span>
+          <i class="fa-solid fa-chevron-down arrow-icon" [class.rotate]="userMenuOpen"></i>
         </div>
       </button>
 
       <ul class="user-menu" [class.show]="userMenuOpen">
         <li (click)="goProfile()">
-          <div class="menu-icon"><i class="fa-regular fa-user"></i>
-          </div>
-          <span>Hồ sơ cá nhân</span>
+          <div class="menu-icon"><i class="fa-regular fa-user"></i></div>
+          <span>Hồ sơ</span>
         </li>
-        <li class="logout-item" (click)="logout()">
-          <div class="menu-icon"><i
-              class="fa-solid fa-right-from-bracket"></i></div>
+        <li routerLink="/tran-dau/lich-su-tran-dau">
+          <div class="menu-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <span>Lịch sử trận đấu</span>
+        </li>
+        <li routerLink="/kho-do">
+          <div class="menu-icon"><i class="fa-solid fa-box-open"></i></div>
+          <span>Kho đồ</span>
+        </li>
+        <li (click)="logout()" class="logout-item">
+          <div class="menu-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
           <span>Đăng xuất</span>
         </li>
       </ul>
     </div>
   </div>
 </header>
+
+@if (showStreakPopup) {
+  <app-login-streak-popup (close)="closeStreakPopup()"></app-login-streak-popup>
+}

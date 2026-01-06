@@ -166,10 +166,10 @@ export class AdminUserList extends Base implements OnInit {
   }
 
   getUserStatus(user: any): { label: string; class: string } {
-    if (user.is_xoa === 1) {
+    if (user.is_xoa === true) {
       return {label: 'Đã xóa', class: 'status-deleted'};
     }
-    if (user.is_active === 0) {
+    if (user.is_active === false) {
       return {label: 'Bị khóa', class: 'status-blocked'};
     }
     return {label: 'Hoạt động', class: 'status-active'};

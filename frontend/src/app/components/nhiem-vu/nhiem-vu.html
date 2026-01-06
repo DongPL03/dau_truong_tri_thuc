@@ -1,0 +1,143 @@
+<div class="quests-page">
+
+  <header class="page-header animate-fade-down">
+    <div class="header-text">
+      <h1>🎯 Nhiệm Vụ</h1>
+      <p>Hoàn thành thử thách mỗi ngày để nhận quà khủng!</p>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-info">
+        <span class="label">Tiến độ hôm nay</span>
+        <span class="value">{{ dailyCompleted() }} / {{ dailyTotal() }}</span>
+      </div>
+      <div class="summary-bar">
+        <div class="bar-fill" [style.width.%]="(dailyCompleted() / dailyTotal()) * 100"></div>
+      </div>
+      <div class="gift-box" [class.shake]="hasClaimable" (click)="hasClaimable ? claimAll() : null">
+        <i class="fas fa-gift"></i>
+        @if (hasClaimable) {
+          <span class="dot"></span>
+        }
+      </div>
+    </div>
+  </header>
+
+  <div class="quests-layout">
+
+    <main class="quest-main animate-fade-up">
+
+      <div class="tabs-container">
+        <button class="tab-btn" [class.active]="activeTab() === 'daily'" (click)="setTab('daily')">
+          <i class="fas fa-sun"></i> Nhiệm vụ Ngày
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'weekly'" (click)="setTab('weekly')">
+          <i class="fas fa-calendar-week"></i> Nhiệm vụ Tuần
+        </button>
+      </div>
+
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+      }
+
+      @if (!loading()) {
+        <div class="quest-list">
+          @for (quest of currentQuests; track quest.ma) {
+            <div class="quest-card" [class.completed]="quest.da_hoan_thanh" [class.claimed]="quest.da_nhan_thuong">
+
+              <div class="quest-icon-box">
+                <span class="emoji">{{ quest.icon || '📜' }}</span>
+              </div>
+
+              <div class="quest-content">
+                <div class="quest-head">
+                  <h3 class="q-title">{{ quest.mo_ta }}</h3>
+                  <div class="q-rewards">
+                    @if (quest.gold_thuong > 0) {
+                      <span class="badge gold"><i class="fas fa-coins"></i> +{{ quest.gold_thuong }}</span>
+                    }
+                    @if (quest.xp_thuong > 0) {
+                      <span class="badge xp"><i class="fas fa-bolt"></i> +{{ quest.xp_thuong }}</span>
+                    }
+                    @if (quest.vat_pham_loai) {
+                      <span class="badge item"><i class="fas fa-box"></i> Quà</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="progress-wrapper">
+                  <div class="progress-track">
+                    <div class="progress-fill" [style.width]="getProgressWidth(quest)"></div>
+                  </div>
+                  <span class="progress-text">{{ quest.tien_do }} / {{ quest.muc_tieu }}</span>
+                </div>
+              </div>
+
+              <div class="quest-action">
+                @if (quest.da_nhan_thuong) {
+                  <span class="status-text claimed"><i class="fas fa-check-circle"></i> Đã nhận</span>
+                } @else if (quest.da_hoan_thanh) {
+                  <button class="btn-claim" [disabled]="claiming() === quest.ma" (click)="claimReward(quest)">
+                    @if (claiming() === quest.ma) {
+                      <i class="fas fa-spinner fa-spin"></i>
+                    } @else {
+                      <span>Nhận</span>
+                    }
+                  </button>
+                } @else {
+                  <span class="status-text pending">{{ quest.phan_tram | number:'1.0-0' }}%</span>
+                }
+              </div>
+
+            </div>
+          }
+
+          @if (currentQuests.length === 0) {
+            <div class="empty-state">
+              <img src="assets/images/empty-quest.png" alt="No Quest" onerror="this.style.display='none'">
+              <p>Chưa có nhiệm vụ nào. Quay lại sau nhé!</p>
+            </div>
+          }
+        </div>
+      }
+    </main>
+
+    <aside class="quest-sidebar animate-fade-left">
+
+      @if (hasClaimable) {
+        <div class="sidebar-card highlight-card">
+          <div class="card-icon">🎁</div>
+          <h3>Quà đang chờ!</h3>
+          <p>Bạn đã hoàn thành nhiệm vụ.</p>
+          <button class="btn-claim-all" [disabled]="claiming() === 'all'" (click)="claimAll()">
+            @if (claiming() === 'all') {
+              <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+            } @else {
+              <span>Nhận tất cả</span>
+            }
+          </button>
+        </div>
+      }
+
+      <div class="sidebar-card info-card">
+        <h3><i class="fas fa-clock"></i> Thời gian reset</h3>
+        <ul>
+          <li>
+            <span class="label">Hàng ngày:</span>
+            <span class="val">00:00</span>
+          </li>
+          <li>
+            <span class="label">Hàng tuần:</span>
+            <span class="val">Thứ 2</span>
+          </li>
+        </ul>
+        <p class="note">Hãy nhận thưởng trước khi thời gian reset điểm lại từ đầu.</p>
+      </div>
+
+    </aside>
+
+  </div>
+</div>

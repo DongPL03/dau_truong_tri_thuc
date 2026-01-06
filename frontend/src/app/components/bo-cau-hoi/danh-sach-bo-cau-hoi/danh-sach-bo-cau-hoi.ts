@@ -32,12 +32,23 @@ export class BoCauHoiList extends Base implements OnInit {
   // Filter free / mất phí
   priceFilter: 'ALL' | 'FREE' | 'PAID' = 'ALL';
 
+  // Filter rating
+  minRating: number | undefined = undefined;
+
   chuDes: ChuDe[] = [];
   readonly trangThaiOptions = [
     {value: '', label: 'Tất cả trạng thái'},
     {value: 'DA_DUYET', label: 'Đã duyệt'},
     {value: 'CHO_DUYET', label: 'Chờ duyệt'},
     {value: 'TU_CHOI', label: 'Từ chối'},
+  ];
+
+  readonly ratingOptions = [
+    {value: undefined, label: 'Tất cả đánh giá'},
+    {value: 4, label: '⭐ 4+ sao'},
+    {value: 3, label: '⭐ 3+ sao'},
+    {value: 2, label: '⭐ 2+ sao'},
+    {value: 1, label: '⭐ 1+ sao'},
   ];
 
   ngOnInit() {
@@ -59,7 +70,9 @@ export class BoCauHoiList extends Base implements OnInit {
         0,                  // 7. nguoiTaoId (Điền 0 mặc định)
         this.sortOrder,     // 8. sortOrder (Giờ mới đến tham số này)
         this.page,          // 9. page
-        this.limit          // 10. limit
+        this.limit,         // 10. limit
+        this.minRating,     // 11. minRating
+        undefined           // 12. maxRating
       )
       .subscribe({
         next: (res: ResponseObject<PageResponse<BoCauHoiResponse>>) => {
@@ -156,6 +169,8 @@ export class BoCauHoiList extends Base implements OnInit {
     this.cheDoHienThi = '';
     this.trangThai = '';
     this.chuDeId = 0;
+    this.minRating = undefined;
+    this.priceFilter = 'ALL';
     this.loadData();
   }
 

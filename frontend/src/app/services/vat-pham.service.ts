@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import {
   LoaiVatPham,
+  MuaVatPhamDTO,
+  MuaVatPhamResponse,
+  ShopResponse,
   SuDungVatPhamDTO,
   SuDungVatPhamResponse,
   VatPham,
@@ -81,5 +84,31 @@ export class VatPhamService {
    */
   hasItem(inventory: VatPhamInventory[], loai: LoaiVatPham): boolean {
     return this.getItemQuantity(inventory, loai) > 0;
+  }
+
+  // ==================== SHOP METHODS ====================
+
+  /**
+   * Lấy danh sách vật phẩm trong Shop
+   */
+  getShop(): Observable<ShopResponse> {
+    return this.http.get<ShopResponse>(`${this.apiUrl}/shop`);
+  }
+
+  /**
+   * Mua vật phẩm từ Shop
+   */
+  purchaseItem(dto: MuaVatPhamDTO): Observable<MuaVatPhamResponse> {
+    return this.http.post<MuaVatPhamResponse>(`${this.apiUrl}/shop/purchase`, dto);
+  }
+
+  /**
+   * Mua vật phẩm theo ID
+   */
+  purchaseItemById(vatPhamId: number, soLuong: number = 1): Observable<MuaVatPhamResponse> {
+    return this.purchaseItem({
+      vat_pham_id: vatPhamId,
+      so_luong: soLuong,
+    });
   }
 }

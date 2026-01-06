@@ -170,3 +170,51 @@ export const VatPhamUtils = {
     }
   },
 };
+
+// ==================== SHOP INTERFACES ====================
+
+/**
+ * DTO để mua vật phẩm từ Shop
+ */
+export interface MuaVatPhamDTO {
+  vat_pham_id: number;
+  so_luong?: number;
+}
+
+/**
+ * Vật phẩm trong Shop
+ */
+export interface ShopItem {
+  id: number;
+  ten: string;
+  mo_ta: string;
+  loai: string;
+  icon: string;
+  mau_sac: string;
+  gia_xu: number;
+  do_hiem: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+  co_the_mua: boolean;
+  so_luong_con_lai_tuan: number;
+  thong_bao_gioi_han?: string;
+}
+
+/**
+ * Response từ Shop API
+ */
+export interface ShopResponse {
+  vat_pham_list: ShopItem[];
+  tien_vang_hien_tai: number;
+}
+
+/**
+ * Response khi mua vật phẩm
+ */
+export interface MuaVatPhamResponse {
+  thanh_cong: boolean;
+  thong_bao: string;
+  ten_vat_pham?: string;
+  so_luong?: number;
+  tong_gia?: number;
+  tien_vang_con_lai?: number;
+  so_luong_trong_inventory?: number;
+}

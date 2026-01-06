@@ -28,7 +28,9 @@ export class BocauhoiService {
     nguoiTaoId: number = 0,
     sortOrder: string = 'NEWEST',
     page: number = 0,
-    limit: number = 10
+    limit: number = 10,
+    minRating?: number,
+    maxRating?: number
   ): Observable<ResponseObject<PageResponse<BoCauHoiResponse>>> {
     const params: any = {
       keyword,
@@ -44,6 +46,14 @@ export class BocauhoiService {
 
     if (muonTaoTraPhi !== undefined && muonTaoTraPhi !== null) {
       params.muon_tao_tra_phi = muonTaoTraPhi.toString();
+    }
+
+    if (minRating !== undefined && minRating !== null) {
+      params.min_rating = minRating.toString();
+    }
+
+    if (maxRating !== undefined && maxRating !== null) {
+      params.max_rating = maxRating.toString();
     }
 
     return this.http.get<ResponseObject<PageResponse<BoCauHoiResponse>>>(`${this.api}`, {

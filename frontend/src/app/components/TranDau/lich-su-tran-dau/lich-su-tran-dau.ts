@@ -4,11 +4,12 @@ import {Base} from '../../base/base';
 import {ResponseObject} from '../../../responses/response-object';
 import {PageResponse} from '../../../responses/page-response';
 import {LichSuTranDauResponse} from '../../../responses/trandau/lichsutrandau';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-lich-su-tran-dau',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './lich-su-tran-dau.html',
   styleUrl: './lich-su-tran-dau.scss',
 })
@@ -20,6 +21,9 @@ export class LichSuTranDau extends Base implements OnInit {
   items: LichSuTranDauResponse[] = [];
   total_items = 0;
   total_pages = 0;
+  filterRank: any;
+  searchQuery: any;
+  filterTime: any;
 
   ngOnInit(): void {
     this.loadData();
@@ -78,5 +82,13 @@ export class LichSuTranDau extends Base implements OnInit {
     if (end < total - 1) visible.push(total - 1);
 
     return visible;
+  }
+
+  onSearch($event: any) {
+
+  }
+
+  onFilterChange() {
+
   }
 }

@@ -146,7 +146,8 @@ export class PostEditorComponent implements OnInit, AfterViewInit, OnDestroy {
               this.quill.clipboard.dangerouslyPasteHTML(post.noiDung);
             }
 
-            // Load existing images
+            // Load existing images - reset first to avoid duplicates
+            this.uploadedImages = [];
             if (post.hinhAnh?.length) {
               post.hinhAnh.forEach((img) => {
                 this.uploadedImages.push({
@@ -236,6 +237,23 @@ export class PostEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.uploadedImages.splice(index, 1);
     this.isDirty = true;
+  }
+
+  /**
+   * Get image preview URL
+   * - For new images (not uploaded): use blob URL
+   * - For existing images (uploaded): prepend server base URL
+   */
+  getPreviewUrl(img: { preview: string; uploaded?: boolean }): string {
+    if (!img.uploaded) {
+      // New image - preview is a blob URL
+      return img.preview;
+    }
+    // Existing image from server - preview is filename
+    if (img.preview.startsWith('http')) {
+      return img.preview;
+    }
+    return `http://localhost:8088/api/v1/posts/images/${img.preview}`;
   }
 
   // Form validation

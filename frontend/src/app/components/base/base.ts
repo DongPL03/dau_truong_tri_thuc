@@ -1,27 +1,32 @@
-import { DOCUMENT, Location } from '@angular/common';
-import { inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AdminStatsService } from '../../services/admin-stats.service';
-import { AdminService } from '../../services/admin.service';
-import { BocauhoiService } from '../../services/bocauhoi.service';
-import { CauHoiService } from '../../services/cauhoi.service';
-import { ChatWsService } from '../../services/chat-ws.service';
-import { ChatService } from '../../services/chat.service';
-import { ChudeService } from '../../services/chude.service';
-import { FriendService } from '../../services/friend.service';
-import { HttpUtilService } from '../../services/http.util.service';
-import { KhoahocService } from '../../services/khoahoc.service';
-import { LeaderboardService } from '../../services/leaderboard.service';
-import { LuyenTapService } from '../../services/luyentap.service';
-import { NotificationWsService } from '../../services/notification-ws.service';
-import { NotificationService } from '../../services/notification.service';
-import { ThanhtichService } from '../../services/thanhtich.service';
-import { ToastNotificationService } from '../../services/toast-notification.service';
-import { TokenService } from '../../services/token.service';
-import { TrandauService } from '../../services/trandau.service';
-import { UserStatsService } from '../../services/user-stats.service';
-import { UserService } from '../../services/user.service';
-import { WsTrandauService } from '../../services/ws-trandau.service';
+import {DOCUMENT, Location} from '@angular/common';
+import {HttpClient} from '@angular/common/http';
+import {inject, Injector} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+import {environment} from '../../environments/environment';
+import {AdminStatsService} from '../../services/admin-stats.service';
+import {AdminService} from '../../services/admin.service';
+import {BocauhoiService} from '../../services/bocauhoi.service';
+import {CauHoiService} from '../../services/cauhoi.service';
+import {ChatWsService} from '../../services/chat-ws.service';
+import {ChatService} from '../../services/chat.service';
+import {ChudeService} from '../../services/chude.service';
+import {FriendService} from '../../services/friend.service';
+import {GroupChatService} from '../../services/group-chat.service';
+import {HttpUtilService} from '../../services/http.util.service';
+import {KhoahocService} from '../../services/khoahoc.service';
+import {LeaderboardService} from '../../services/leaderboard.service';
+import {LuyenTapService} from '../../services/luyentap.service';
+import {NotificationWsService} from '../../services/notification-ws.service';
+import {NotificationService} from '../../services/notification.service';
+import {ThanhtichService} from '../../services/thanhtich.service';
+import {ToastNotificationService} from '../../services/toast-notification.service';
+import {TokenService} from '../../services/token.service';
+import {TrandauService} from '../../services/trandau.service';
+import {UserStatsService} from '../../services/user-stats.service';
+import {UserService} from '../../services/user.service';
+import {WsTrandauService} from '../../services/ws-trandau.service';
+import {LoginStreakService} from '../../services/login-streak.service';
 
 export class Base {
   router: Router = inject(Router);
@@ -31,6 +36,7 @@ export class Base {
   tranDauService: TrandauService = inject(TrandauService);
   bocauHoiService: BocauhoiService = inject(BocauhoiService);
   httpUtilService: HttpUtilService = inject(HttpUtilService);
+  httpUtil: HttpUtilService = inject(HttpUtilService);
   chuDeService: ChudeService = inject(ChudeService);
   cauHoiService: CauHoiService = inject(CauHoiService);
   wsTrandauService: WsTrandauService = inject(WsTrandauService);
@@ -46,7 +52,15 @@ export class Base {
   userStatsService: UserStatsService = inject(UserStatsService);
   protected chatService: ChatService = inject(ChatService);
   protected chatWsService: ChatWsService = inject(ChatWsService);
+  protected groupChatService: GroupChatService = inject(GroupChatService);
   khoaHocService: KhoahocService = inject(KhoahocService);
+  loginStreakService: LoginStreakService = inject(LoginStreakService);
   document: Document = inject(DOCUMENT);
   location: Location = inject(Location);
+  protected injector: Injector = inject(Injector);
+  protected http: HttpClient = inject(HttpClient);
+  protected toastr: ToastrService = inject(ToastrService);
+
+  // API URL
+  protected API_URL = environment.apiBaseUrl;
 }

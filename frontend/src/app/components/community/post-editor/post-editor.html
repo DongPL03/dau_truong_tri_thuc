@@ -5,17 +5,17 @@
       <a routerLink="/community" class="btn-back">
         <i class="fa-solid fa-arrow-left"></i>
       </a>
-      <h1>{{ isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới' }}</h1>
+      <h1>{{ isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới' }}
+      </h1>
       <div class="header-actions">
         <button class="btn-submit"
-                [disabled]="!isValid || isSubmitting"
-                (click)="submit()">
+          [disabled]="!isValid || isSubmitting" (click)="submit()">
           @if (isSubmitting) {
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Đang xử lý...
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Đang xử lý...
           } @else {
-            <i class="fa-solid fa-paper-plane"></i>
-            {{ isEditMode ? 'Cập nhật' : 'Đăng bài' }}
+          <i class="fa-solid fa-paper-plane"></i>
+          {{ isEditMode ? 'Cập nhật' : 'Đăng bài' }}
           }
         </button>
       </div>
@@ -31,18 +31,17 @@
             Tiêu đề <span class="required">*</span>
           </label>
           <input type="text" class="form-input title-input"
-                 [(ngModel)]="tieuDe"
-                 placeholder="Nhập tiêu đề bài viết..."
-                 maxlength="200">
+            [(ngModel)]="tieuDe"
+            placeholder="Nhập tiêu đề bài viết..." maxlength="200">
           <div class="input-meta">
-                        <span class="char-count"
-                              [class.warning]="tieuDe.length < 10">
-                            {{ tieuDe.length }}/200
-                        </span>
-            @if (tieuDe.length > 0 && tieuDe.length < 10) {
-              <span class="error">Tối thiểu 10 ký
-                            tự</span>
-            }
+            <span class="char-count"
+              [class.warning]="tieuDe.length < 10">
+              {{ tieuDe.length }}/200
+            </span>
+            @if (tieuDe.length > 0 && tieuDe.length < 10) { <span
+              class="error">Tối thiểu 10 ký
+              tự</span>
+              }
           </div>
         </div>
 
@@ -62,44 +61,40 @@
           <label class="form-label">
             Hình ảnh
             <span class="label-hint">(Tối đa 10 hình, mỗi
-                            hình không quá 5MB)</span>
+              hình không quá 5MB)</span>
           </label>
           <div class="images-section">
             <!-- Upload Area -->
             <label class="upload-area"
-                   [class.disabled]="uploadedImages.length >= 10">
-              <input type="file" accept="image/*"
-                     multiple
-                     [disabled]="uploadedImages.length >= 10"
-                     (change)="onImageSelect($event)">
+              [class.disabled]="uploadedImages.length >= 10">
+              <input type="file" accept="image/*" multiple
+                [disabled]="uploadedImages.length >= 10"
+                (change)="onImageSelect($event)">
               <div class="upload-content">
-                <i
-                  class="fa-solid fa-cloud-upload-alt"></i>
+                <i class="fa-solid fa-cloud-upload-alt"></i>
                 <span>Kéo thả hoặc click để chọn
-                                    hình</span>
+                  hình</span>
               </div>
             </label>
 
             <!-- Preview Grid -->
             @if (uploadedImages.length) {
-              <div class="images-grid">
-                @for (img of uploadedImages; track
-                  img.preview; let i = $index) {
-                  <div class="image-item">
-                    <img [src]="'http://localhost:8088/api/v1/posts/images/'+ img.preview"
-                         alt="Upload preview">
-                    <button class="btn-remove"
-                            (click)="removeImage(i)">
-                      <i class="fa-solid fa-times"></i>
-                    </button>
-                    @if (img.uploaded) {
-                      <span class="upload-status success">
-                                    <i class="fa-solid fa-check"></i>
-                                </span>
-                    }
-                  </div>
+            <div class="images-grid">
+              @for (img of uploadedImages; track
+              img.preview; let i = $index) {
+              <div class="image-item">
+                <img [src]="getPreviewUrl(img)" alt="Upload preview">
+                <button class="btn-remove" (click)="removeImage(i)">
+                  <i class="fa-solid fa-times"></i>
+                </button>
+                @if (img.uploaded) {
+                <span class="upload-status success">
+                  <i class="fa-solid fa-check"></i>
+                </span>
                 }
               </div>
+              }
+            </div>
             }
           </div>
         </div>
@@ -115,20 +110,19 @@
           </h3>
           <div class="type-options">
             @for (option of loaiOptions; track
-              option.value) {
-              <label class="type-option"
-                     [class.selected]="loai === option.value"
-                     [style.--type-color]="option.color">
-                <input type="radio" name="postType"
-                       [value]="option.value"
-                       [(ngModel)]="loai">
-                <span class="option-icon">{{
-                    option.icon
-                  }}</span>
-                <span class="option-label">{{
-                    option.label
-                  }}</span>
-              </label>
+            option.value) {
+            <label class="type-option"
+              [class.selected]="loai === option.value"
+              [style.--type-color]="option.color">
+              <input type="radio" name="postType"
+                [value]="option.value" [(ngModel)]="loai">
+              <span class="option-icon">{{
+                option.icon
+                }}</span>
+              <span class="option-label">{{
+                option.label
+                }}</span>
+            </label>
             }
           </div>
         </div>
@@ -139,77 +133,73 @@
             <i class="fa-solid fa-tags"></i>
             Tags <span class="required">*</span>
             <span class="tag-count">({{
-                selectedTags.length
+              selectedTags.length
               }}/5)</span>
           </h3>
 
           <!-- Selected Tags -->
           @if (selectedTags.length) {
-            <div class="selected-tags">
-              @for (tag of selectedTags; track tag.id) {
-                <span class="tag-chip"
-                      [style.--tag-color]="tag.mauSac || '#6b7280'">
-                            <i class="fa-solid"
-                               [ngClass]="tag.icon || 'fa-tag'"></i>
-                  {{ tag.ten }}
-                  <button class="btn-remove-tag"
-                          (click)="removeTag(tag)">
-                                <i class="fa-solid fa-times"></i>
-                            </button>
-                        </span>
-              }
-            </div>
+          <div class="selected-tags">
+            @for (tag of selectedTags; track tag.id) {
+            <span class="tag-chip"
+              [style.--tag-color]="tag.mauSac || '#6b7280'">
+              <i class="fa-solid"
+                [ngClass]="tag.icon || 'fa-tag'"></i>
+              {{ tag.ten }}
+              <button class="btn-remove-tag" (click)="removeTag(tag)">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </span>
+            }
+          </div>
           }
 
           <!-- Tag Dropdown -->
           <div class="tag-dropdown-wrapper">
             <button class="btn-add-tag"
-                    [disabled]="selectedTags.length >= 5"
-                    (click)="toggleTagDropdown()">
+              [disabled]="selectedTags.length >= 5"
+              (click)="toggleTagDropdown()">
               <i class="fa-solid fa-plus"></i>
               Thêm tag
             </button>
 
             @if (showTagDropdown) {
-              <div class="tag-dropdown">
-                <input type="text" class="tag-search"
-                       [(ngModel)]="tagSearch"
-                       placeholder="Tìm tag..." autofocus>
-                <div class="tag-list">
-                  @for (tag of filteredTags; track
-                    tag.id) {
-                    <button class="tag-option"
-                            (click)="addTag(tag)">
-                      <i class="fa-solid"
-                         [ngClass]="tag.icon || 'fa-tag'"
-                         [style.color]="tag.mauSac"></i>
-                      {{ tag.ten }}
-                    </button>
-                  } @empty {
-                    <div class="no-tags">Không tìm thấy
-                      tag
-                    </div>
-                  }
+            <div class="tag-dropdown">
+              <input type="text" class="tag-search"
+                [(ngModel)]="tagSearch" placeholder="Tìm tag..."
+                autofocus>
+              <div class="tag-list">
+                @for (tag of filteredTags; track
+                tag.id) {
+                <button class="tag-option" (click)="addTag(tag)">
+                  <i class="fa-solid" [ngClass]="tag.icon || 'fa-tag'"
+                    [style.color]="tag.mauSac"></i>
+                  {{ tag.ten }}
+                </button>
+                } @empty {
+                <div class="no-tags">Không tìm thấy
+                  tag
                 </div>
+                }
               </div>
+            </div>
             }
           </div>
         </div>
 
         <!-- Validation Summary -->
         @if (validationErrors.length) {
-          <div class="validation-card">
-            <h4>
-              <i
-                class="fa-solid fa-exclamation-triangle"></i>
-              Cần hoàn thiện
-            </h4>
-            <ul>
-              @for (error of validationErrors; track error) {
-                <li>{{ error }}</li>
-              }
-            </ul>
-          </div>
+        <div class="validation-card">
+          <h4>
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Cần hoàn thiện
+          </h4>
+          <ul>
+            @for (error of validationErrors; track error) {
+            <li>{{ error }}</li>
+            }
+          </ul>
+        </div>
         }
 
         <!-- Tips -->
@@ -233,5 +223,5 @@
 
 <!-- Click outside to close dropdown -->
 @if (showTagDropdown) {
-  <div class="backdrop" (click)="showTagDropdown = false"></div>
+<div class="backdrop" (click)="showTagDropdown = false"></div>
 }

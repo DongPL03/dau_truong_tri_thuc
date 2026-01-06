@@ -192,7 +192,8 @@ export class Home extends Base implements OnInit {
   }
 
   navigateRecommendation() {
-    this.router.navigate(['/goi-y-hoc-tap']).then(() => {});
+    this.router.navigate(['/goi-y-hoc-tap']).then(() => {
+    });
   }
 
   navigateFriend(): void {
@@ -201,4 +202,28 @@ export class Home extends Base implements OnInit {
   }
 
 
+  createRoom() {
+    this.router.navigate(['/tran-dau/tao-moi-tran-dau']).then(r => {
+    });
+  }
+
+  navigateCourse() {
+    this.router.navigate(['/khoa-hoc']).then(r => {
+    });
+  }
+
+  navigateLeaderboard() {
+    this.router.navigate(['/bang-xep-hang']).then(r => {
+    });
+  }
+
+  navigateMission() {
+    this.router.navigate(['/nhiem-vu']).then(r => {
+    });
+  }
+
+  navigateInventory() {
+    this.router.navigate(['/kho-do']).then(r => {
+    });
+  }
 }

@@ -1,0 +1,109 @@
+<div class="shop-page">
+
+  <header class="shop-header animate-fade-down">
+    <div class="header-content">
+      <div class="title-group">
+        <h1>🛍️ Cửa Hàng Vật Phẩm</h1>
+        <p>Mua sắm vật phẩm hỗ trợ để leo rank thần tốc!</p>
+      </div>
+
+      <div class="balance-card">
+        <span class="label">Số dư hiện tại</span>
+        <div class="coin-display">
+          <span class="coin-icon">💰</span>
+          <span class="amount">{{ tienVang() | number }} xu</span>
+          <button class="btn-add-coin" title="Nạp thêm">+</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="filter-bar animate-fade-up">
+    <div class="filter-group">
+      <label>Độ hiếm:</label>
+      <select [ngModel]="filterRarity()" (ngModelChange)="filterRarity.set($event)">
+        <option value="ALL">Tất cả</option>
+        <option value="COMMON">Thường</option>
+        <option value="RARE">Hiếm</option>
+        <option value="EPIC">Sử thi</option>
+        <option value="LEGENDARY">Huyền thoại</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Sắp xếp:</label>
+      <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
+        <option value="PRICE_ASC">Giá: Thấp -> Cao</option>
+        <option value="PRICE_DESC">Giá: Cao -> Thấp</option>
+        <option value="RARITY">Độ hiếm</option>
+      </select>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Đang tải cửa hàng...</p>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="shop-grid animate-fade-up">
+      @for (item of filteredItems(); track item.id) {
+        <div class="item-card" [attr.data-rarity]="item.do_hiem" [class.disabled]="!item.co_the_mua">
+
+          <div class="rarity-badge" [class]="getRarityClass(item.do_hiem)">
+            {{ getRarityLabel(item.do_hiem) }}
+          </div>
+
+          <div class="item-icon-wrapper">
+            <div class="icon-circle" [style.color]="item.mau_sac">
+              {{ item.icon }} </div>
+          </div>
+
+          <div class="item-info">
+            <h3 class="item-name">{{ item.ten }}</h3>
+            <p class="item-desc">{{ item.mo_ta }}</p>
+          </div>
+
+          <div class="item-footer">
+            <div class="price-tag">
+              <span class="coin-symbol">💰</span> {{ item.gia_xu | number }}
+            </div>
+
+            @if (item.thong_bao_gioi_han) {
+              <span class="limit-text warning">{{ item.thong_bao_gioi_han }}</span>
+            } @else if (item.so_luong_con_lai_tuan < 99) {
+              <span class="limit-text">Còn {{ item.so_luong_con_lai_tuan }}</span>
+            }
+
+            <button class="btn-buy" (click)="purchaseItem(item)"
+                    [disabled]="!item.co_the_mua || purchasing() || tienVang() < item.gia_xu">
+              @if (purchasing()) { <span class="spinner-sm"></span> }
+              @else if (tienVang() < item.gia_xu) { Thiếu xu }
+              @else { Mua ngay }
+            </button>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    @if (filteredItems().length === 0) {
+      <div class="empty-state">
+        <p>🔍 Không tìm thấy vật phẩm nào.</p>
+      </div>
+    }
+  }
+
+  <div class="shop-rules">
+    <h3><i class="fas fa-info-circle"></i> Quy định mua hàng</h3>
+    <div class="rule-tags">
+      <span class="tag legendary">💎 Legendary: 1/tuần</span>
+      <span class="tag epic">💜 Epic: 2/tuần</span>
+      <span class="tag common">💚 Common: Không giới hạn</span>
+      <span class="tag reset">⏰ Reset: Thứ 2</span>
+    </div>
+  </div>
+
+</div>

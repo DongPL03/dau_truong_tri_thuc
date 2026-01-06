@@ -251,10 +251,10 @@
       </div>
 
       @if (phanTich.giai_phap){
-        <div class="analysis-suggestion">
-          <h3><i class="fas fa-lightbulb"></i> Gợi ý ôn tập</h3>
-          <pre>{{ phanTich.giai_phap }}</pre>
-        </div>
+      <div class="analysis-suggestion">
+        <h3><i class="fas fa-lightbulb"></i> Gợi ý ôn tập</h3>
+        <pre>{{ phanTich.giai_phap }}</pre>
+      </div>
       }
 
     </div>
@@ -266,6 +266,26 @@
     </p>
     }
   </div>
+
+  <!-- Rating Section -->
+  @if (detail.khoa_hoc.trang_thai === 'PUBLISHED' && !isOwner()) {
+  <div class="rating-section">
+    <h2 class="section-title">
+      <i class="fas fa-star"></i> Đánh giá khóa học
+    </h2>
+    <app-danh-gia loaiDoiTuong="KHOA_HOC" [doiTuongId]="id"
+      [allowRating]="canRateAndComment()">
+    </app-danh-gia>
+
+    @if (!canRateAndComment() && detail.khoa_hoc.gia_mo_khoa &&
+    detail.khoa_hoc.gia_mo_khoa > 0 && !detail.da_mo_khoa_khoa_hoc) {
+    <div class="rating-unlock-hint">
+      <i class="fas fa-info-circle"></i>
+      Bạn cần mở khóa khóa học này để có thể đánh giá
+    </div>
+    }
+  </div>
+  }
 </div>
 </div>
 } @else if (loading) {

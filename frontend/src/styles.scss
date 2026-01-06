@@ -11,11 +11,11 @@
   /* Palette: Modern Slate & Indigo */
   --c-bg-body: #f0f2f5;
   --c-bg-card: #ffffff;
-  --c-primary: #6C5DD3;
+  --c-primary: #6c5dd3;
   --c-primary-light: #eef2ff;
   --c-primary-hover: #5b4cc4; /* Thêm màu hover */
 
-  --c-text-main: #11142D;
+  --c-text-main: #11142d;
   --c-text-secondary: #808191;
   --c-border: #e2e8f0;
 
@@ -42,7 +42,9 @@ body {
   overflow-x: hidden; /* Tránh thanh cuộn ngang không mong muốn */
 }
 
-h1, h2, .logo {
+h1,
+h2,
+.logo {
   font-weight: 800;
   /* font-family: var(--font-display); */
 }
@@ -180,7 +182,8 @@ h1, h2, .logo {
     text-decoration: none !important;
     transition: all 0.2s;
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
       background-color: #f3f4f6 !important;
       color: #1f2937 !important;
       outline: none;
@@ -195,7 +198,8 @@ h1, h2, .logo {
     }
 
     /* Fix icon */
-    i, svg {
+    i,
+    svg {
       width: 20px;
       min-width: 20px;
       text-align: center;
@@ -218,7 +222,7 @@ h1, h2, .logo {
   pointer-events: none;
   z-index: 9999;
   text-align: center;
-  animation: cartoonShake 0.6s cubic-bezier(.36, .07, .19, .97) both;
+  animation: cartoonShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -228,7 +232,7 @@ h1, h2, .logo {
   font-family: inherit;
   font-size: 3.5rem;
   font-weight: 900;
-  color: #FFD700;
+  color: #ffd700;
   -webkit-text-stroke: 2px #d35400;
   text-shadow: 4px 4px 0px #000;
   transform: rotate(-5deg);
@@ -413,7 +417,7 @@ h1, h2, .logo {
   top: 0;
   left: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #6C5DD3, #a29bfe);
+  background: linear-gradient(90deg, #6c5dd3, #a29bfe);
   z-index: 1;
 }
 
@@ -563,5 +567,122 @@ h1, h2, .logo {
   }
   to {
     transform: translateY(-10px);
+  }
+}
+
+/* =========================================
+   7. LEVEL UP REWARDS POPUP STYLES
+   ========================================= */
+.levelup-rewards-section {
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.levelup-banner {
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #ec4899);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+  padding: 12px 20px;
+  border-radius: 16px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.levelup-star {
+  font-size: 1.8rem;
+  animation: starPulse 1s ease infinite;
+}
+
+.levelup-text {
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.levelup-level {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.levelup-rewards-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.levelup-reward-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(168, 85, 247, 0.2));
+  border: 2px solid rgba(245, 158, 11, 0.5);
+  border-radius: 12px;
+  padding: 8px 14px;
+  animation: itemPopIn 0.5s ease forwards;
+
+  .reward-icon {
+    font-size: 1.5rem;
+  }
+
+  .reward-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fbbf24;
+  }
+
+  .reward-qty {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.2);
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes starPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes itemPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }

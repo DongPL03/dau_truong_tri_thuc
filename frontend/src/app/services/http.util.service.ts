@@ -1,13 +1,12 @@
-import {Injectable} from '@angular/core';
-import {HttpHeaders} from '@angular/common/http';
-import {TokenService} from './token.service';
+import { HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { TokenService } from './token.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpUtilService {
-  constructor(private tokenService: TokenService) {
-  }
+  constructor(private tokenService: TokenService) {}
 
   /** 🔹 Header mặc định (cho các request public như dang-nhap/dang-ky) */
   createHeaders(): HttpHeaders {
@@ -23,7 +22,16 @@ export class HttpUtilService {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept-Language': 'vi',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
+  /** 🔹 Header cho upload file (không set Content-Type, để browser tự set multipart/form-data) */
+  createUploadHeaders(): HttpHeaders {
+    const token = this.tokenService.getAccessToken();
+    return new HttpHeaders({
+      'Accept-Language': 'vi',
+      Authorization: `Bearer ${token}`,
     });
   }
 }

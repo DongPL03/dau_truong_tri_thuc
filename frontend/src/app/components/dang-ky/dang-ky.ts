@@ -1,25 +1,21 @@
-import {Component, ViewChild} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule, NgForm} from '@angular/forms';
-import {Base} from '../base/base';
-import {ToastrService} from 'ngx-toastr';
+import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, ViewChild } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import Swal from 'sweetalert2';
-import 'sweetalert2/src/sweetalert2.scss'
-import {ResponseObject} from '../../responses/response-object';
-import {RegisterDto} from '../../dtos/nguoi-dung/register-dto';
-import {HttpErrorResponse} from '@angular/common/http';
-
+import { RegisterDto } from '../../dtos/nguoi-dung/register-dto';
+import { ResponseObject } from '../../responses/response-object';
+import { Base } from '../base/base';
 
 @Component({
   selector: 'app-dang-ky',
   imports: [CommonModule, FormsModule],
   templateUrl: './dang-ky.html',
   styleUrl: './dang-ky.scss',
-  standalone: true
+  standalone: true,
 })
-export class DangKy extends Base
-  // implements AfterViewInit
-{
+// implements AfterViewInit
+export class DangKy extends Base {
   @ViewChild('registerForm') registerForm!: NgForm;
 
   // Biến dữ liệu
@@ -40,7 +36,7 @@ export class DangKy extends Base
   //   console.log('Hàm JS đã chạy qua Module Alias!');
   // }
 
-  constructor(private toastr: ToastrService) {
+  constructor() {
     super();
     this.tenDangNhap = '';
     this.email = '';
@@ -60,7 +56,7 @@ export class DangKy extends Base
 
   checkPasswordsMatch() {
     if (this.password !== this.retypePassword) {
-      this.registerForm.form.controls['retypePassword']?.setErrors({passwordMismatch: true});
+      this.registerForm.form.controls['retypePassword']?.setErrors({ passwordMismatch: true });
     } else {
       this.registerForm.form.controls['retypePassword']?.setErrors(null);
     }
@@ -82,9 +78,8 @@ export class DangKy extends Base
           title: 'Đăng ký thành công!',
           text: 'Mời bạn đăng nhập để tiếp tục.',
           icon: 'success',
-          confirmButtonText: 'Đăng nhập'
-        })
-          .then(() => this.router.navigate(['']));
+          confirmButtonText: 'Đăng nhập',
+        }).then(() => this.router.navigate(['']));
       },
       error: (err: HttpErrorResponse) => {
         // const msg = err?.error?.message || 'Đăng ký thất bại, vui lòng thử lại.';
@@ -96,7 +91,6 @@ export class DangKy extends Base
   }
 
   login() {
-    this.router.navigate(['/login']).then(r => {
-    });
+    this.router.navigate(['/login']).then((r) => {});
   }
 }

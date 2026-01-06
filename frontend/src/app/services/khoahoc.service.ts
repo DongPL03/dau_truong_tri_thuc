@@ -24,9 +24,11 @@ export class KhoahocService {
     trangThai: string = '',
     sortOrder: string = 'NEWEST',
     page: number = 0,
-    limit: number = 10
+    limit: number = 10,
+    minRating?: number,
+    maxRating?: number
   ): Observable<ResponseObject<PageResponse<KhoaHoiResponse>>> {
-    const params = {
+    let params: any = {
       keyword,
       chu_de_id: chuDeId.toString(),
       trang_thai: trangThai,
@@ -34,6 +36,12 @@ export class KhoahocService {
       page: page.toString(),
       limit: limit.toString(),
     };
+    if (minRating !== undefined) {
+      params.min_rating = minRating.toString();
+    }
+    if (maxRating !== undefined) {
+      params.max_rating = maxRating.toString();
+    }
     return this.http.get<ResponseObject<PageResponse<KhoaHoiResponse>>>(`${this.api}`, {
       headers: this.httpUtil.createAuthHeaders(),
       params,

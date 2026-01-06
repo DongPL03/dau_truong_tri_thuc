@@ -7,10 +7,11 @@ import { CauHoiResponse } from '../../../responses/cauhoi/cauhoi-response';
 import { PageResponse } from '../../../responses/page-response';
 import { ResponseObject } from '../../../responses/response-object';
 import { Base } from '../../base/base';
+import { DanhGiaComponent } from '../../shared/danh-gia/danh-gia';
 
 @Component({
   selector: 'app-chi-tiet-bo-cau-hoi',
-  imports: [CommonModule],
+  imports: [CommonModule, DanhGiaComponent],
   templateUrl: './chi-tiet-bo-cau-hoi.html',
   styleUrl: './chi-tiet-bo-cau-hoi.scss',
   standalone: true,
@@ -159,6 +160,23 @@ export class BoCauHoiDetail extends Base implements OnInit {
   /** Được xem đáp án/giải thích? (chỉ owner hoặc admin) */
   canViewAnswers(): boolean {
     return this.isOwner() || this.isAdmin();
+  }
+
+  /**
+   * Kiểm tra có được phép đánh giá/comment không
+   * - Chủ sở hữu không được đánh giá bộ của mình
+   * - Bộ FREE: ai cũng được đánh giá
+   * - Bộ TRẢ PHÍ: chỉ người đã mở khóa mới được đánh giá
+   */
+  canRateAndComment(): boolean {
+    if (!this.bo) return false;
+    if (this.isOwner()) return false; // Chủ không tự đánh giá
+
+    // Nếu bộ FREE (không cần mở khóa) → ai cũng rating được
+    if (!this.bo.can_mo_khoa) return true;
+
+    // Nếu bộ TRẢ PHÍ → chỉ người đã mở khóa mới rating được
+    return !!this.bo.da_mo_khoa;
   }
 
   goCreateQuestion() {

@@ -1,19 +1,20 @@
 // src/app/components/admin/dashboard/admin-dashboard.ts
-import {CommonModule} from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 
-import {ChartConfiguration, ChartOptions} from 'chart.js';
-import {BaseChartDirective} from 'ng2-charts';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import Swal from 'sweetalert2';
-import {AdminDashboardStatsResponse} from '../../../responses/admin/admin-dashboard-stats-response';
-import {BoCauHoiResponse} from '../../../responses/bocauhoi/bocauhoi-response';
-import {PageResponse} from '../../../responses/page-response';
-import {ResponseObject} from '../../../responses/response-object';
-import {AdminSummaryStatsResponse} from '../../../responses/thongke/admin-summary-stats-response';
-import {DateCountResponse} from '../../../responses/thongke/date-count-response';
-import {TopBoCauHoiStatsResponse} from '../../../responses/thongke/top-bo-cau-hoi-stats-response';
-import {TopPlayerStatsResponse} from '../../../responses/thongke/top-player-stats-response';
-import {Base} from '../../base/base';
+import { AdminDashboardStatsResponse } from '../../../responses/admin/admin-dashboard-stats-response';
+import { BoCauHoiResponse } from '../../../responses/bocauhoi/bocauhoi-response';
+import { PageResponse } from '../../../responses/page-response';
+import { ResponseObject } from '../../../responses/response-object';
+import { AdminSummaryStatsResponse } from '../../../responses/thongke/admin-summary-stats-response';
+import { DateCountResponse } from '../../../responses/thongke/date-count-response';
+import { RatingOverviewStatsResponse } from '../../../responses/thongke/rating-stats-response';
+import { TopBoCauHoiStatsResponse } from '../../../responses/thongke/top-bo-cau-hoi-stats-response';
+import { TopPlayerStatsResponse } from '../../../responses/thongke/top-player-stats-response';
+import { Base } from '../../base/base';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -39,12 +40,14 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
   loading_battles_chart = false;
   loading_top_bo = false;
   loading_top_players = false;
+  loading_rating_stats = false;
 
   // --- data ---
   summary: AdminSummaryStatsResponse | null = null;
   battles_by_day: DateCountResponse[] = [];
   top_bo_cau_hoi: TopBoCauHoiStatsResponse[] = [];
   top_players: TopPlayerStatsResponse[] = [];
+  rating_stats: RatingOverviewStatsResponse | null = null;
 
   // nếu bạn dùng chart lib (Apex / Chart.js), có thể map ra dạng label/value:
   battle_chart_labels: string[] = [];
@@ -68,6 +71,7 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
     this.load_battles_by_day();
     this.load_top_bo_cau_hoi();
     this.load_top_players();
+    this.load_rating_stats();
   }
 
   startAutoRefresh(): void {
@@ -212,8 +216,7 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
       error: (err: any) => {
         console.error('get_summary error', err);
         this.loading_summary = false;
-        Swal.fire('Lỗi', 'Không lấy được thống kê tổng quan hệ thống', 'error').then((r) => {
-        });
+        Swal.fire('Lỗi', 'Không lấy được thống kê tổng quan hệ thống', 'error').then((r) => {});
       },
     });
   }
@@ -234,8 +237,7 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
       error: (err: any) => {
         console.error('get_battles_by_day error', err);
         this.loading_battles_chart = false;
-        Swal.fire('Lỗi', 'Không lấy được thống kê số trận theo ngày', 'error').then((r) => {
-        });
+        Swal.fire('Lỗi', 'Không lấy được thống kê số trận theo ngày', 'error').then((r) => {});
       },
     });
   }
@@ -250,8 +252,7 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
       error: (err) => {
         console.error('get_top_bo_cau_hoi error', err);
         this.loading_top_bo = false;
-        Swal.fire('Lỗi', 'Không lấy được top bộ câu hỏi', 'error').then((r) => {
-        });
+        Swal.fire('Lỗi', 'Không lấy được top bộ câu hỏi', 'error').then((r) => {});
       },
     });
   }
@@ -266,6 +267,20 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
       error: (err) => {
         console.error('get_top_players error', err);
         this.loading_top_players = false;
+      },
+    });
+  }
+
+  load_rating_stats(limit: number = 5): void {
+    this.loading_rating_stats = true;
+    this.adminStatsService.get_rating_stats(limit).subscribe({
+      next: (res: ResponseObject<RatingOverviewStatsResponse>) => {
+        this.rating_stats = res.data ?? null;
+        this.loading_rating_stats = false;
+      },
+      error: (err) => {
+        console.error('get_rating_stats error', err);
+        this.loading_rating_stats = false;
       },
     });
   }
@@ -291,22 +306,22 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
     responsive: true,
     maintainAspectRatio: false,
     elements: {
-      line: {tension: 0.4}, // Đường cong mềm mại
-      point: {radius: 4, hoverRadius: 6}
+      line: { tension: 0.4 }, // Đường cong mềm mại
+      point: { radius: 4, hoverRadius: 6 },
     },
     scales: {
-      x: {grid: {display: false}, ticks: {color: '#94A3B8'}},
-      y: {grid: {color: '#F1F5F9'}, ticks: {color: '#94A3B8'}, beginAtZero: true}
+      x: { grid: { display: false }, ticks: { color: '#94A3B8' } },
+      y: { grid: { color: '#F1F5F9' }, ticks: { color: '#94A3B8' }, beginAtZero: true },
     },
     plugins: {
-      legend: {display: false}, // Ẩn legend mặc định cho gọn
+      legend: { display: false }, // Ẩn legend mặc định cho gọn
       tooltip: {
         backgroundColor: '#1E293B',
         padding: 10,
         cornerRadius: 8,
-        displayColors: false
-      }
-    }
+        displayColors: false,
+      },
+    },
   };
 
   updateBattlesChart(): void {
@@ -366,18 +381,18 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
     maintainAspectRatio: false,
     scales: {
       x: {
-        ticks: {color: '#e5e7eb'},
-        grid: {color: 'rgba(148,163,184,0.15)'},
+        ticks: { color: '#e5e7eb' },
+        grid: { color: 'rgba(148,163,184,0.15)' },
       },
       y: {
         beginAtZero: true,
-        ticks: {color: '#e5e7eb'},
-        grid: {color: 'rgba(148,163,184,0.15)'},
+        ticks: { color: '#e5e7eb' },
+        grid: { color: 'rgba(148,163,184,0.15)' },
       },
     },
     plugins: {
       legend: {
-        labels: {color: '#000'},
+        labels: { color: '#000' },
       },
     },
   };
@@ -401,18 +416,18 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
     maintainAspectRatio: false,
     scales: {
       x: {
-        ticks: {color: '#e5e7eb'},
-        grid: {color: 'rgba(148,163,184,0.2)'},
+        ticks: { color: '#e5e7eb' },
+        grid: { color: 'rgba(148,163,184,0.2)' },
       },
       y: {
         beginAtZero: true,
-        ticks: {color: '#e5e7eb'},
-        grid: {color: 'rgba(148,163,184,0.2)'},
+        ticks: { color: '#e5e7eb' },
+        grid: { color: 'rgba(148,163,184,0.2)' },
       },
     },
     plugins: {
       legend: {
-        labels: {color: '#000'},
+        labels: { color: '#000' },
       },
     },
   };
@@ -452,31 +467,27 @@ export class AdminDashboard extends Base implements OnInit, OnDestroy {
     maintainAspectRatio: false,
     cutout: '70%', // Lỗ giữa to hơn cho hiện đại
     plugins: {
-      legend: {display: false}, // Dùng legend custom HTML cho đẹp
+      legend: { display: false }, // Dùng legend custom HTML cho đẹp
       tooltip: {
-        enabled: true
-      }
-    }
+        enabled: true,
+      },
+    },
   };
 
   // 🔗 Quick links
   goToBoCauHoi(): void {
-    this.router.navigate(['/admin/bo-cau-hoi']).then((r) => {
-    });
+    this.router.navigate(['/admin/bo-cau-hoi']).then((r) => {});
   }
 
   goToUsers(): void {
-    this.router.navigate(['/admin/users']).then((r) => {
-    });
+    this.router.navigate(['/admin/users']).then((r) => {});
   }
 
   goToTranDau(): void {
-    this.router.navigate(['/admin/tran-dau']).then((r) => {
-    });
+    this.router.navigate(['/admin/tran-dau']).then((r) => {});
   }
 
   goToThongKe(): void {
-    this.router.navigate(['/admin/thong-ke']).then((r) => {
-    });
+    this.router.navigate(['/admin/thong-ke']).then((r) => {});
   }
 }

@@ -1,4 +1,5 @@
-import {AchievementResponse} from '../thanhtich/achievement-response';
+import { AchievementResponse } from '../thanhtich/achievement-response';
+import { LevelUpRewardItem } from './match-reward-response';
 
 export interface FinishedPlayer {
   user_id: number;
@@ -15,6 +16,8 @@ export interface FinishedPlayer {
   level_after?: number;
   rank_tier_before?: string; // 'BRONZE' | 'SILVER' | ...
   rank_tier_after?: string;
+  leveled_up?: boolean;
+  level_up_rewards?: LevelUpRewardItem[];
 
   new_achievements?: AchievementResponse[];
 }

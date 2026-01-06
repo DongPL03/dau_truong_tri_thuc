@@ -7,11 +7,12 @@ import { KhoaHoiDetailResponse } from '../../../responses/khoahoc/khoa-hoi-detai
 import { PhanTichHocTapResponse } from '../../../responses/khoahoc/phan-tich-hoc-tap-response';
 import { ResponseObject } from '../../../responses/response-object';
 import { Base } from '../../base/base';
+import { DanhGiaComponent } from '../../shared/danh-gia/danh-gia';
 
 @Component({
   selector: 'app-chi-tiet-khoa-hoc',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DanhGiaComponent],
   templateUrl: './chi-tiet-khoa-hoc.html',
   styleUrl: './chi-tiet-khoa-hoc.scss',
 })
@@ -311,5 +312,31 @@ export class ChiTietKhoaHoc extends Base implements OnInit {
         Swal.fire('Lỗi', msg, 'error');
       },
     });
+  }
+
+  /**
+   * Kiểm tra có phải chủ sở hữu khóa học không
+   */
+  isOwner(): boolean {
+    const userId = this.tokenService.getUserId();
+    return this.detail?.khoa_hoc?.nguoi_tao_id === userId;
+  }
+
+  /**
+   * Kiểm tra có được phép đánh giá/comment không
+   * - Chủ sở hữu không được đánh giá khóa học của mình
+   * - Khóa học FREE: ai cũng được đánh giá
+   * - Khóa học TRẢ PHÍ: chỉ người đã mở khóa mới được đánh giá
+   */
+  canRateAndComment(): boolean {
+    if (!this.detail) return false;
+    if (this.isOwner()) return false; // Chủ không tự đánh giá
+
+    const gia = this.detail.khoa_hoc?.gia_mo_khoa ?? 0;
+    // Nếu khóa học FREE (gia_mo_khoa = 0) → ai cũng rating được
+    if (gia <= 0) return true;
+
+    // Nếu khóa học TRẢ PHÍ → chỉ người đã mở khóa mới rating được
+    return !!this.detail.da_mo_khoa_khoa_hoc;
   }
 }

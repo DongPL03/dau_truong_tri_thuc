@@ -8,6 +8,7 @@ import { environment } from '../environments/environment';
 import { ResponseObject } from '../responses/response-object';
 import { AdminSummaryStatsResponse } from '../responses/thongke/admin-summary-stats-response';
 import { DateCountResponse } from '../responses/thongke/date-count-response';
+import { RatingOverviewStatsResponse } from '../responses/thongke/rating-stats-response';
 import { TopBoCauHoiStatsResponse } from '../responses/thongke/top-bo-cau-hoi-stats-response';
 import { TopPlayerStatsResponse } from '../responses/thongke/top-player-stats-response';
 import { HttpUtilService } from './http.util.service';
@@ -44,6 +45,14 @@ export class AdminStatsService {
   /** 🔹 Top người chơi (theo điểm tích lũy) */
   get_top_players(limit: number = 10): Observable<ResponseObject<TopPlayerStatsResponse[]>> {
     return this.http.get<ResponseObject<TopPlayerStatsResponse[]>>(`${this.api}/top-players`, {
+      headers: this.http_util.createAuthHeaders(),
+      params: { limit },
+    });
+  }
+
+  /** 🔹 Thống kê đánh giá (rating overview) */
+  get_rating_stats(limit: number = 5): Observable<ResponseObject<RatingOverviewStatsResponse>> {
+    return this.http.get<ResponseObject<RatingOverviewStatsResponse>>(`${this.api}/rating-stats`, {
       headers: this.http_util.createAuthHeaders(),
       params: { limit },
     });

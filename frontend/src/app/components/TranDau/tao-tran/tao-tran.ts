@@ -104,8 +104,6 @@ export class TaoTran extends Base implements OnInit {
     this.loadBoCauHoiForMode(mode);
   }
 
-  // ====== PHẦN PREVIEW BO CÂU HỎI (GIỮ NGUYÊN) ======
-
   onBoCauHoiChanged(bo_cau_hoi_id: number) {
     this.form.bo_cau_hoi_id = bo_cau_hoi_id;
     if (!bo_cau_hoi_id) {
@@ -162,16 +160,7 @@ export class TaoTran extends Base implements OnInit {
     });
   }
 
-  // ====== (các hàm submit, cancel... giữ nguyên) ======
-
   onSubmit() {
-    if (this.createForm.invalid) {
-      this.createForm.control.markAllAsTouched();
-      Swal.fire('Thiếu thông tin', 'Hãy kiểm tra lại các trường bắt buộc', 'info').then(r => {
-      });
-      return;
-    }
-
     if (!this.form.cong_khai && (!this.form.ma_pin || !this.form.ma_pin.trim())) {
       Swal.fire('Thiếu PIN', 'Phòng riêng tư bắt buộc nhập mã PIN', 'info').then(r => {
       });

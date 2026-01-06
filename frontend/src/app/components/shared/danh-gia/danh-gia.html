@@ -1,0 +1,152 @@
+<div class="rating-container">
+    <!-- Stats Summary -->
+    <div class="rating-summary" *ngIf="stats">
+        <div class="rating-average">
+            <span class="average-number">{{ stats.trung_binh_sao |
+                number:'1.1-1' }}</span>
+            <div class="stars-display">
+                <ng-container *ngFor="let i of [1,2,3,4,5]">
+                    <i class="fa-star"
+                        [class.fas]="i <= stats.trung_binh_sao"
+                        [class.far]="i > stats.trung_binh_sao"></i>
+                </ng-container>
+            </div>
+            <span class="total-reviews">{{ stats.tong_danh_gia }} đánh
+                giá</span>
+        </div>
+
+        <div class="rating-distribution">
+            <div class="distribution-row"
+                *ngFor="let star of [5,4,3,2,1]">
+                <span class="star-label">{{ star }} <i
+                        class="fas fa-star"></i></span>
+                <div class="progress-bar">
+                    <div class="progress-fill"
+                        [style.width.%]="getStarPercentage(star)">
+                    </div>
+                </div>
+                <span class="star-count">{{ stats.phan_bo_sao[star] ||
+                    0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Rating Form -->
+    <div class="my-rating-section" *ngIf="allowRating">
+        <h4 *ngIf="!myRating">Đánh giá của bạn</h4>
+        <h4 *ngIf="myRating && !isEditing">Đánh giá của bạn</h4>
+        <h4 *ngIf="myRating && isEditing">Chỉnh sửa đánh giá</h4>
+
+        <div class="star-rating-input" *ngIf="!myRating || isEditing">
+            <ng-container *ngFor="let star of [1,2,3,4,5]">
+                <i class="fa-star star-input"
+                    [class.fas]="star <= (hoverStar || selectedStar)"
+                    [class.far]="star > (hoverStar || selectedStar)"
+                    (mouseenter)="onStarHover(star)"
+                    (mouseleave)="onStarLeave()"
+                    (click)="onStarClick(star)">
+                </i>
+            </ng-container>
+            <span class="star-text" *ngIf="selectedStar">{{
+                selectedStar }} sao</span>
+        </div>
+
+        <!-- Display existing rating -->
+        <div class="existing-rating" *ngIf="myRating && !isEditing">
+            <div class="my-stars">
+                <ng-container *ngFor="let star of [1,2,3,4,5]">
+                    <i class="fas fa-star"
+                        *ngIf="star <= myRating.so_sao"></i>
+                    <i class="far fa-star"
+                        *ngIf="star > myRating.so_sao"></i>
+                </ng-container>
+            </div>
+            <p class="my-review-content" *ngIf="myRating.noi_dung">{{
+                myRating.noi_dung }}</p>
+            <p class="review-date">Đánh giá lúc: {{
+                formatDate(myRating.cap_nhat_luc) }}</p>
+            <div class="my-rating-actions">
+                <button class="btn btn-sm btn-outline-primary"
+                    (click)="isEditing = true">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
+                <button class="btn btn-sm btn-outline-danger"
+                    (click)="deleteMyRating()">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+
+        <!-- Review textarea -->
+        <div class="review-input" *ngIf="!myRating || isEditing">
+            <textarea [(ngModel)]="reviewContent"
+                placeholder="Viết nhận xét của bạn (tùy chọn)..."
+                rows="3">
+      </textarea>
+
+            <div class="rating-actions">
+                <button class="btn btn-primary"
+                    [disabled]="selectedStar === 0 || isSubmitting"
+                    (click)="submitRating()">
+                    <span *ngIf="isSubmitting"
+                        class="spinner-border spinner-border-sm"></span>
+                    {{ myRating ? 'Cập nhật' : 'Gửi đánh giá' }}
+                </button>
+                <button class="btn btn-secondary" *ngIf="isEditing"
+                    (click)="cancelEdit()">
+                    Hủy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-list"
+        *ngIf="showReviews && reviews.length > 0">
+        <h4>Nhận xét từ người dùng</h4>
+
+        <div class="review-item" *ngFor="let review of reviews">
+            <div class="reviewer-info">
+                <img [src]="review.nguoi_dung_avatar || 'assets/images/default-avatar.png'"
+                    alt="avatar" class="reviewer-avatar">
+                <div class="reviewer-details">
+                    <span class="reviewer-name">{{
+                        review.nguoi_dung_ten }}</span>
+                    <div class="reviewer-stars">
+                        <ng-container
+                            *ngFor="let star of [1,2,3,4,5]">
+                            <i class="fas fa-star"
+                                *ngIf="star <= review.so_sao"></i>
+                            <i class="far fa-star"
+                                *ngIf="star > review.so_sao"></i>
+                        </ng-container>
+                    </div>
+                </div>
+                <span class="review-date-small">{{
+                    formatDate(review.cap_nhat_luc) }}</span>
+            </div>
+            <p class="review-content" *ngIf="review.noi_dung">{{
+                review.noi_dung }}</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="reviews-pagination" *ngIf="totalPages > 1">
+            <button class="btn btn-sm btn-outline-secondary"
+                [disabled]="currentPage === 0" (click)="prevPage()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span>{{ currentPage + 1 }} / {{ totalPages }}</span>
+            <button class="btn btn-sm btn-outline-secondary"
+                [disabled]="currentPage === totalPages - 1"
+                (click)="nextPage()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="no-reviews"
+        *ngIf="showReviews && reviews.length === 0 && stats && stats.tong_danh_gia === 0">
+        <p>Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!</p>
+    </div>
+</div>

@@ -61,4 +61,8 @@ export interface BoCauHoiResponse {
 
   /** 🕓 Thời điểm cập nhật gần nhất */
   cap_nhat_luc?: string;
+
+  // Rating fields
+  tong_danh_gia?: number;
+  trung_binh_sao?: number;
 }

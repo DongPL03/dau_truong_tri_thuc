@@ -145,7 +145,7 @@ export class PhongCho extends Base implements OnInit, OnDestroy {
   }
 
   goToCreateRoom() {
-    this.router.navigateByUrl('/tran-dau/tao-moi-bo-cau-hoi').then(r => {
+    this.router.navigateByUrl('/tran-dau/tao-moi-tran-dau').then(r => {
     });
   }
 }

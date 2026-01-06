@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { Admin } from './components/admin/admin';
+import { UserFriend } from './components/ban-be/user-friend/user-friend';
 import { BoCauHoiList } from './components/bo-cau-hoi/danh-sach-bo-cau-hoi/danh-sach-bo-cau-hoi';
+import { ChatMainComponent } from './components/chat/chat-main/chat-main';
 import { DangKy } from './components/dang-ky/dang-ky';
 import { DangNhap } from './components/dang-nhap/dang-nhap';
 import { Home } from './components/home/home';
@@ -71,7 +73,7 @@ export const routes: Routes = [
         title: 'Chi tiết phòng đấu',
       },
       {
-        path: 'tran-dau/tao-moi-bo-cau-hoi',
+        path: 'tran-dau/tao-moi-tran-dau',
         loadComponent: () =>
           import('./components/TranDau/tao-tran/tao-tran').then((m) => m.TaoTran),
         title: 'Tạo trận đấu',
@@ -115,6 +117,23 @@ export const routes: Routes = [
         title: 'Bảng xếp hạng',
       },
       {
+        path: 'shop',
+        loadComponent: () =>
+          import('./components/shop/shop-vat-pham/shop-vat-pham').then((m) => m.ShopVatPham),
+        title: 'Cửa hàng vật phẩm',
+      },
+      {
+        path: 'nhiem-vu',
+        loadComponent: () =>
+          import('./components/nhiem-vu/nhiem-vu').then((m) => m.NhiemVuComponent),
+        title: 'Nhiệm vụ',
+      },
+      {
+        path: 'kho-do',
+        loadComponent: () => import('./components/kho-do/kho-do').then((m) => m.KhoDo),
+        title: 'Kho đồ',
+      },
+      {
         path: 'nguoi-choi/:id',
         loadComponent: () =>
           import('./components/nguoi-choi/ho-so-nguoi-choi/ho-so-nguoi-choi').then(
@@ -124,8 +143,9 @@ export const routes: Routes = [
       },
       {
         path: 'ban-be',
-        loadComponent: () =>
-          import('./components/ban-be/user-friend/user-friend').then((m) => m.UserFriend),
+        // loadComponent: () =>
+        //   import('./components/ban-be/user-friend/user-friend').then((m) => m.UserFriend),
+        component: UserFriend,
         title: 'Bạn bè',
       },
       {
@@ -138,8 +158,9 @@ export const routes: Routes = [
       },
       {
         path: 'chat',
-        loadComponent: () =>
-          import('./components/chat/chat-main/chat-main').then((m) => m.ChatMainComponent),
+        // loadComponent: () =>
+        //   import('./components/chat/chat-main/chat-main').then((m) => m.ChatMainComponent),
+        component: ChatMainComponent,
         title: 'Tin nhắn',
       },
       {

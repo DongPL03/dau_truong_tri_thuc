@@ -6,11 +6,12 @@ import { environment } from '../../../environments/environment';
 import { BaiViet, LOAI_BAI_VIET_OPTIONS, LOAI_BAO_CAO_OPTIONS } from '../../../models/community';
 import { CommunityService } from '../../../services/community.service';
 import { TokenService } from '../../../services/token.service';
+import {NgbDropdownModule} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NgbDropdownModule],
   templateUrl: './post-card.html',
   styleUrls: ['./post-card.scss'],
 })
@@ -71,7 +72,8 @@ export class PostCardComponent {
 
   getImageUrl(path: string): string {
     if (path.startsWith('http')) return path;
-    return `${environment.apiBaseUrl}/uploads/images/${path}`;
+    // return `${environment.apiBaseUrl}/uploads/images/${path}`;
+    return `http://localhost:8088/api/v1/posts/images/${path}`;
   }
 
   getAvatarUrl(url: string | undefined): string {
@@ -159,5 +161,8 @@ export class PostCardComponent {
       alert('Đã sao chép link bài viết!');
     }
     this.showMenu = false;
+  }
+
+  viewImage(i: number) {
   }
 }

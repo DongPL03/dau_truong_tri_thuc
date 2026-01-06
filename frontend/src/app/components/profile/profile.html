@@ -34,9 +34,10 @@
             <div class="xp-section">
               <div class="xp-info">
                 <span>EXP</span>
-                <span>{{ user_summary?.xp_in_current_level | number }} / 1000</span></div>
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="(user_summary?.xp_in_current_level || 0) / 10"></div>
+                <span>{{ user_summary?.xp_in_current_level || 0 }}
+                  / {{ (user_summary?.xp_in_current_level || 0) + (user_summary?.xp_next_level || 100) }}</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" [style.width.%]="user_summary?.level_progress_percent || 0"></div>
               </div>
             </div>
 

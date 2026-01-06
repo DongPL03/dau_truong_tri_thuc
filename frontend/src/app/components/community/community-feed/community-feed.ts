@@ -5,12 +5,21 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { BaiViet, LOAI_BAI_VIET_OPTIONS, Tag } from '../../../models/community';
 import { CommunityService } from '../../../services/community.service';
+import { FriendsSidebarComponent } from '../../shared/friends-sidebar/friends-sidebar';
+import { RecentChatsComponent } from '../../shared/recent-chats/recent-chats';
 import { PostCardComponent } from '../post-card/post-card';
 
 @Component({
   selector: 'app-community-feed',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, PostCardComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    PostCardComponent,
+    FriendsSidebarComponent,
+    RecentChatsComponent,
+  ],
   templateUrl: './community-feed.html',
   styleUrls: ['./community-feed.scss'],
 })

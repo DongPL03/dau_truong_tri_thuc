@@ -1,23 +1,23 @@
 :host {
-  --bg-page: #F8F9FD;
-  --text-main: #1E293B;
-  --text-sub: #64748B;
-  --primary: #6C5DD3;
-  --bg-card: #FFFFFF;
-  --border: #E2E8F0;
+  --bg-page: #f8f9fd;
+  --text-main: #1e293b;
+  --text-sub: #64748b;
+  --primary: #6c5dd3;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 
   /* Colors */
-  --purple: #6C5DD3;
-  --purple-light: #F3F0FF;
-  --blue: #3B82F6;
-  --blue-light: #EFF6FF;
-  --orange: #F59E0B;
-  --orange-light: #FFFBEB;
-  --green: #10B981;
-  --green-light: #ECFDF5;
-  --red: #EF4444;
-  --red-light: #FEF2F2;
+  --purple: #6c5dd3;
+  --purple-light: #f3f0ff;
+  --blue: #3b82f6;
+  --blue-light: #eff6ff;
+  --orange: #f59e0b;
+  --orange-light: #fffbeb;
+  --green: #10b981;
+  --green-light: #ecfdf5;
+  --red: #ef4444;
+  --red-light: #fef2f2;
 }
 
 .admin-dashboard {
@@ -342,7 +342,7 @@
 
   td {
     padding: 15px 0;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
   }
 
@@ -367,7 +367,7 @@
 }
 
 .text-muted {
-  color: #94A3B8;
+  color: #94a3b8;
   font-size: 0.85rem;
 }
 
@@ -408,7 +408,7 @@
   transition: 0.2s;
 
   &:hover {
-    background: #F8FAFC;
+    background: #f8fafc;
   }
 }
 
@@ -421,22 +421,22 @@
   font-weight: 700;
   font-size: 0.9rem;
   border-radius: 50%;
-  background: #E2E8F0;
-  color: #64748B;
+  background: #e2e8f0;
+  color: #64748b;
 
   &.rank-1 {
-    background: #FEF3C7;
-    color: #D97706;
+    background: #fef3c7;
+    color: #d97706;
   }
 
   &.rank-2 {
-    background: #F1F5F9;
-    color: #64748B;
+    background: #f1f5f9;
+    color: #64748b;
   }
 
   &.rank-3 {
-    background: #FFEDD5;
-    color: #C2410C;
+    background: #ffedd5;
+    color: #c2410c;
   }
 }
 
@@ -509,4 +509,142 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Rating Statistics Section */
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  i {
+    color: var(--orange);
+  }
+}
+
+.rating-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.rating-summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: var(--shadow);
+
+  .summary-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+
+    &.blue {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    &.orange {
+      background: var(--orange-light);
+      color: var(--orange);
+    }
+  }
+
+  .summary-info {
+    flex: 1;
+
+    .label {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 4px 0;
+    }
+
+    .avg-rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .stars {
+        display: flex;
+        gap: 2px;
+
+        i {
+          color: #e0e0e0;
+          font-size: 0.9rem;
+
+          &.filled {
+            color: #ffc107;
+          }
+        }
+      }
+
+      .avg-value {
+        font-weight: 700;
+        color: #ffc107;
+      }
+    }
+  }
+}
+
+.rating-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+
+  .list-card {
+    margin-bottom: 0;
+  }
+
+  .rank-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    color: var(--text-main);
+
+    i {
+      font-size: 0.9rem;
+    }
+
+    .text-warning {
+      color: #ffc107;
+    }
+
+    small {
+      color: var(--text-sub);
+      font-weight: 400;
+    }
+  }
+
+  .empty-text {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-sub);
+    font-style: italic;
+  }
+
+  .flex-1 {
+    flex: 1;
+  }
+}
+
+.text-warning {
+  color: #ffc107;
 }

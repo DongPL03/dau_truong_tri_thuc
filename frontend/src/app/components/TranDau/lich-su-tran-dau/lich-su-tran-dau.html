@@ -1,79 +1,136 @@
-<div class="page">
-  <div class="container">
-    <header class="header">
-      <h1>Lịch sử trận đấu của bạn</h1>
-      <p class="subtitle">
-        Xem lại các trận đã tham gia, điểm số và thứ hạng cuối cùng.
-      </p>
+<div class="history-page">
+  <div class="history-container">
+
+    <header class="page-header animate-fade-down">
+      <div class="header-info">
+        <h1>📜 Lịch sử đấu trường</h1>
+        <p>Theo dõi hành trình leo rank và thành tích của bạn</p>
+      </div>
     </header>
 
-    @if (loading) {
-      <div class="loading">
-        <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+    <div class="toolbar animate-fade-up">
+      <div class="search-group">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Tìm theo tên phòng hoặc bộ câu hỏi..."
+               [ngModel]="searchQuery" (ngModelChange)="onSearch($event)">
       </div>
-    } @else {
-      @if (items.length === 0) {
-        <div class="empty">
-          Bạn chưa tham gia trận đấu nào.
+
+      <div class="filter-group">
+        <select [(ngModel)]="filterRank" (change)="onFilterChange()">
+          <option value="all">Tất cả thứ hạng</option>
+          <option value="1">🏆 Top 1 (Victory)</option>
+          <option value="top3">🏅 Top 3</option>
+        </select>
+
+        <select [(ngModel)]="filterTime" (change)="onFilterChange()">
+          <option value="all">Toàn thời gian</option>
+          <option value="7days">7 ngày qua</option>
+          <option value="30days">30 ngày qua</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-card animate-fade-up">
+
+      @if (loading) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
         </div>
       } @else {
-        <section class="history-card">
-          <table class="history-table">
-            <thead>
-            <tr>
-              <th>Thời gian</th>
-              <th>Phòng</th>
-              <th>Bộ câu hỏi</th>
-              <th>Điểm</th>
-              <th>Đúng</th>
-              <th>Hạng</th>
-              <th>Luật</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
-              @for (h of items; track h.lich_su_id) {
-                <tr [class.top-rank]="h.xep_hang === 1">
-                  <td>{{ h.hoan_thanh_luc | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
-                  <td>{{ h.ten_phong || ('#' + h.tran_dau_id) }}</td>
-                  <td>{{ h.bo_cau_hoi_tieu_de || '—' }}</td>
-                  <td>{{ h.tong_diem }}</td>
-                  <td>{{ h.so_cau_dung }}</td>
-                  <td>#{{ h.xep_hang }}</td>
-                  <td>{{ h.luat_tinh_diem }}</td>
-                  <td>
-                    <button class="link-btn" (click)="goToBattleDetail(h.tran_dau_id)">
-                      Xem chi tiết
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
 
-          <!-- phân trang đơn giản -->
-          @if (total_pages > 1) {
-            <div class="pagination">
-              <!-- Nút Previous -->
-              <a (click)="changePage(page - 1)" [class.disabled]="page === 0">&laquo;</a>
+        @if (items.length === 0) {
+          <div class="empty-state">
+            <img src="assets/images/empty-history.png" alt="Empty" onerror="this.style.display='none'">
+            <p>Chưa có lịch sử đấu nào. <a routerLink="/tran-dau">Chiến ngay!</a></p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+              <tr>
+                <th class="col-time">Thời gian</th>
+                <th class="col-info">Thông tin trận đấu</th>
+                <th class="col-stat text-center">Đúng</th>
+                <th class="col-stat text-center">Điểm</th>
+                <th class="col-rank text-center">Hạng</th>
+                <th class="col-action"></th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (h of items; track h.lich_su_id) {
+                  <tr [class.highlight]="h.xep_hang === 1" (click)="goToBattleDetail(h.tran_dau_id)">
 
-              <!-- Dải trang động -->
-              @for (p of getVisiblePages(); track $index) {
-                @if (p >= 0) {
-                  <a [class.active]="p === page" (click)="changePage(p)">
-                    {{ p + 1 }}
-                  </a>
-                } @else {
-                  <span class="ellipsis">...</span>
+                    <td class="col-time">
+                      <div class="date-box">
+                        <span class="day">{{ h.hoan_thanh_luc | date:'dd/MM' }}</span>
+                        <span class="time">{{ h.hoan_thanh_luc | date:'HH:mm' }}</span>
+                      </div>
+                    </td>
+
+                    <td class="col-info">
+                      <div class="match-info">
+                        <span class="room-name">{{ h.ten_phong || ('Phòng #' + h.tran_dau_id) }}</span>
+                        <span class="quiz-name"><i
+                          class="fas fa-book-open"></i> {{ h.bo_cau_hoi_tieu_de || 'Không xác định' }}</span>
+                        <span class="mode-badge">{{ h.luat_tinh_diem }}</span>
+                      </div>
+                    </td>
+
+                    <td class="col-stat text-center">
+                      <span class="stat-val correct">{{ h.so_cau_dung }}</span>
+                    </td>
+
+                    <td class="col-stat text-center">
+                      <span class="stat-val score">+{{ h.tong_diem | number }}</span>
+                    </td>
+
+                    <td class="col-rank text-center">
+                      @if (h.xep_hang === 1) {
+                        <span class="rank-badge rank-1"><i class="fas fa-crown"></i> #1</span>
+                      } @else if (h.xep_hang === 2) {
+                        <span class="rank-badge rank-2">#2</span>
+                      } @else if (h.xep_hang === 3) {
+                        <span class="rank-badge rank-3">#3</span>
+                      } @else {
+                        <span class="rank-badge rank-other">#{{ h.xep_hang }}</span>
+                      }
+                    </td>
+
+                    <td class="col-action text-right">
+                      <button class="btn-icon" title="Xem chi tiết">
+                        <i class="fas fa-chevron-right"></i>
+                      </button>
+                    </td>
+                  </tr>
                 }
-              }
+              </tbody>
+            </table>
+          </div>
 
-              <!-- Nút Next -->
-              <a (click)="changePage(page + 1)" [class.disabled]="page === total_pages - 1">&raquo;</a>
+          @if (total_pages > 1) {
+            <div class="pagination-container">
+              <button class="page-btn" [disabled]="page === 0" (click)="changePage(page - 1)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <div class="page-numbers">
+                @for (p of getVisiblePages(); track $index) {
+                  @if (p >= 0) {
+                    <button class="num-btn" [class.active]="p === page" (click)="changePage(p)">{{ p + 1 }}</button>
+                  } @else {
+                    <span class="dots">...</span>
+                  }
+                }
+              </div>
+
+              <button class="page-btn" [disabled]="page === total_pages - 1" (click)="changePage(page + 1)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
             </div>
           }
-        </section>
+        }
       }
-    }
+    </div>
   </div>
 </div>

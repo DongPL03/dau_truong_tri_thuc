@@ -14,4 +14,7 @@ export interface KhoaHoiResponse {
   co_quyen_sua?: boolean;
   tao_luc?: string;
   cap_nhat_luc?: string;
+  // Rating fields
+  tong_danh_gia?: number;
+  trung_binh_sao?: number;
 }

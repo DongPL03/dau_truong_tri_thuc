@@ -2,10 +2,13 @@
   <header class="dashboard-header animate-fade-down">
     <div class="header-title">
       <h1>Dashboard Tổng Quan</h1>
-      <p>Chào mừng quay lại, Admin! Dưới đây là tình hình hoạt động của hệ thống hôm nay.</p>
+      <p>Chào mừng quay lại, Admin! Dưới đây là tình hình hoạt động
+        của hệ thống hôm nay.</p>
     </div>
-    <button class="btn-refresh" (click)="refreshData()" [disabled]="loading">
-      <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Làm mới dữ liệu
+    <button class="btn-refresh" (click)="refreshData()"
+      [disabled]="loading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Làm
+      mới dữ liệu
     </button>
   </header>
 
@@ -16,7 +19,8 @@
         <span class="label">Tổng người dùng</span>
         <h2 class="value">{{ summary?.tong_nguoi_dung | number }}</h2>
         <div class="sub-text">
-          <span class="badge success">+{{ summary?.nguoi_dung_moi_hom_nay }} mới</span> hôm nay
+          <span class="badge success">+{{
+            summary?.nguoi_dung_moi_hom_nay }} mới</span> hôm nay
         </div>
       </div>
     </div>
@@ -27,7 +31,8 @@
         <span class="label">Tổng trận đấu</span>
         <h2 class="value">{{ summary?.tong_tran_dau | number }}</h2>
         <div class="sub-text">
-          <span class="highlight">{{ summary?.tran_dang_dien_ra }}</span> đang diễn ra
+          <span class="highlight">{{ summary?.tran_dang_dien_ra
+            }}</span> đang diễn ra
         </div>
       </div>
     </div>
@@ -38,18 +43,21 @@
         <span class="label">Bộ câu hỏi</span>
         <h2 class="value">{{ summary?.tong_bo_cau_hoi | number }}</h2>
         <div class="sub-text">
-          <span class="badge warning">{{ summary?.bo_cau_hoi_cho_duyet }} chờ duyệt</span>
+          <span class="badge warning">{{ summary?.bo_cau_hoi_cho_duyet
+            }} chờ duyệt</span>
         </div>
       </div>
     </div>
 
     <div class="kpi-card green">
-      <div class="kpi-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="kpi-icon"><i class="fas fa-graduation-cap"></i>
+      </div>
       <div class="kpi-info">
         <span class="label">Khóa học</span>
         <h2 class="value">{{ summary?.tong_khoa_hoc | number }}</h2>
         <div class="sub-text">
-          <span class="highlight">{{ summary?.khoa_hoc_published }}</span> đã xuất bản
+          <span class="highlight">{{ summary?.khoa_hoc_published
+            }}</span> đã xuất bản
         </div>
       </div>
     </div>
@@ -59,40 +67,42 @@
 
     <div class="chart-card main-chart">
       <div class="card-header">
-        <h3><i class="fas fa-chart-line"></i> Hoạt động trận đấu (7 ngày qua)</h3>
+        <h3><i class="fas fa-chart-line"></i> Hoạt động trận đấu (7
+          ngày qua)</h3>
         <div class="card-actions">
-          <button class="btn-icon"><i class="fas fa-ellipsis-h"></i></button>
+          <button class="btn-icon"><i
+              class="fas fa-ellipsis-h"></i></button>
         </div>
       </div>
       <div class="chart-container">
-        <canvas baseChart
-                [data]="battlesLineChartData"
-                [options]="battlesLineChartOptions"
-                [type]="'line'">
+        <canvas baseChart [data]="battlesLineChartData"
+          [options]="battlesLineChartOptions" [type]="'line'">
         </canvas>
       </div>
     </div>
 
     <div class="chart-card side-chart">
       <div class="card-header">
-        <h3><i class="fas fa-chart-pie"></i> Trạng thái bộ câu hỏi</h3>
+        <h3><i class="fas fa-chart-pie"></i> Trạng thái bộ câu hỏi
+        </h3>
       </div>
       <div class="donut-container">
-        <canvas baseChart
-                [data]="boCauHoiDonutData"
-                [options]="boCauHoiDonutOptions"
-                [type]="'doughnut'">
+        <canvas baseChart [data]="boCauHoiDonutData"
+          [options]="boCauHoiDonutOptions" [type]="'doughnut'">
         </canvas>
       </div>
       <div class="chart-legend">
         <div class="legend-item">
-          <span class="dot green"></span> Đã duyệt ({{ summary?.bo_cau_hoi_da_duyet }})
+          <span class="dot green"></span> Đã duyệt ({{
+          summary?.bo_cau_hoi_da_duyet }})
         </div>
         <div class="legend-item">
-          <span class="dot orange"></span> Chờ duyệt ({{ summary?.bo_cau_hoi_cho_duyet }})
+          <span class="dot orange"></span> Chờ duyệt ({{
+          summary?.bo_cau_hoi_cho_duyet }})
         </div>
         <div class="legend-item">
-          <span class="dot red"></span> Từ chối ({{ summary?.bo_cau_hoi_tu_choi }})
+          <span class="dot red"></span> Từ chối ({{
+          summary?.bo_cau_hoi_tu_choi }})
         </div>
       </div>
     </div>
@@ -108,33 +118,36 @@
       <div class="table-responsive">
         <table class="admin-table">
           <thead>
-          <tr>
-            <th>Bộ câu hỏi</th>
-            <th>Người tạo</th>
-            <th>Thời gian</th>
-            <th></th>
-          </tr>
+            <tr>
+              <th>Bộ câu hỏi</th>
+              <th>Người tạo</th>
+              <th>Thời gian</th>
+              <th></th>
+            </tr>
           </thead>
           <tbody>
             @if (pending_list.length === 0) {
-              <tr>
-                <td colspan="4" class="text-center text-muted">Không có yêu cầu nào.</td>
-              </tr>
+            <tr>
+              <td colspan="4" class="text-center text-muted">Không có
+                yêu cầu nào.</td>
+            </tr>
             }
             @for (quiz of pending_list; track quiz.id) {
-              <tr>
-                <td>
-                  <div class="quiz-info">
-                    <span class="quiz-title">{{ quiz.tieu_de }}</span>
-                    <span class="quiz-sub">{{ quiz.chu_de }}</span>
-                  </div>
-                </td>
-                <td>{{ quiz.nguoi_tao }}</td>
-                <td class="text-muted">{{ quiz.tao_luc | date:'dd/MM HH:mm' }}</td>
-                <td class="text-right">
-                  <button class="btn-sm-primary" (click)="goToBoCauHoi()">Review</button>
-                </td>
-              </tr>
+            <tr>
+              <td>
+                <div class="quiz-info">
+                  <span class="quiz-title">{{ quiz.tieu_de }}</span>
+                  <span class="quiz-sub">{{ quiz.chu_de }}</span>
+                </div>
+              </td>
+              <td>{{ quiz.nguoi_tao }}</td>
+              <td class="text-muted">{{ quiz.tao_luc | date:'dd/MM
+                HH:mm' }}</td>
+              <td class="text-right">
+                <button class="btn-sm-primary"
+                  (click)="goToBoCauHoi()">Review</button>
+              </td>
+            </tr>
             }
           </tbody>
         </table>
@@ -147,23 +160,196 @@
         <a (click)="goToUsers()" class="link-more">Xem tất cả</a>
       </div>
       <div class="ranking-list">
-        @for (player of top_players; track player.user_id; let i = $index) {
-          <div class="rank-item">
-            <div class="rank-idx" [ngClass]="'rank-' + (i+1)">{{ i + 1 }}</div>
-            <div class="rank-avatar">
-              <img
-                [src]="player.avatar_url ? 'http://localhost:8088/api/v1/users/profile-images/' + player.avatar_url : 'assets/images/default-avatar.png'"
-                alt="avt">
-            </div>
-            <div class="rank-info">
-              <span class="p-name">{{ player.ho_ten || player.ten_dang_nhap }}</span>
-              <span class="p-stats">{{ player.tong_tran }} trận • Win {{ player.ti_le_thang }}%</span>
-            </div>
-            <div class="rank-score">{{ player.tong_diem | number }} pts</div>
+        @for (player of top_players; track player.user_id; let i =
+        $index) {
+        <div class="rank-item">
+          <div class="rank-idx" [ngClass]="'rank-' + (i+1)">{{ i + 1
+            }}</div>
+          <div class="rank-avatar">
+            <img
+              [src]="player.avatar_url ? 'http://localhost:8088/api/v1/users/profile-images/' + player.avatar_url : 'assets/images/default-avatar.png'"
+              alt="avt">
           </div>
+          <div class="rank-info">
+            <span class="p-name">{{ player.ho_ten ||
+              player.ten_dang_nhap }}</span>
+            <span class="p-stats">{{ player.tong_tran }} trận • Win {{
+              player.ti_le_thang }}%</span>
+          </div>
+          <div class="rank-score">{{ player.tong_diem | number }} pts
+          </div>
+        </div>
         }
       </div>
     </div>
 
   </section>
+
+  <!-- Rating Statistics Section -->
+  @if (rating_stats) {
+  <section class="stats-row animate-fade-up">
+    <h2 class="section-title"><i class="fas fa-star"></i> Thống kê
+      Đánh giá</h2>
+
+    <div class="rating-overview-grid">
+      <div class="rating-summary-card">
+        <div class="summary-icon blue"><i class="fas fa-book"></i>
+        </div>
+        <div class="summary-info">
+          <span class="label">Bộ câu hỏi</span>
+          <h3 class="value">{{ rating_stats.tong_danh_gia_bo_cau_hoi |
+            number }} đánh giá</h3>
+          <div class="avg-rating">
+            <span class="stars">
+              @for (i of [1,2,3,4,5]; track i) {
+              <i class="fas fa-star"
+                [class.filled]="i <= (rating_stats.trung_binh_sao_bo_cau_hoi || 0)"></i>
+              }
+            </span>
+            <span class="avg-value">{{
+              rating_stats.trung_binh_sao_bo_cau_hoi | number:'1.1-1'
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rating-summary-card">
+        <div class="summary-icon orange"><i
+            class="fas fa-graduation-cap"></i></div>
+        <div class="summary-info">
+          <span class="label">Khóa học</span>
+          <h3 class="value">{{ rating_stats.tong_danh_gia_khoa_hoc |
+            number }} đánh giá</h3>
+          <div class="avg-rating">
+            <span class="stars">
+              @for (i of [1,2,3,4,5]; track i) {
+              <i class="fas fa-star"
+                [class.filled]="i <= (rating_stats.trung_binh_sao_khoa_hoc || 0)"></i>
+              }
+            </span>
+            <span class="avg-value">{{
+              rating_stats.trung_binh_sao_khoa_hoc | number:'1.1-1'
+              }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rating-tables-grid">
+      <!-- Top Rated Bộ Câu Hỏi -->
+      <div class="list-card">
+        <div class="card-header">
+          <h3><i class="fas fa-star text-warning"></i> Bộ Câu Hỏi Đánh
+            Giá Cao</h3>
+        </div>
+        <div class="ranking-list">
+          @for (item of rating_stats.top_rated_bo_cau_hoi; track
+          item.id; let i = $index) {
+          <div class="rank-item">
+            <div class="rank-idx" [ngClass]="'rank-' + (i+1)">{{ i + 1
+              }}</div>
+            <div class="rank-info flex-1">
+              <span class="p-name">{{ item.tieu_de }}</span>
+              <span class="p-stats">{{ item.nguoi_tao }}</span>
+            </div>
+            <div class="rank-rating">
+              <i class="fas fa-star text-warning"></i>
+              {{ item.trung_binh_sao | number:'1.1-1' }}
+              <small>({{ item.tong_danh_gia }})</small>
+            </div>
+          </div>
+          } @empty {
+          <div class="empty-text">Chưa có đánh giá</div>
+          }
+        </div>
+      </div>
+
+      <!-- Top Rated Khóa Học -->
+      <div class="list-card">
+        <div class="card-header">
+          <h3><i class="fas fa-star text-warning"></i> Khóa Học Đánh
+            Giá Cao</h3>
+        </div>
+        <div class="ranking-list">
+          @for (item of rating_stats.top_rated_khoa_hoc; track
+          item.id; let i = $index) {
+          <div class="rank-item">
+            <div class="rank-idx" [ngClass]="'rank-' + (i+1)">{{ i + 1
+              }}</div>
+            <div class="rank-info flex-1">
+              <span class="p-name">{{ item.tieu_de }}</span>
+              <span class="p-stats">{{ item.nguoi_tao }}</span>
+            </div>
+            <div class="rank-rating">
+              <i class="fas fa-star text-warning"></i>
+              {{ item.trung_binh_sao | number:'1.1-1' }}
+              <small>({{ item.tong_danh_gia }})</small>
+            </div>
+          </div>
+          } @empty {
+          <div class="empty-text">Chưa có đánh giá</div>
+          }
+        </div>
+      </div>
+
+      <!-- Most Reviewed Bộ Câu Hỏi -->
+      <div class="list-card">
+        <div class="card-header">
+          <h3><i class="fas fa-comments"></i> Nhiều Đánh Giá Nhất
+            (BCH)</h3>
+        </div>
+        <div class="ranking-list">
+          @for (item of rating_stats.most_reviewed_bo_cau_hoi; track
+          item.id; let i = $index) {
+          <div class="rank-item">
+            <div class="rank-idx" [ngClass]="'rank-' + (i+1)">{{ i + 1
+              }}</div>
+            <div class="rank-info flex-1">
+              <span class="p-name">{{ item.tieu_de }}</span>
+              <span class="p-stats">{{ item.nguoi_tao }}</span>
+            </div>
+            <div class="rank-rating">
+              <i class="fas fa-comment"></i>
+              {{ item.tong_danh_gia }}
+              <small>({{ item.trung_binh_sao | number:'1.1-1'
+                }}⭐)</small>
+            </div>
+          </div>
+          } @empty {
+          <div class="empty-text">Chưa có đánh giá</div>
+          }
+        </div>
+      </div>
+
+      <!-- Most Reviewed Khóa Học -->
+      <div class="list-card">
+        <div class="card-header">
+          <h3><i class="fas fa-comments"></i> Nhiều Đánh Giá Nhất (KH)
+          </h3>
+        </div>
+        <div class="ranking-list">
+          @for (item of rating_stats.most_reviewed_khoa_hoc; track
+          item.id; let i = $index) {
+          <div class="rank-item">
+            <div class="rank-idx" [ngClass]="'rank-' + (i+1)">{{ i + 1
+              }}</div>
+            <div class="rank-info flex-1">
+              <span class="p-name">{{ item.tieu_de }}</span>
+              <span class="p-stats">{{ item.nguoi_tao }}</span>
+            </div>
+            <div class="rank-rating">
+              <i class="fas fa-comment"></i>
+              {{ item.tong_danh_gia }}
+              <small>({{ item.trung_binh_sao | number:'1.1-1'
+                }}⭐)</small>
+            </div>
+          </div>
+          } @empty {
+          <div class="empty-text">Chưa có đánh giá</div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+  }
 </div>

@@ -1,0 +1,109 @@
+<div class="streak-overlay" (click)="closePopup()">
+    <div class="streak-popup" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="popup-header">
+            <h2>🔥 Điểm danh hàng ngày</h2>
+            <button class="close-btn" (click)="closePopup()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        @if (loading()) {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Đang tải...</p>
+        </div>
+        } @else if (streakInfo()) {
+        <div class="popup-content">
+            <!-- Streak Counter -->
+            <div class="streak-counter">
+                <div class="streak-number">{{
+                    streakInfo()!.streak_hien_tai }}</div>
+                <div class="streak-label">ngày liên tục</div>
+            </div>
+
+            <!-- Days Grid -->
+            <div class="days-grid">
+                @for (day of streakInfo()!.danh_sach_ngay; track
+                day.ngay) {
+                <div class="day-card" [class]="getDayClass(day)">
+                    <div class="day-header">
+                        <span class="day-number">Ngày {{ day.ngay
+                            }}</span>
+                        @if (day.da_nhan) {
+                        <i class="fas fa-check-circle check-icon"></i>
+                        }
+                    </div>
+
+                    <div class="day-rewards">
+                        <div class="reward-item gold">
+                            <span class="reward-icon">💰</span>
+                            <span class="reward-value">{{ day.gold
+                                }}</span>
+                        </div>
+                        @if (day.xp > 0) {
+                        <div class="reward-item xp">
+                            <span class="reward-icon">⭐</span>
+                            <span class="reward-value">{{ day.xp
+                                }}</span>
+                        </div>
+                        }
+                        @if (day.co_vat_pham) {
+                        <div class="reward-item item">
+                            <span class="reward-icon">🎁</span>
+                        </div>
+                        }
+                    </div>
+
+                    @if (day.la_hom_nay &&
+                    !streakInfo()!.da_diem_danh_hom_nay) {
+                    <div class="today-badge">HÔM NAY</div>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Claim Button -->
+            <div class="claim-section">
+                @if (streakInfo()!.da_diem_danh_hom_nay) {
+                <button class="claim-btn claimed" disabled>
+                    <i class="fas fa-check"></i> Đã điểm danh
+                </button>
+                <p class="next-claim-hint">Quay lại vào ngày mai để
+                    tiếp tục! 🌟</p>
+                } @else {
+                <button class="claim-btn" (click)="claimReward()"
+                    [disabled]="claiming()">
+                    @if (claiming()) {
+                    <div class="btn-spinner"></div>
+                    } @else {
+                    <i class="fas fa-gift"></i> Nhận thưởng ngày {{
+                    streakInfo()!.ngay_trong_chu_ky }}
+                    }
+                </button>
+                @if (streakInfo()!.phan_thuong_hom_nay) {
+                <div class="today-reward-preview">
+                    <span>💰 {{
+                        streakInfo()!.phan_thuong_hom_nay!.gold }}
+                        Gold</span>
+                    @if (streakInfo()!.phan_thuong_hom_nay!.xp > 0) {
+                    <span>⭐ {{ streakInfo()!.phan_thuong_hom_nay!.xp
+                        }} XP</span>
+                    }
+                    @if
+                    (streakInfo()!.phan_thuong_hom_nay!.vat_pham_ten)
+                    {
+                    <span>🎁 {{
+                        streakInfo()!.phan_thuong_hom_nay!.so_luong_vat_pham
+                        }}x {{
+                        streakInfo()!.phan_thuong_hom_nay!.vat_pham_ten
+                        }}</span>
+                    }
+                </div>
+                }
+                }
+            </div>
+        </div>
+        }
+    </div>
+</div>

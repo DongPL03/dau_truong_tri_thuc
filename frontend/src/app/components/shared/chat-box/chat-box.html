@@ -1,0 +1,93 @@
+<div class="chat-box" [class.minimized]="isMinimized">
+    <!-- Header -->
+    <div class="chat-header" (click)="toggleMinimize()">
+        <div class="user-info">
+            <div class="avatar-wrapper">
+                <img [src]="getAvatarUrl()" [alt]="friend.ho_ten" />
+                @if (friend.trang_thai === 'ONLINE') {
+                <span class="status-dot online"></span>
+                }
+            </div>
+            <div class="user-details">
+                <span class="user-name">{{ friend.ho_ten }}</span>
+                <span class="user-status">
+                    {{ friend.trang_thai === 'ONLINE' ? 'Đang hoạt động' : 'Không hoạt động' }}
+                </span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon"
+                (click)="$event.stopPropagation()">
+                <i class="fas fa-phone"></i>
+            </button>
+            <button class="btn-icon"
+                (click)="$event.stopPropagation()">
+                <i class="fas fa-video"></i>
+            </button>
+            <button class="btn-icon"
+                (click)="toggleMinimize(); $event.stopPropagation()">
+                <i class="fas" [class.fa-minus]="!isMinimized"
+                    [class.fa-expand]="isMinimized"></i>
+            </button>
+            <button class="btn-icon btn-close"
+                (click)="closeChat(); $event.stopPropagation()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Body (hidden when minimized) -->
+    @if (!isMinimized) {
+    <div class="chat-body">
+        <!-- Messages -->
+        <div class="messages-container" #messagesContainer>
+            @if (loading) {
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            }
+
+            @for (msg of messages; track msg.tin_nhan_id) {
+            <div class="message" [class.my-message]="isMyMessage(msg)"
+                [class.other-message]="!isMyMessage(msg)">
+                @if (!isMyMessage(msg)) {
+                <img class="msg-avatar" [src]="getAvatarUrl()"
+                    [alt]="friend.ho_ten" />
+                }
+                <div class="msg-content">
+                    <div class="msg-bubble">{{ msg.noi_dung }}</div>
+                    <span class="msg-time">{{ formatTime(msg.gui_luc)
+                        }}</span>
+                </div>
+            </div>
+            }
+
+            @if (messages.length === 0 && !loading) {
+            <div class="empty-chat">
+                <p>Bắt đầu cuộc trò chuyện với {{ friend.ho_ten }}</p>
+            </div>
+            }
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input">
+            <button class="btn-icon">
+                <i class="fas fa-plus-circle"></i>
+            </button>
+            <button class="btn-icon">
+                <i class="fas fa-image"></i>
+            </button>
+            <button class="btn-icon">
+                <i class="fas fa-smile"></i>
+            </button>
+            <input type="text" #messageInput [(ngModel)]="newMessage"
+                (keydown)="onKeyDown($event)" placeholder="Aa"
+                [disabled]="sending" />
+            <button class="btn-send" (click)="sendMessage()"
+                [disabled]="!newMessage.trim() || sending">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    }
+</div>

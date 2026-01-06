@@ -26,6 +26,7 @@ export class DanhSachKhoaHoc extends Base implements OnInit {
   totalPages = 0;
   currentUserId: number = 0;
   items: KhoaHoiResponse[] = [];
+  minRating: number | undefined = undefined;
 
   chuDes: ChuDe[] = [];
   readonly trangThaiOptions = [
@@ -33,6 +34,13 @@ export class DanhSachKhoaHoc extends Base implements OnInit {
     { value: 'PUBLISHED', label: 'Đã xuất bản' },
     { value: 'DRAFT', label: 'Bản nháp' },
     { value: 'ARCHIVED', label: 'Đã lưu trữ' },
+  ];
+  readonly ratingOptions = [
+    { value: undefined, label: '⭐ Tất cả đánh giá' },
+    { value: 4, label: '⭐ 4+ sao' },
+    { value: 3, label: '⭐ 3+ sao' },
+    { value: 2, label: '⭐ 2+ sao' },
+    { value: 1, label: '⭐ 1+ sao' },
   ];
 
   ngOnInit() {
@@ -44,7 +52,7 @@ export class DanhSachKhoaHoc extends Base implements OnInit {
   loadData() {
     this.loading = true;
     this.khoaHocService
-      .getAll(this.keyword, this.chuDeId, this.trangThai, this.sortOrder, this.page, this.limit)
+      .getAll(this.keyword, this.chuDeId, this.trangThai, this.sortOrder, this.page, this.limit, this.minRating, undefined)
       .subscribe({
         next: (res: ResponseObject<PageResponse<KhoaHoiResponse>>) => {
           const data = res.data!;

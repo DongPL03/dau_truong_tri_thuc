@@ -1,0 +1,82 @@
+<aside class="friends-sidebar">
+    <!-- Header -->
+    <div class="sidebar-header">
+        <h3>Người liên hệ</h3>
+        <div class="header-actions">
+            <button class="btn-icon" (click)="toggleSearch()"
+                title="Tìm kiếm">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="btn-icon" title="Tùy chọn">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Box -->
+    @if (showSearch) {
+    <div class="search-box">
+        <input type="text" placeholder="Tìm kiếm bạn bè..."
+            [value]="searchQuery" (input)="onSearch($event)"
+            autofocus />
+    </div>
+    }
+
+    <!-- Loading -->
+    @if (loading) {
+    <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    }
+
+    <!-- Friends List -->
+    @if (!loading) {
+    <div class="friends-list">
+        <!-- Online Friends -->
+        @if (onlineFriends.length > 0) {
+        @for (friend of onlineFriends; track friend.user_id) {
+        <div class="friend-item online" (click)="openChat(friend)">
+            <div class="avatar-wrapper">
+                <img [src]="getAvatarUrl(friend)"
+                    [alt]="friend.ho_ten" />
+                <span class="status-dot online"></span>
+            </div>
+            <span class="friend-name">{{ friend.ho_ten }}</span>
+        </div>
+        }
+        }
+
+        <!-- Offline Friends -->
+        @if (offlineFriends.length > 0) {
+        @for (friend of offlineFriends; track friend.user_id) {
+        <div class="friend-item" (click)="openChat(friend)">
+            <div class="avatar-wrapper">
+                <img [src]="getAvatarUrl(friend)"
+                    [alt]="friend.ho_ten" />
+            </div>
+            <span class="friend-name">{{ friend.ho_ten }}</span>
+        </div>
+        }
+        }
+
+        <!-- Empty State -->
+        @if (friends.length === 0) {
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Chưa có bạn bè</p>
+            <a routerLink="/friends" class="btn-add-friends">
+                Tìm bạn bè
+            </a>
+        </div>
+        }
+
+        <!-- No Results -->
+        @if (friends.length > 0 && onlineFriends.length === 0 &&
+        offlineFriends.length === 0 && searchQuery) {
+        <div class="empty-state">
+            <p>Không tìm thấy "{{ searchQuery }}"</p>
+        </div>
+        }
+    </div>
+    }
+</aside>

@@ -1,201 +1,187 @@
-<article class="post-card" [class.pinned]="post.ghim">
-    <!-- Pinned Badge -->
-    @if (post.ghim) {
+<article class="post-card animate-fade-up" [class.pinned]="post.ghim">
+  <!-- Pinned Badge -->
+  @if (post.ghim) {
     <div class="pinned-badge">
-        <i class="fas fa-thumbtack"></i>
-        Đã ghim
+      <i class="fas fa-thumbtack"></i>
+      <span>Được ghim bởi Quản trị viên</span>
     </div>
+  }
+
+
+  <!-- Post Header -->
+  <header class="post-header">
+    <a [routerLink]="['/nguoi-choi', author.id]"
+       class="author-avatar">
+      <img [src]="getAvatarUrl(author.anhDaiDien)"
+           [alt]="author.ten"/>
+      <span class="level-badge">Lv.{{ author.capDo }}</span>
+    </a>
+
+    <div class="post-meta">
+      <div class="author-info">
+        <a [routerLink]="['/nguoi-choi', author.id]"
+           class="author-name">
+          {{ author.ten }}
+        </a>
+        <span class="post-type"
+              [style.background]="postTypeInfo.color">{{ postTypeInfo.icon }} {{ postTypeInfo.label }}</span>
+      </div>
+      <span class="post-time">{{ timeAgo }}</span>
+    </div>
+    <div class="post-options" ngbDropdown placement="bottom-end" container="body">
+      <button class="btn-icon" ngbDropdownToggle>
+        <i class="fas fa-ellipsis-h"></i>
+      </button>
+      <div ngbDropdownMenu class="dropdown-menu-custom">
+        @if (isOwner) {
+          <button ngbDropdownItem class="menu-item" [routerLink]="['/community/edit', post.id]">
+            <i class="fas fa-edit"></i> Chỉnh sửa
+          </button>
+          <button ngbDropdownItem class="menu-item danger" (click)="deletePost()">
+            <i class="fas fa-trash"></i> Xóa bài viết
+          </button>
+        } @else {
+          <button ngbDropdownItem class="menu-item" (click)="sharePost()">
+            <i class="fas fa-share"></i> Chia sẻ
+          </button>
+          <div class="dropdown-divider"></div>
+          <button ngbDropdownItem class="menu-item" (click)="openReportModal()">
+            <i class="fas fa-flag"></i> Báo cáo
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Post Content -->
+  <div class="post-content">
+    <a [routerLink]="['/community', post.id]" class="post-title">
+      {{ post.tieuDe }}
+    </a>
+
+    <div class="post-body"
+         [innerHTML]="showFullContent ? post.noiDung : contentPreview">
+    </div>
+
+    <!-- Images -->
+    @if (post.hinhAnh && post.hinhAnh.length > 0) {
+      <div class="post-images"
+           [class.single]="post.hinhAnh.length === 1"
+           [class.grid]="post.hinhAnh.length > 1">
+        @for (img of post.hinhAnh.slice(0, 4); track img.id; let i
+          = $index) {
+          <div class="image-item"
+               [class.more]="i === 3 && post.hinhAnh.length > 4">
+            <img [src]="getImageUrl(img.duongDan)"
+                 [alt]="'Hình ' + (i + 1)" loading="lazy"/>
+            @if (i === 3 && post.hinhAnh.length > 4) {
+              <div class="more-overlay">+{{
+                  post.hinhAnh.length - 4
+                }}
+              </div>
+            }
+          </div>
+        }
+      </div>
     }
 
-    <!-- Post Header -->
-    <header class="post-header">
-        <a [routerLink]="['/nguoi-choi', author.id]"
-            class="author-avatar">
-            <img [src]="getAvatarUrl(author.anhDaiDien)"
-                [alt]="author.ten" />
-            <span class="level-badge">Lv.{{ author.capDo }}</span>
-        </a>
 
-        <div class="post-meta">
-            <div class="author-info">
-                <a [routerLink]="['/nguoi-choi', author.id]"
-                    class="author-name">
-                    {{ author.ten }}
-                </a>
-                <span class="post-type"
-                    [style.background]="postTypeInfo.color">
-                    {{ postTypeInfo.icon }} {{ postTypeInfo.label }}
-                </span>
-            </div>
-            <span class="post-time">{{ timeAgo }}</span>
-        </div>
-
-        <div class="post-actions-menu">
-            <button class="btn-menu" (click)="showMenu = !showMenu">
-                <i class="fas fa-ellipsis-h"></i>
-            </button>
-
-            @if (showMenu) {
-            <div class="dropdown-menu">
-                @if (isOwner) {
-                <a [routerLink]="['/community/edit', post.id]"
-                    class="menu-item">
-                    <i class="fas fa-edit"></i>
-                    Chỉnh sửa
-                </a>
-                <button class="menu-item danger"
-                    (click)="deletePost()">
-                    <i class="fas fa-trash"></i>
-                    Xóa bài
-                </button>
-                }
-                <button class="menu-item" (click)="sharePost()">
-                    <i class="fas fa-share"></i>
-                    Chia sẻ
-                </button>
-                @if (!isOwner) {
-                <button class="menu-item" (click)="openReportModal()">
-                    <i class="fas fa-flag"></i>
-                    Báo cáo
-                </button>
-                }
-            </div>
+    <!-- Tags -->
+    @if (post.tags && post.tags.length > 0) {
+      <div class="post-tags">
+        @for (tag of post.tags; track tag.id) {
+          <a [routerLink]="['/community']"
+             [queryParams]="{tag: tag.id}" class="tag"
+             [style.--tag-color]="tag.mauSac">
+            @if (tag.icon) {
+              <span class="tag-icon">{{ tag.icon }}</span>
             }
-        </div>
-    </header>
-
-    <!-- Post Content -->
-    <div class="post-content">
-        <a [routerLink]="['/community', post.id]" class="post-title">
-            {{ post.tieuDe }}
-        </a>
-
-        <div class="post-body"
-            [innerHTML]="showFullContent ? post.noiDung : contentPreview">
-        </div>
-
-        <!-- Images -->
-        @if (post.hinhAnh && post.hinhAnh.length > 0) {
-        <div class="post-images"
-            [class.single]="post.hinhAnh.length === 1"
-            [class.grid]="post.hinhAnh.length > 1">
-            @for (img of post.hinhAnh.slice(0, 4); track img.id; let i
-            = $index) {
-            <div class="image-item"
-                [class.more]="i === 3 && post.hinhAnh.length > 4">
-                <img [src]="getImageUrl(img.duongDan)"
-                    [alt]="'Hình ' + (i + 1)" loading="lazy" />
-                @if (i === 3 && post.hinhAnh.length > 4) {
-                <div class="more-overlay">+{{ post.hinhAnh.length - 4
-                    }}</div>
-                }
-            </div>
-            }
-        </div>
+            {{ tag.ten }}
+          </a>
         }
+      </div>
+    }
+  </div>
 
-        <!-- Tags -->
-        @if (post.tags && post.tags.length > 0) {
-        <div class="post-tags">
-            @for (tag of post.tags; track tag.id) {
-            <a [routerLink]="['/community']"
-                [queryParams]="{tag: tag.id}" class="tag"
-                [style.--tag-color]="tag.mauSac">
-                @if (tag.icon) {
-                <span class="tag-icon">{{ tag.icon }}</span>
-                }
-                {{ tag.ten }}
-            </a>
-            }
-        </div>
-        }
+  <!-- Post Footer -->
+  <footer class="post-footer">
+    <div class="stats">
+      <span class="stat"><i class="fas fa-eye"></i>{{ post.luotXem }}</span>
+      <span class="stat"><i class="fas fa-heart"></i>{{ post.soLuotThich }}</span><span class="stat"><i
+      class="fas fa-comment"></i>{{ post.soLuotBinhLuan }}</span>
     </div>
+    <div class="actions">
+      <button class="btn-action" [class.active]="post.daThich"
+              (click)="toggleLike()">
+        <i class="fas fa-heart"></i>
+        {{ post.daThich ? 'Đã thích' : 'Thích' }}
+      </button>
 
-    <!-- Post Footer -->
-    <footer class="post-footer">
-        <div class="stats">
-            <span class="stat">
-                <i class="fas fa-eye"></i>
-                {{ post.luotXem }}
-            </span>
-            <span class="stat">
-                <i class="fas fa-heart"></i>
-                {{ post.soLuotThich }}
-            </span>
-            <span class="stat">
-                <i class="fas fa-comment"></i>
-                {{ post.soLuotBinhLuan }}
-            </span>
-        </div>
+      <a [routerLink]="['/community', post.id]"
+         class="btn-action">
+        <i class="fas fa-comment"></i>
+        Bình luận
+      </a>
+      <button class="btn-action" [class.active]="post.daLuu"
+              (click)="toggleSave()">
+        <i class="fas fa-bookmark"></i>
+        {{ post.daLuu ? 'Đã lưu' : 'Lưu' }}
+      </button>
+    </div>
+  </footer>
 
-        <div class="actions">
-            <button class="btn-action" [class.active]="post.daThich"
-                (click)="toggleLike()">
-                <i class="fas fa-heart"></i>
-                {{ post.daThich ? 'Đã thích' : 'Thích' }}
-            </button>
-
-            <a [routerLink]="['/community', post.id]"
-                class="btn-action">
-                <i class="fas fa-comment"></i>
-                Bình luận
-            </a>
-
-            <button class="btn-action" [class.active]="post.daLuu"
-                (click)="toggleSave()">
-                <i class="fas fa-bookmark"></i>
-                {{ post.daLuu ? 'Đã lưu' : 'Lưu' }}
-            </button>
-        </div>
-    </footer>
 </article>
 
+
 <!-- Report Modal -->
+
 @if (showReportModal) {
-<div class="modal-overlay" (click)="closeReportModal()">
+  <div class="modal-overlay" (click)="closeReportModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>Báo cáo bài viết</h3>
-            <button class="btn-close" (click)="closeReportModal()">
-                <i class="fas fa-times"></i>
-            </button>
+      <div class="modal-header">
+        <h3>Báo cáo bài viết</h3>
+        <button class="btn-close" (click)="closeReportModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="report-info">Chọn lý do báo cáo:</p>
+
+        <div class="report-options">
+          @for (option of loaiBaoCaoOptions; track option.value) {
+            <label class="report-option"
+                   [class.selected]="selectedReportType === option.value">
+              <input type="radio" name="reportType"
+                     [value]="option.value"
+                     [(ngModel)]="selectedReportType"/>
+              <span class="option-icon">{{ option.icon }}</span>
+              <span class="option-label">{{
+                  option.label
+                }}</span>
+            </label>
+          }
         </div>
 
-        <div class="modal-body">
-            <p class="report-info">Chọn lý do báo cáo:</p>
+        <textarea class="report-detail"
+                  placeholder="Mô tả chi tiết (tùy chọn)..."
+                  [(ngModel)]="reportDetail" rows="3"></textarea>
+      </div>
 
-            <div class="report-options">
-                @for (option of loaiBaoCaoOptions; track option.value)
-                {
-                <label class="report-option"
-                    [class.selected]="selectedReportType === option.value">
-                    <input type="radio" name="reportType"
-                        [value]="option.value"
-                        [(ngModel)]="selectedReportType" />
-                    <span class="option-icon">{{ option.icon }}</span>
-                    <span class="option-label">{{ option.label
-                        }}</span>
-                </label>
-                }
-            </div>
-
-            <textarea class="report-detail"
-                placeholder="Mô tả chi tiết (tùy chọn)..."
-                [(ngModel)]="reportDetail" rows="3"></textarea>
-        </div>
-
-        <div class="modal-footer">
-            <button class="btn-cancel"
-                (click)="closeReportModal()">Hủy</button>
-            <button class="btn-submit"
+      <div class="modal-footer">
+        <button class="btn-cancel"
+                (click)="closeReportModal()">Hủy
+        </button>
+        <button class="btn-submit"
                 [disabled]="!selectedReportType || reportLoading"
                 (click)="submitReport()">
-                @if (reportLoading) {
-                <i class="fas fa-spinner fa-spin"></i>
-                }
-                Gửi báo cáo
-            </button>
-        </div>
+          @if (reportLoading) {
+            <i class="fas fa-spinner fa-spin"></i>
+          }
+          Gửi báo cáo
+        </button>
+      </div>
     </div>
-</div>
+  </div>
+
 }

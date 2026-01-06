@@ -1,8 +1,8 @@
 export interface ChatInboxItemResponse {
-  partner_id: number;
-  partner_name: string;
-  partner_avatar_url: string | null;
-  last_message: string;
-  last_time: string;   // ISO
-  unread_count: number;
+  partnerId: number;
+  partnerName: string;
+  partnerAvatarUrl: string | null;
+  lastMessage: string;
+  lastTime: string; // ISO
+  unreadCount: number;
 }

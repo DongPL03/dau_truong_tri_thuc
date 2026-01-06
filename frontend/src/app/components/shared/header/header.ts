@@ -1,9 +1,10 @@
-import {Component, HostListener, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterLink, RouterLinkActive} from '@angular/router';
-import {UserResponse} from '../../../responses/nguoidung/user-response';
-import {Base} from '../../base/base';
-import {NotificationBell} from '../../notification-bell/notification-bell';
+import { CommonModule } from '@angular/common';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { UserResponse } from '../../../responses/nguoidung/user-response';
+import { Base } from '../../base/base';
+import { NotificationBell } from '../../notification-bell/notification-bell';
+import { LoginStreakPopup } from '../login-streak-popup/login-streak-popup';
 
 /**
  * 🔹 Header Component
@@ -12,7 +13,7 @@ import {NotificationBell} from '../../notification-bell/notification-bell';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, NotificationBell],
+  imports: [CommonModule, RouterLink, RouterLinkActive, NotificationBell, LoginStreakPopup],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
 })
@@ -23,18 +24,22 @@ export class Header extends Base implements OnInit {
   userMenuOpen = false;
   unreadCount = 3;
 
+  // Login Streak
+  showStreakPopup = false;
+  hasUnclaimedStreak = false;
+
   readonly imageBaseUrl = 'http://localhost:8088/api/v1/users/profile-images/';
 
   /** 🔔 Danh sách thông báo (demo) */
   notifications = [
-    {id: 1, icon: 'fas fa-bolt', text: 'Nguyễn Văn A đã mời bạn vào trận đấu ⚡'},
-    {id: 2, icon: 'fas fa-user-plus', text: 'Trần Thị Nhi đã chấp nhận lời mời kết bạn 🤝'},
-    {id: 3, icon: 'fas fa-trophy', text: 'Bạn đã thắng trận "Lịch sử Việt Nam" 🏆'},
+    { id: 1, icon: 'fas fa-bolt', text: 'Nguyễn Văn A đã mời bạn vào trận đấu ⚡' },
+    { id: 2, icon: 'fas fa-user-plus', text: 'Trần Thị Nhi đã chấp nhận lời mời kết bạn 🤝' },
+    { id: 3, icon: 'fas fa-trophy', text: 'Bạn đã thắng trận "Lịch sử Việt Nam" 🏆' },
   ];
-
 
   ngOnInit(): void {
     this.loadUserInfo();
+    this.checkStreakStatus();
   }
 
   /** 🧩 Lấy dữ liệu người dùng từ LocalStorage */
@@ -80,11 +85,11 @@ export class Header extends Base implements OnInit {
         console.error('Logout backend error:', err);
         // Dù lỗi (ví dụ token hết hạn) vẫn nên clear FE để tránh kẹt user
         this.afterLogout();
-      }
+      },
     });
   }
 
-// Tách phần clear local state riêng cho gọn
+  // Tách phần clear local state riêng cho gọn
   private afterLogout(): void {
     this.tokenService.clear();
     this.userService.removeUserFromLocalStorage();
@@ -93,11 +98,38 @@ export class Header extends Base implements OnInit {
     });
   }
 
-
   /** 🚫 Ẩn các dropdown khi click ra ngoài */
   @HostListener('document:click')
   onOutsideClick(): void {
     this.notifOpen = false;
     this.userMenuOpen = false;
+  }
+
+  // ==================== LOGIN STREAK ====================
+
+  /** 🔥 Kiểm tra trạng thái streak để hiển thị badge */
+  private checkStreakStatus(): void {
+    this.loginStreakService.getStreakInfo().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.hasUnclaimedStreak = !res.data.da_diem_danh_hom_nay;
+        }
+      },
+      error: (err) => {
+        console.error('Check streak error:', err);
+      },
+    });
+  }
+
+  /** 🔥 Toggle popup streak */
+  toggleStreakPopup(): void {
+    this.showStreakPopup = !this.showStreakPopup;
+  }
+
+  /** 🔥 Đóng popup streak */
+  closeStreakPopup(): void {
+    this.showStreakPopup = false;
+    // Refresh streak status after closing
+    this.checkStreakStatus();
   }
 }

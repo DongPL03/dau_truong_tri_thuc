@@ -2,7 +2,7 @@
   <header class="hero-header">
     <div class="greeting-content">
       <h1>Xin chào, <span class="highlight-name">{{ user?.ho_ten }}</span>! 🚀</h1>
-      <p>Hôm nay là một ngày tuyệt vời để leo rank!</p>
+      <p>Sẵn sàng chinh phục đỉnh cao tri thức hôm nay chưa?</p>
     </div>
     <div class="header-decoration">
     </div>
@@ -79,21 +79,40 @@
           </div>
           <div class="shine-effect"></div>
         </button>
-
-        <div class="sub-actions">
-          <button class="btn-3d btn-secondary" (click)="navigateQuiz()">
-            <i class="fas fa-plus"></i> Tạo câu hỏi
-          </button>
-          <button class="btn-3d btn-secondary" (click)="navigatePractice()">
-            <i class="fas fa-dumbbell"></i> Luyện tập
-          </button>
-          <button class="btn-3d btn-secondary" (click)="navigateFriend()">
-            <i class="fas fa-user-friends"></i> Bạn bè
-          </button>
-          <button class="btn-3d btn-secondary" (click)="navigateRecommendation()">
-            <i class="fas fa-lightbulb"></i> Gợi ý học tập
-          </button>
-        </div>
+      </section>
+<!--        <div class="sub-actions">-->
+<!--          <button class="btn-3d btn-secondary" >-->
+<!--            <i class="fas fa-plus"></i> Tạo câu hỏi-->
+<!--          </button>-->
+<!--          <button class="btn-3d btn-secondary" (click)="navigatePractice()">-->
+<!--            <i class="fas fa-dumbbell"></i> Luyện tập-->
+<!--          </button>-->
+<!--          <button class="btn-3d btn-secondary" (click)="navigateFriend()">-->
+<!--            <i class="fas fa-user-friends"></i> Bạn bè-->
+<!--          </button>-->
+<!--          <button class="btn-3d btn-secondary" (click)="navigateRecommendation()">-->
+<!--            <i class="fas fa-lightbulb"></i> Gợi ý học tập-->
+<!--          </button>-->
+<!--        </div>-->
+      <section class="quick-access-grid">
+<!--        <button class="btn-quick-access purple" routerLink="/tran-dau/pending">-->
+<!--          <i class="fas fa-bolt"></i> <span>Đấu Trường</span>-->
+<!--        </button>-->
+        <button class="btn-quick-access blue" (click)="navigateQuiz()">
+          <i class="fas fa-book-open"></i> <span>Kho Bộ Câu Hỏi</span>
+        </button>
+        <button class="btn-quick-access green" (click)="navigateCourse()">
+          <i class="fas fa-graduation-cap"></i> <span>Khóa Học</span>
+        </button>
+        <button class="btn-quick-access yellow" (click)="navigateLeaderboard()">
+          <i class="fas fa-trophy"></i> <span>BXH</span>
+        </button>
+        <button class="btn-quick-access orange" (click)="navigateMission()">
+          <i class="fas fa-tasks"></i> <span>Nhiệm Vụ</span>
+        </button>
+<!--        <button class="btn-quick-access teal" (click)="navigateInventory()">-->
+<!--          <i class="fas fa-box-open"></i> <span>Kho Đồ</span>-->
+<!--        </button>-->
       </section>
 
       <section class="card feed-card">
@@ -126,7 +145,10 @@
 
       <div class="bottom-grid">
         <section class="card room-card">
-          <h2 class="card-title">📡 Phòng chờ</h2>
+          <div class="card-header">
+            <h2 class="card-title">📡 Phòng Chờ</h2>
+            <button class="btn-text" (click)="navigateBattle()">Xem tất cả</button>
+          </div>
           @if (pendingBattles.length > 0) {
             <div class="room-list">
               @for (b of pendingBattles; track b.id) {
@@ -137,7 +159,10 @@
               }
             </div>
           } @else {
+            <div class="empty-state">
             <p class="empty-text">Không có phòng chờ.</p>
+            <button class="btn-sm btn-create" (click)="createRoom()">Tạo phòng</button>
+            </div>
           }
         </section>
 

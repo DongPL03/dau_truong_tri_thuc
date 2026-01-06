@@ -8,10 +8,30 @@
       <header class="sidebar-header">
         <h2>Tin nhắn</h2>
         <div class="header-actions">
-          <button class="btn-icon" title="Cài đặt"><i class="fas fa-cog"></i></button>
-          <button class="btn-icon" title="Soạn tin mới"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon" title="Tạo nhóm"
+            (click)="openCreateGroupModal()">
+            <i class="fas fa-users"></i>
+          </button>
+          <button class="btn-icon" title="Cài đặt"><i
+              class="fas fa-cog"></i></button>
         </div>
       </header>
+
+      <!-- Tabs -->
+      <div class="sidebar-tabs">
+        <button class="tab-btn"
+          [class.active]="activeTab === 'friends'"
+          (click)="switchTab('friends')">
+          <i class="fas fa-user"></i>
+          <span>Bạn bè</span>
+        </button>
+        <button class="tab-btn"
+          [class.active]="activeTab === 'groups'"
+          (click)="switchTab('groups')">
+          <i class="fas fa-users"></i>
+          <span>Nhóm</span>
+        </button>
+      </div>
 
       <div class="search-wrapper">
         <i class="fas fa-search"></i>
@@ -19,163 +39,670 @@
       </div>
 
       <div class="sidebar-body custom-scrollbar">
+        <!-- Friends Tab -->
+        @if (activeTab === 'friends') {
         @if (inbox_loading && inbox_items.length === 0) {
-          <div class="loading-state">
-            <div class="spinner-sm"></div>
-            Đang tải...
-          </div>
+        <div class="loading-state">
+          <div class="spinner-sm"></div>
+          Đang tải...
+        </div>
         } @else {
-          @if (inbox_items.length === 0) {
-            <div class="empty-state">
-              <img src="assets/images/empty-chat.png" onerror="this.style.display='none'">
-              <p>Chưa có cuộc trò chuyện nào</p>
+        @if (inbox_items.length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-user-friends"></i>
+          <p>Chưa có bạn bè nào</p>
+        </div>
+        } @else {
+        <div class="conversation-list">
+          @for (item of inbox_items; track item.partner_id) {
+          <div class="conv-item"
+            [class.active]="active_partner?.partner_id === item.partner_id"
+            (click)="select_partner(item)">
+
+            <div class="avatar-wrapper">
+              <img
+                [src]="getAvatar(item.partner_avatar_url, item.partner_name)"
+                class="avatar">
+              <div class="status-dot"
+                [class.online]="item.partner_status === 'ONLINE'">
+              </div>
             </div>
-          } @else {
-            <div class="conversation-list">
-              @for (item of inbox_items; track item.partner_id) {
-                <div class="conv-item"
-                     [class.active]="active_partner?.partner_id === item.partner_id"
-                     (click)="select_partner(item)">
 
-                  <div class="avatar-wrapper">
-                    <img [src]="getAvatar(item.partner_avatar_url, item.partner_name)" class="avatar">
-                    <div class="status-dot" [class.online]="item.partner_status === 'ONLINE'"></div>
-                  </div>
+            <div class="conv-info">
+              <div class="conv-top">
+                <span class="name">{{ item.partner_name }}</span>
+                <span class="time">{{ item.last_time | date:'HH:mm'
+                  }}</span>
+              </div>
+              <div class="conv-bottom">
+                <span class="last-msg"
+                  [class.unread]="(item.unread_count ?? 0) > 0">
+                  {{ item.last_message || 'Bắt đầu trò chuyện' }}
+                </span>
+                @if ((item.unread_count ?? 0) > 0) {
+                <span class="badge">{{ (item.unread_count ?? 0) > 9 ?
+                  '9+' : item.unread_count }}</span>
+                }
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+        }
+        }
+        }
 
-                  <div class="conv-info">
-                    <div class="conv-top">
-                      <span class="name">{{ item.partner_name }}</span>
-                      <span class="time">{{ item.last_time | date:'HH:mm' }}</span>
-                    </div>
-                    <div class="conv-bottom">
-                      <span class="last-msg" [class.unread]="(item.unread_count ?? 0) > 0">
-                        {{ item.last_message || 'Bắt đầu trò chuyện' }}
-                      </span>
-                      @if ((item.unread_count ?? 0) > 0) {
-                        <span class="badge">{{ (item.unread_count ?? 0) > 9 ? '9+' : item.unread_count }}</span>
-                      }
-                    </div>
-                  </div>
-                </div>
+        <!-- Groups Tab -->
+        @if (activeTab === 'groups') {
+        @if (groups_loading && groups.length === 0) {
+        <div class="loading-state">
+          <div class="spinner-sm"></div>
+          Đang tải...
+        </div>
+        } @else {
+        @if (groups.length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-comments"></i>
+          <p>Chưa có nhóm chat nào</p>
+          <button class="btn-create-group"
+            (click)="openCreateGroupModal()">
+            <i class="fas fa-plus"></i>
+            Tạo nhóm mới
+          </button>
+        </div>
+        } @else {
+        <div class="conversation-list">
+          @for (group of groups; track group.id) {
+          <div class="conv-item"
+            [class.active]="activeGroup?.id === group.id"
+            (click)="select_group(group)">
+
+            <div class="avatar-wrapper">
+              <img [src]="getGroupAvatar(group)" class="avatar">
+              @if (group.loai === LoaiPhongChat.NHOM) {
+              <div class="group-badge">
+                <i class="fas fa-users"></i>
+              </div>
               }
             </div>
+
+            <div class="conv-info">
+              <div class="conv-top">
+                <span class="name">{{ getGroupDisplayName(group)
+                  }}</span>
+                <span class="time">{{ group.thoiGianTinNhanCuoi |
+                  date:'HH:mm' }}</span>
+              </div>
+              <div class="conv-bottom"><span class="last-msg"
+                  [class.unread]="group.soTinNhanChuaDoc > 0">{{
+                  group.tinNhanCuoi || 'Bắt đầu trò chuyện' }}</span>
+                @if (group.soTinNhanChuaDoc > 0) {
+                <span class="badge">{{ group.soTinNhanChuaDoc > 9 ?
+                  '9+' : group.soTinNhanChuaDoc }}</span>
+                }
+              </div>
+            </div>
+          </div>
           }
+        </div>
+        }
+        }
         }
       </div>
     </aside>
 
     <section class="chat-main">
-      @if (!active_partner) {
-        <div class="welcome-screen animate-fade-up">
-          <div class="welcome-icon">👋</div>
-          <h3>Xin chào, {{ meName }}!</h3>
-          <p>Chọn một người bạn để bắt đầu tán gẫu ngay thôi.</p>
+      <!-- Welcome Screen - No chat selected -->
+      @if (!active_partner && !activeGroup) {
+      <div class="welcome-screen animate-fade-up">
+        <div class="welcome-icon">👋</div>
+        <h3>Xin chào, {{ meName }}!</h3>
+        <p>Chọn một cuộc trò chuyện để bắt đầu.</p>
+      </div>
+      }
+
+      <!-- Friend Chat -->
+      @if (active_partner && activeChatType === 'friend') {
+      <header class="chat-header">
+        <div class="partner-details">
+          <div class="avatar-wrapper sm">
+            <img
+              [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
+              class="avatar">
+            <div class="status-dot"
+              [class.online]="active_partner.partner_status === 'ONLINE'">
+            </div>
+          </div>
+          <div class="info">
+            <h3 class="name">{{ active_partner.partner_name }}</h3>
+            <span class="status-text">
+              {{ active_partner.partner_status === 'ONLINE' ? 'Đang
+              hoạt động' : 'Hoạt động gần đây' }}
+            </span>
+          </div>
         </div>
-      } @else {
+        <div class="chat-actions">
+          <button class="btn-icon"><i
+              class="fas fa-phone-alt"></i></button>
+          <button class="btn-icon"><i
+              class="fas fa-video"></i></button>
+          <button class="btn-icon"><i
+              class="fas fa-info-circle"></i></button>
+        </div>
+      </header>
 
-        <header class="chat-header">
-          <div class="partner-details">
-            <div class="avatar-wrapper sm">
-              <img [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)" class="avatar">
-              <div class="status-dot" [class.online]="active_partner.partner_status === 'ONLINE'"></div>
-            </div>
-            <div class="info">
-              <h3 class="name">{{ active_partner.partner_name }}</h3>
-              <span class="status-text">
-                {{ active_partner.partner_status === 'ONLINE' ? 'Đang hoạt động' : 'Hoạt động gần đây' }}
-              </span>
-            </div>
-          </div>
-          <div class="chat-actions">
-            <button class="btn-icon"><i class="fas fa-phone-alt"></i></button>
-            <button class="btn-icon"><i class="fas fa-video"></i></button>
-            <button class="btn-icon"><i class="fas fa-info-circle"></i></button>
-          </div>
-        </header>
+      <div class="messages-area custom-scrollbar" #messagesContainer>
+        @if (messages_loading && messages.length === 0) {
+        <div class="loading-state full">
+          <div class="spinner-3d"></div>
+        </div>
+        } @else {
 
-        <div class="messages-area custom-scrollbar" #messagesContainer>
-          @if (messages_loading && messages.length === 0) {
-            <div class="loading-state full">
-              <div class="spinner-3d"></div>
-            </div>
-          } @else {
+        @if (messages_has_more && !messages_loading) {
+        <div class="load-more-wrapper">
+          <button class="btn-load-more"
+            (click)="load_more_messages()">Tải tin nhắn cũ</button>
+        </div>
+        }
 
-            @if (messages_has_more && !messages_loading) {
-              <div class="load-more-wrapper">
-                <button class="btn-load-more" (click)="load_more_messages()">Tải tin nhắn cũ</button>
-              </div>
+        @if (messages.length === 0) {
+        <div class="empty-chat-state">
+          <img
+            [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
+            class="lg-avatar">
+          <p>Các bạn đã là bạn bè. Hãy gửi lời chào!</p>
+          <div class="wave-emoji">👋</div>
+        </div>
+        }
+
+        <div class="msg-list">
+          @for (m of messages; track $index) {
+          <div class="msg-row" [class.mine]="m.la_toi"
+            [class.partner]="!m.la_toi">
+
+            @if (!m.la_toi) {
+            <img
+              [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
+              class="mini-avatar">
             }
 
-            @if (messages.length === 0) {
-              <div class="empty-chat-state">
-                <img [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
-                     class="lg-avatar">
-                <p>Các bạn đã là bạn bè. Hãy gửi lời chào!</p>
-                <div class="wave-emoji">👋</div>
+            <div class="bubble-wrapper">
+              <!-- Text message -->
+              @if (!m.loai_tin_nhan || m.loai_tin_nhan === 'VAN_BAN')
+              {
+              <div class="bubble"
+                [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
+                {{ m.noi_dung }}
               </div>
-            }
-
-            <div class="msg-list">
-              @for (m of messages; track m.tin_nhan_id) {
-                <div class="msg-row" [class.mine]="m.la_toi" [class.partner]="!m.la_toi">
-
-                  @if (!m.la_toi) {
-                    <img [src]="getAvatar(active_partner.partner_avatar_url, active_partner.partner_name)"
-                         class="mini-avatar">
-                  }
-
-                  <div class="bubble-wrapper">
-                    <div class="bubble" [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
-                      {{ m.noi_dung }}
-                    </div>
-                    <span class="msg-time">{{ m.gui_luc | date:'HH:mm' }}</span>
-                  </div>
-                </div>
               }
+              <!-- Image message -->
+              @else if (m.loai_tin_nhan === 'HINH_ANH') {
+              <div class="bubble image-bubble"
+                [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
+                <img [src]="API_URL + '/chat/files/' + m.url_media"
+                  alt="Ảnh" loading="lazy">
+              </div>
+              }
+              <!-- File message -->
+              @else if (m.loai_tin_nhan === 'TAP_TIN') {
+              <div class="bubble file-bubble"
+                [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
+                <a [href]="m.url_media ? (API_URL + '/chat/files/' + m.url_media) : '#'"
+                  target="_blank"
+                  [attr.download]="m.ten_file || 'file'">
+                  <i class="fas fa-file-alt"></i>
+                  <span class="file-name">{{ m.ten_file || 'Tệp đính
+                    kèm' }}</span>
+                  @if (m.kich_thuoc_file) {
+                  <small class="file-size">({{
+                    formatFileSize(m.kich_thuoc_file) }})</small>
+                  }
+                </a>
+              </div>
+              }
+              <!-- Audio message -->
+              @else if (m.loai_tin_nhan === 'AM_THANH') {
+              <div class="bubble audio-bubble"
+                [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
+                <audio controls
+                  [src]="API_URL + '/chat/files/' + m.url_media"></audio>
+              </div>
+              }
+              @else {
+              <div class="bubble"
+                [title]="m.gui_luc | date:'dd/MM/yyyy HH:mm'">
+                {{ m.noi_dung }}
+              </div>
+              }
+              <span class="msg-time">{{ m.gui_luc | date:'HH:mm'
+                }}</span>
             </div>
+          </div>
           }
         </div>
+        }
+      </div>
 
-        <footer class="chat-footer">
+      <footer class="chat-footer">
+        <button class="btn-tool" title="Gửi ảnh"
+          (click)="openImageSelector()">
+          <i class="fas fa-image"></i>
+        </button>
+        <button class="btn-tool" title="Gửi file"
+          (click)="openFileSelector()">
+          <i class="fas fa-paperclip"></i>
+        </button>
 
-          <button class="btn-tool"><i class="fas fa-plus-circle"></i></button>
-
-          <div class="input-box">
-            <textarea
-              #chatInput
-              [(ngModel)]="new_message_noi_dung"
-              placeholder="Nhập tin nhắn..."
-              (keydown.enter)="on_enter_send($any($event))"
-              (input)="autoResize()"
-              rows="1">
+        <div class="input-box">
+          <textarea #chatInput [(ngModel)]="new_message_noi_dung"
+            placeholder="Nhập tin nhắn..."
+            (keydown.enter)="on_enter_send($any($event))"
+            (input)="autoResize()" rows="1">
             </textarea>
 
-            <button class="btn-emoji" (click)="toggleEmojiPicker()" [class.active]="showEmojiPicker()">
-              <i class="far fa-smile"></i>
-            </button>
-          </div>
-
-          <button class="btn-send" (click)="send_message()" [disabled]="!new_message_noi_dung.trim()">
-            <i class="fas fa-paper-plane"></i>
+          <button class="btn-emoji" (click)="toggleEmojiPicker()"
+            [class.active]="showEmojiPicker()">
+            <i class="far fa-smile"></i>
           </button>
+        </div>
 
-          @if (showEmojiPicker()) {
-            <div class="emoji-popover">
-              <div class="emoji-overlay" (click)="showEmojiPicker.set(false)"></div>
-
-              <div class="emoji-content">
-                <emoji-mart
-                  [showPreview]="false"
-                  [enableSearch]="true"
-                  [darkMode]="false"
-                  color="#6C5DD3"
-                  (emojiClick)="addEmoji($event)">
-                </emoji-mart>
-              </div>
-            </div>
+        <button class="btn-send" (click)="send_message()"
+          [disabled]="!new_message_noi_dung.trim() && !uploadingFile">
+          @if (uploadingFile) {
+          <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+          <i class="fas fa-paper-plane"></i>
           }
-        </footer>
+        </button>
+
+        <!-- Hidden file input -->
+        <input type="file" #fileInput style="display: none"
+          (change)="onFileSelected($event)">
+
+        @if (showEmojiPicker()) {
+        <div class="emoji-popover">
+          <div class="emoji-overlay"
+            (click)="showEmojiPicker.set(false)"></div>
+          <div class="emoji-content">
+            <emoji-mart [showPreview]="false" [enableSearch]="true"
+              [darkMode]="false" color="#6C5DD3"
+              (emojiClick)="addEmoji($event)">
+            </emoji-mart>
+          </div>
+        </div>
+        }
+      </footer>
+      }
+
+      <!-- Group Chat -->
+      @if (activeGroup && activeChatType === 'group') {
+      <header class="chat-header">
+        <div class="partner-details">
+          <div class="avatar-wrapper sm">
+            <img [src]="getGroupAvatar(activeGroup)" class="avatar">
+          </div>
+          <div class="info">
+            <h3 class="name">{{ getGroupDisplayName(activeGroup) }}
+            </h3>
+            <span class="status-text">{{ activeGroup.thanhVien.length
+              || 0 }} thành viên</span>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <button class="btn-icon" title="Thêm thành viên"
+            (click)="openAddMembersModal()">
+            <i class="fas fa-user-plus"></i>
+          </button>
+          <button class="btn-icon" title="Cài đặt nhóm"
+            (click)="openGroupSettings()">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="messages-area custom-scrollbar" #messagesContainer>
+        @if (groupMessages_loading && groupMessages.length === 0) {
+        <div class="loading-state full">
+          <div class="spinner-3d"></div>
+        </div>
+        } @else {
+
+        @if (groupMessages_has_more && !groupMessages_loading) {
+        <div class="load-more-wrapper">
+          <button class="btn-load-more"
+            (click)="load_more_group_messages()">Tải tin nhắn
+            cũ</button>
+        </div>
+        }
+
+        @if (groupMessages.length === 0) {
+        <div class="empty-chat-state">
+          <img [src]="getGroupAvatar(activeGroup)" class="lg-avatar">
+          <p>Nhóm đã được tạo. Hãy gửi tin nhắn đầu tiên!</p>
+          <div class="wave-emoji">💬</div>
+        </div>
+        }
+
+        <div class="msg-list">
+          @for (m of groupMessages; track $index) {
+          <div class="msg-row" [class.mine]="m.laToi"
+            [class.partner]="!m.laToi"
+            [class.system]="m.loai === LoaiTinNhan.HE_THONG">
+
+            @if (m.loai === LoaiTinNhan.HE_THONG) {
+            <div class="system-message">
+              <i class="fas fa-info-circle"></i>
+              {{ m.noiDung }}
+            </div>
+            } @else {
+            @if (!m.laToi) {
+            <img
+              [src]="getAvatar(m.nguoiGui.anhDaiDien, m.nguoiGui.ten || 'User')"
+              class="mini-avatar">
+            }
+
+            <div class="bubble-wrapper">
+              @if (!m.laToi) {
+              <span class="sender-name">{{ m.nguoiGui.ten }}</span>
+              }
+              <div class="bubble"
+                [title]="m.guiLuc | date:'dd/MM/yyyy HH:mm'">
+                @if (m.loai === LoaiTinNhan.HINH_ANH && m.urlMedia) {
+                <img [src]="m.urlMedia" class="msg-image" alt="Image">
+                } @else if (m.loai === LoaiTinNhan.TAP_TIN &&
+                m.urlMedia) {
+                <a [href]="m.urlMedia" target="_blank"
+                  class="file-attachment">
+                  <i class="fas fa-file"></i>
+                  {{ m.tenFile || 'Tập tin' }}
+                </a>
+                } @else {
+                {{ m.noiDung }}
+                }
+              </div>
+              <span class="msg-time">{{ m.guiLuc | date:'HH:mm'
+                }}</span>
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+      </div>
+
+      <footer class="chat-footer">
+        <button class="btn-tool"><i
+            class="fas fa-plus-circle"></i></button>
+
+        <div class="input-box">
+          <textarea #chatInput [(ngModel)]="new_message_noi_dung"
+            placeholder="Nhập tin nhắn..."
+            (keydown.enter)="on_enter_send($any($event))"
+            (input)="autoResize()" rows="1">
+            </textarea>
+
+          <button class="btn-emoji" (click)="toggleEmojiPicker()"
+            [class.active]="showEmojiPicker()">
+            <i class="far fa-smile"></i>
+          </button>
+        </div>
+
+        <!-- File upload buttons -->
+        <button class="btn-tool" title="Gửi ảnh"
+          (click)="openImageSelector()" [disabled]="uploadingFile">
+          <i class="fas fa-image"></i>
+        </button>
+        <button class="btn-tool" title="Gửi file"
+          (click)="openFileSelector()" [disabled]="uploadingFile">
+          <i class="fas fa-paperclip"></i>
+        </button>
+
+        <button class="btn-send" (click)="send_group_message()"
+          [disabled]="(!new_message_noi_dung.trim() && !uploadingFile) || uploadingFile">
+          @if (uploadingFile) {
+          <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+          <i class="fas fa-paper-plane"></i>
+          }
+        </button>
+
+        <!-- Hidden file input -->
+        <input type="file" #fileInput style="display: none"
+          (change)="onFileSelected($event)">
+
+        @if (showEmojiPicker()) {
+        <div class="emoji-popover">
+          <div class="emoji-overlay"
+            (click)="showEmojiPicker.set(false)"></div>
+          <div class="emoji-content">
+            <emoji-mart [showPreview]="false" [enableSearch]="true"
+              [darkMode]="false" color="#6C5DD3"
+              (emojiClick)="addEmoji($event)">
+            </emoji-mart>
+          </div>
+        </div>
+        }
+      </footer>
       }
     </section>
   </div>
+
+  <!-- Create Group Modal -->
+  @if (showCreateGroupModal) {
+  <div class="modal-overlay" (click)="closeCreateGroupModal()">
+    <div class="modal-content create-group-modal"
+      (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-users"></i> Tạo nhóm chat mới</h3>
+        <button class="btn-close" (click)="closeCreateGroupModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Tên nhóm</label>
+          <input type="text" [(ngModel)]="newGroupName"
+            placeholder="Nhập tên nhóm..." class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Chọn thành viên ({{ selectedMemberIds.length }} đã
+            chọn)</label>
+          <div class="member-list">
+            @for (friend of inbox_items; track friend.partner_id) {
+            <div class="member-item"
+              [class.selected]="isMemberSelected(friend.partner_id)"
+              (click)="toggleMemberSelection(friend.partner_id)">
+              <img
+                [src]="getAvatar(friend.partner_avatar_url, friend.partner_name)"
+                class="avatar-sm">
+              <span class="member-name">{{ friend.partner_name
+                }}</span>
+              <div class="checkbox">
+                @if (isMemberSelected(friend.partner_id)) {
+                <i class="fas fa-check-circle"></i>
+                } @else {
+                <i class="far fa-circle"></i>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel"
+          (click)="closeCreateGroupModal()">Hủy</button>
+        <button class="btn-create"
+          [disabled]="!newGroupName.trim() || selectedMemberIds.length === 0"
+          (click)="createGroup()">
+          <i class="fas fa-plus"></i>
+          Tạo nhóm
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Group Settings Panel -->
+  @if (showGroupSettings && activeGroup) {
+  <div class="modal-overlay" (click)="closeGroupSettings()">
+    <div class="modal-content group-settings-modal"
+      (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-cog"></i> Cài đặt nhóm</h3>
+        <button class="btn-close" (click)="closeGroupSettings()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Group Avatar -->
+        <div class="group-avatar-section">
+          <div class="avatar-wrapper lg">
+            <img [src]="getGroupAvatar(activeGroup)" class="avatar">
+            <label class="avatar-overlay" for="groupAvatarInput">
+              <i class="fas fa-camera"></i>
+            </label>
+            <input type="file" id="groupAvatarInput" accept="image/*"
+              style="display: none"
+              (change)="onGroupAvatarSelected($event)">
+          </div>
+        </div>
+
+        <!-- Group Name -->
+        <div class="form-group">
+          <label>Tên nhóm</label>
+          @if (isEditingGroupName) {
+          <div class="edit-name-row">
+            <input type="text" [(ngModel)]="editGroupName"
+              class="form-input">
+            <button class="btn-icon-sm success"
+              (click)="saveGroupName()">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="btn-icon-sm"
+              (click)="cancelEditGroupName()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          } @else {
+          <div class="display-name-row">
+            <span class="group-name-display">{{ activeGroup.ten ||
+              'Chưa đặt tên' }}</span>
+            <button class="btn-icon-sm"
+              (click)="startEditGroupName()">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          }
+        </div>
+
+        <!-- Members List -->
+        <div class="form-group">
+          <label>Thành viên ({{ activeGroup.thanhVien.length
+            }})</label>
+          <div class="member-list settings-member-list">
+            @for (member of activeGroup.thanhVien; track member.id) {
+            <div class="member-item">
+              <img [src]="getAvatar(member.anhDaiDien, member.ten)"
+                class="avatar-sm">
+              <div class="member-info">
+                <span class="member-name">{{ member.ten }}</span>
+                @if (member.vaiTro === 'ADMIN') {
+                <span class="role-badge admin">Admin</span>
+                }
+                @if (member.nguoiDungId === current_user_id) {
+                <span class="role-badge you">Bạn</span>
+                }
+              </div>
+              @if (isGroupAdmin() && member.nguoiDungId !==
+              current_user_id) {
+              <button class="btn-kick"
+                (click)="kickMember(member.nguoiDungId, member.ten)">
+                <i class="fas fa-user-minus"></i>
+              </button>
+              }
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger" (click)="leaveGroup()">
+          <i class="fas fa-sign-out-alt"></i>
+          Rời nhóm
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Add Members Modal -->
+  @if (showAddMembersModal && activeGroup) {
+  <div class="modal-overlay" (click)="closeAddMembersModal()">
+    <div class="modal-content add-members-modal"
+      (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-plus"></i> Thêm thành viên</h3>
+        <button class="btn-close" (click)="closeAddMembersModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Chọn bạn bè để thêm ({{ addMemberSelectedIds.length
+            }} đã chọn)</label>
+          <div class="member-list">
+            @for (friend of inbox_items; track friend.partner_id) {
+            @if (!isAlreadyMember(friend.partner_id)) {
+            <div class="member-item"
+              [class.selected]="isAddMemberSelected(friend.partner_id)"
+              (click)="toggleAddMemberSelection(friend.partner_id)">
+              <img
+                [src]="getAvatar(friend.partner_avatar_url, friend.partner_name)"
+                class="avatar-sm">
+              <span class="member-name">{{ friend.partner_name
+                }}</span>
+              <div class="checkbox">
+                @if (isAddMemberSelected(friend.partner_id)) {
+                <i class="fas fa-check-circle"></i>
+                } @else {
+                <i class="far fa-circle"></i>
+                }
+              </div>
+            </div>
+            } @else {
+            <div class="member-item disabled">
+              <img
+                [src]="getAvatar(friend.partner_avatar_url, friend.partner_name)"
+                class="avatar-sm">
+              <span class="member-name">{{ friend.partner_name
+                }}</span>
+              <span class="already-member-badge">Đã là thành
+                viên</span>
+            </div>
+            }
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel"
+          (click)="closeAddMembersModal()">Hủy</button>
+        <button class="btn-create"
+          [disabled]="addMemberSelectedIds.length === 0"
+          (click)="addMembersToGroup()">
+          <i class="fas fa-plus"></i>
+          Thêm {{ addMemberSelectedIds.length }} thành viên
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

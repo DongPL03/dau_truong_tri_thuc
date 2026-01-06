@@ -28,7 +28,8 @@
 
       <h1 class="quiz-title">{{ bo?.tieu_de || 'Đang tải tiêu đề...'
         }}</h1>
-      <p class="quiz-desc">{{ bo?.mo_ta || 'Chưa có mô tả cho bộ câu hỏi này.' }}</p>
+      <p class="quiz-desc">{{ bo?.mo_ta || 'Chưa có mô tả cho bộ câu
+        hỏi này.' }}</p>
 
       @if (bo?.che_do_hien_thi === 'PUBLIC' && bo?.trang_thai ===
       'CHO_DUYET') {
@@ -57,7 +58,8 @@
   <div class="locked-section">
     <div class="lock-icon-3d"><i class="fas fa-lock"></i></div>
     <h2>Nội dung này đã bị khóa!</h2>
-    <p class="lock-msg">{{ unlockError || 'Bạn cần mở khóa để xem chi tiết bộ câu hỏi này.' }}</p>
+    <p class="lock-msg">{{ unlockError || 'Bạn cần mở khóa để xem chi
+      tiết bộ câu hỏi này.' }}</p>
 
     <div class="unlock-price-tag">
       <span>Giá mở khóa</span>
@@ -188,6 +190,24 @@
         <i class="fas fa-arrow-right"></i> Đi đến khóa học
       </button>
     </div>
+    }
+
+    <!-- Rating Section -->
+    @if (bo?.trang_thai === 'DA_DUYET' && !isOwner()) {
+    <section class="rating-section">
+      <h2><i class="fas fa-star"></i> Đánh giá bộ câu hỏi</h2>
+      <app-danh-gia loaiDoiTuong="BO_CAU_HOI"
+        [doiTuongId]="boCauHoiId" [allowRating]="canRateAndComment()">
+      </app-danh-gia>
+
+      @if (!canRateAndComment() && bo?.can_mo_khoa && !bo?.da_mo_khoa)
+      {
+      <div class="rating-unlock-hint">
+        <i class="fas fa-info-circle"></i>
+        Bạn cần mở khóa bộ câu hỏi này để có thể đánh giá
+      </div>
+      }
+    </section>
     }
 
     } @else {

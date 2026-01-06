@@ -30,21 +30,16 @@
 
         <div class="filter-group">
           <label class="group-label">Sắp xếp</label>
-          <div class="toggle-row">
-            <label class="toggle-btn"
-                   [class.active]="sortOrder === 'NEWEST'">
-              <input type="radio" name="sort" value="NEWEST"
-                     [(ngModel)]="sortOrder"
-                     (change)="applyFilter()" hidden>
-              Mới nhất
-            </label>
-            <label class="toggle-btn"
-                   [class.active]="sortOrder === 'OLDEST'">
-              <input type="radio" name="sort" value="OLDEST"
-                     [(ngModel)]="sortOrder"
-                     (change)="applyFilter()" hidden>
-              Cũ nhất
-            </label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="sortOrder"
+                    (change)="applyFilter()"
+                    class="custom-select">
+              <option value="NEWEST">🕐 Mới nhất</option>
+              <option value="OLDEST">📅 Cũ nhất</option>
+              <option value="RATING_DESC">⭐ Đánh giá cao nhất</option>
+              <option value="RATING_ASC">⭐ Đánh giá thấp nhất</option>
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
           </div>
         </div>
 
@@ -73,6 +68,20 @@
                 opt.value) {
                 <option [value]="opt.value">{{ opt.label }}
                 </option>
+              }
+            </select>
+            <i class="fas fa-chevron-down arrow"></i>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="group-label">Đánh giá</label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="minRating"
+                    (change)="applyFilter()"
+                    class="custom-select">
+              @for (opt of ratingOptions; track opt.value) {
+                <option [ngValue]="opt.value">{{ opt.label }}</option>
               }
             </select>
             <i class="fas fa-chevron-down arrow"></i>
@@ -131,6 +140,13 @@
                                 <i class="fas fa-user-astronaut"></i>
                               {{ khoaHoc.nguoi_tao || 'Ẩn danh' }}
                             </span>
+                            @if ((khoaHoc.tong_danh_gia ?? 0) > 0) {
+                              <span class="meta-item rating-display">
+                                <i class="fas fa-star text-warning"></i>
+                                {{ khoaHoc.trung_binh_sao | number:'1.1-1' }}
+                                <span class="rating-count">({{ khoaHoc.tong_danh_gia }})</span>
+                              </span>
+                            }
                   </div>
                   <p class="card-desc">{{ khoaHoc.mo_ta || 'Chưa có mô tả cho khóa học này.' }}</p>
                 </div>

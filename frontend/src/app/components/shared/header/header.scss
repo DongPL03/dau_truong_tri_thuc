@@ -49,7 +49,7 @@
 /* --- NAVIGATION --- */
 .main-nav {
   display: flex;
-  gap: 10px;
+  gap: 20px;
   align-items: center;
 }
 
@@ -255,4 +255,106 @@
 .logout-item:hover .menu-icon {
   background-color: #ff4757;
   color: white;
+}
+
+/* --- STREAK BUTTON STYLES --- */
+
+.streak-btn {
+  background: #f2f2f2; /* Nền mặc định khi đã điểm danh (nguội) */
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%; /* Tròn hoàn hảo */
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: #a0a0a0; /* Màu icon khi nguội (xám tro) */
+}
+
+/* Icon bên trong */
+.streak-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+/* --- TRẠNG THÁI: CHƯA ĐIỂM DANH (IS BURNING) --- */
+.streak-btn.is-burning {
+  background: linear-gradient(135deg, #FF9966 0%, #FF5E62 100%); /* Gradient Cam-Đỏ */
+  color: white; /* Icon chuyển sang màu trắng cho nổi trên nền đỏ */
+  /* Animation nhịp đập & phát sáng */
+  animation: fire-pulse 2s infinite;
+  box-shadow: 0 4px 15px rgba(255, 94, 98, 0.4);
+}
+
+.streak-btn.is-burning .streak-icon {
+  /* Làm icon lắc nhẹ giống ngọn lửa đang cháy */
+  animation: fire-flicker 3s infinite alternate;
+}
+
+/* --- TRẠNG THÁI: ĐÃ ĐIỂM DANH (HOVER NHẸ) --- */
+.streak-btn:not(.is-burning):hover {
+  background: #e6e6e6;
+  color: var(--primary); /* Hover thì hiện màu tím chủ đạo */
+  transform: translateY(-2px);
+}
+
+
+/* --- BADGE DẤU CHẤM THAN (!) --- */
+.streak-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background-color: #ff4757;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: bounce 1s infinite; /* Badge nhảy tưng tưng */
+}
+
+/* --- KEYFRAMES ANIMATION --- */
+
+/* 1. Hiệu ứng tỏa nhiệt (Glow & Pulse) */
+@keyframes fire-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 117, 76, 0.7); /* Màu cam accent */
+  }
+  70% {
+    transform: scale(1.05); /* Phóng to nhẹ */
+    box-shadow: 0 0 0 10px rgba(255, 117, 76, 0); /* Tỏa bóng ra xa và mờ dần */
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 117, 76, 0);
+  }
+}
+
+/* 2. Hiệu ứng ngọn lửa lắc lư (Flicker) */
+@keyframes fire-flicker {
+  0%, 100% {
+    transform: rotate(-3deg) scale(1);
+  }
+  50% {
+    transform: rotate(3deg) scale(1.1);
+  }
+}
+
+/* 3. Hiệu ứng Badge nhảy (Bounce) */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
